@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DB_NAME: DESD
+      DB_USER: admin
+      DB_PASSWORD: AhmadandYousef
+      DB_HOST: passwordlessauth.chu26k8yu6en.eu-west-2.rds.amazonaws.com
+      DB_PORT: "3306"
+      DEBUG: "1"
