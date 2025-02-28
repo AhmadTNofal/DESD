@@ -5,7 +5,6 @@ class CustomUserBackend(BaseBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:
             user = CustomUser.objects.get(username=username)
-            # WARNING: In production, never compare plaintext passwords.
             if user.password == password:
                 return user
         except CustomUser.DoesNotExist:

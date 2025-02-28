@@ -35,4 +35,4 @@ class CustomUser(models.Model):
 
     class Meta:
         db_table = 'User'
-        managed = False  # Since this table already exists in your DB
+        managed = False 
