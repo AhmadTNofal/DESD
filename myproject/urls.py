@@ -16,9 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from accounts.views import home  # Import home view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),  # built-in auth routes
-    path('', include('accounts.urls')),  # your app's routes
+    path('accounts/', include('accounts.urls')),  # your app's routes
+    path('', home, name='home'),  # Redirect users after login
 ]
