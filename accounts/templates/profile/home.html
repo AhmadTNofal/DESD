@@ -6,6 +6,9 @@
 <body>
     <h1>Welcome, {{ request.user.username }}!</h1>
     <p>You are logged in.</p>
+    
+    <p><strong>Permission Level:</strong> {{ request.user.Permission }}</p> <!-- ✅ Show user permission -->
+
     <a href="{% url 'logout' %}">Logout</a>
 </body>
 </html>

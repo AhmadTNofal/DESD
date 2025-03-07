@@ -1,18 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signup</title>
 </head>
 <body>
     <h2>Signup</h2>
-    {% block content %}
-    <h2>Sign Up</h2>
-    <form method="post">
+    <form method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
+        
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br>
+
+        <label for="surname">Surname:</label>
+        <input type="text" id="surname" name="surname" required><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br>
+
+        <label for="phoneNumber">Phone Number:</label>
+        <input type="text" id="phoneNumber" name="phoneNumber" required><br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br>
+
+        <label for="bio">Bio:</label>
+        <textarea id="bio" name="bio"></textarea><br>
+
+        <label for="major">Major:</label>
+        <input type="text" id="major" name="major"><br>
+
+        <label for="academicYear">Academic Year:</label>
+        <input type="text" id="academicYear" name="academicYear"><br>
+
+        <label for="campusInvolvement">Campus Involvement:</label>
+        <textarea id="campusInvolvement" name="campusInvolvement"></textarea><br>
+
         <button type="submit">Sign Up</button>
     </form>
-    <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
-    {% endblock %}
 </body>
 </html>

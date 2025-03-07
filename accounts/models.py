@@ -1,19 +1,46 @@
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 
-class CustomUser(models.Model):
+class CustomUserManager(BaseUserManager):
+    """ Manager for CustomUser to handle user creation properly. """
+
+    def create_user(self, username, surname, email, phoneNumber, password=None):
+        """ Create and return a regular user with a hashed password. """
+        if not username:
+            raise ValueError("Users must have a username")
+        if not email:
+            raise ValueError("Users must have an email address")
+
+        user = self.model(
+            username=username,
+            surname=surname,
+            email=email,
+            phoneNumber=phoneNumber,
+        )
+        user.set_password(password)  # Hash password before storing
+        user.save(using=self._db)
+        return user
+
+class CustomUser(AbstractBaseUser):
+    """ Custom user model for authentication, mapping to the 'User' table. """
+
     userID = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=50)
+    username = models.CharField(max_length=50, unique=True)
     surname = models.CharField(max_length=50)
-    email = models.EmailField(max_length=100)
+    email = models.EmailField(max_length=100, unique=True)
     phoneNumber = models.CharField(max_length=20)
-    password = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)  
     createdAt = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(null=True, blank=True)
+    Permission = models.CharField(max_length=255)  
 
-    # Properties to satisfy Django's authentication system:
-    @property
-    def is_authenticated(self):
-        return True
+    objects = CustomUserManager()
+
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ["email", "surname", "phoneNumber"]
+
+    def __str__(self):
+        return self.username
 
     @property
     def is_active(self):
@@ -21,18 +48,8 @@ class CustomUser(models.Model):
 
     @property
     def is_staff(self):
-        return False
-
-    @property
-    def is_superuser(self):
-        return False
-
-    def get_username(self):
-        return self.username
-
-    def __str__(self):
-        return self.username
+        return self.Permission == "Admin"
 
     class Meta:
         db_table = 'User'
-        managed = False 
+        managed = False  # Since MySQL manages this table

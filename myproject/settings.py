@@ -93,6 +93,11 @@ AUTHENTICATION_BACKENDS = [
     'accounts.backends.CustomUserBackend',
 ]
 
+AUTH_USER_MODEL = "accounts.CustomUser"
+
+LOGIN_REDIRECT_URL = "home"  
+LOGOUT_REDIRECT_URL = "login" 
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
