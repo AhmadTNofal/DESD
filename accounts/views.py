@@ -5,13 +5,15 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.db import connection
 from django.contrib.auth.hashers import make_password
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 @login_required
 def home(request):
     """Render the home page after successful login."""
     return render(request, "profile/home.html", {"permission": request.user.Permission}) 
 
-
+@csrf_exempt
 def login_view(request):
     """Custom login view to authenticate users and redirect them to home."""
     if request.method == "POST":
