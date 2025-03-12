@@ -7,11 +7,26 @@ from django.db import connection
 from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.db.models import Q
+from .models import CustomUser
 
 @login_required
 def home(request):
     """Render the home page after successful login."""
-    return render(request, "profile/home.html", {"permission": request.user.Permission}) 
+    return render(request, "profile/home.html", {"permission": request.user.Permission})
+
+def search_users(request):
+    """ Allow users to search for others by username, email, or surname """
+    
+    query = request.GET.get('q', '').strip() # Get the search query from the request and remove whitespace
+    
+    results = CustomUser.objects.filter(
+        Q(username__icontains=query) | 
+        Q(email__icontains=query) | 
+        Q(surname__icontains=query)
+    ) if query else None  # Return None if query is empty
+
+    return render(request, 'profile/search_results.html', {'results': results, 'query': query}) 
 
 @csrf_exempt
 def login_view(request):

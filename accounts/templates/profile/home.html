@@ -6,6 +6,11 @@
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
 </head>
 <body>
+    <form action="{% url 'search_users' %}" method="GET">
+        <input type="text" name="q" placeholder="Search users..." required>
+        <button type="submit">Search</button>
+    </form>
+    <br>
     <h1>Welcome, {{ request.user.username }}!</h1>
     <p>You are logged in.</p>
     
