@@ -1,0 +1,147 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* General Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f5f2eb; /* Creamy white background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Form Container */
+.container {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    transition: transform 0.3s ease-in-out;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Fade-in Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Form Styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+/* Labels */
+label {
+    font-weight: 600;
+    text-align: left;
+    width: 100%;
+    color: #333;
+}
+
+/* Required Asterisk */
+.required {
+    color: red;
+    font-size: 16px;
+    font-weight: bold;
+    margin-left: 3px;
+}
+
+/* Input Fields */
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    background: #fafafa;
+    color: #333;
+    outline: none;
+    transition: border-color 0.3s ease-in-out;
+}
+
+/* Input Focus Effect */
+input:focus, textarea:focus {
+    border-color: #ff758c;
+}
+
+/* Placeholder Styling */
+::placeholder {
+    color: #999;
+}
+
+/* Textarea Styling */
+textarea {
+    resize: none;
+    height: 80px;
+}
+
+/* Button Styling */
+button {
+    background: #ff758c;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out, transform 0.2s;
+    width: 100%;
+}
+
+button:hover {
+    background: #e85b72;
+    transform: scale(1.02);
+}
+
+/* Links */
+a {
+    display: block;
+    margin-top: 15px;
+    color: #ff758c;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease-in-out;
+}
+
+a:hover {
+    color: #e85b72;
+    text-decoration: underline;
+}
+
+/* Two-Column Signup Layout */
+.signup-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
+    width: 90%;
+    max-width: 800px;
+}
+
+/* Adjust Layout for Mobile */
+@media (max-width: 768px) {
+    .signup-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    .signup-container .container {
+        max-width: 100%;
+    }
+}

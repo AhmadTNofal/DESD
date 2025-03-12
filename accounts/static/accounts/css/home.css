@@ -1,0 +1,64 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* General Styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f5f2eb; /* Creamy white background */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Welcome Heading */
+h1 {
+    color: #333;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+/* General Text */
+p {
+    color: #555;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+/* Permission Level Styling */
+strong {
+    color: #ff758c;
+}
+
+/* Logout Button */
+a {
+    display: inline-block;
+    background: #ff758c;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 6px;
+    transition: background 0.3s ease-in-out, transform 0.2s;
+    margin-top: 20px;
+}
+
+a:hover {
+    background: #e85b72;
+    transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 24px;
+    }
+    p {
+        font-size: 16px;
+    }
+}

@@ -17,6 +17,21 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from accounts.views import home  # Import home view
+from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import path
+from accounts import views
+from accounts.views import signup, home, login_view
+
+urlpatterns = [
+    path("home/", home, name="home"),
+    path("login/", login_view, name="login"),
+    path("signup/", signup, name="signup"),
+]
+
+# Serve static files in development mode
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,3 +39,5 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),  # your app's routes
     path('', home, name='home'),  # Redirect users after login
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

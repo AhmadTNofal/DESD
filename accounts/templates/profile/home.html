@@ -2,6 +2,8 @@
 <html>
 <head>
     <title>Home</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
 </head>
 <body>
     <h1>Welcome, {{ request.user.username }}!</h1>
