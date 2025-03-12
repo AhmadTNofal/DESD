@@ -21,12 +21,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from accounts import views
-from accounts.views import signup, home, login_view
+from accounts.views import signup, home, login_view, search_users
 
 urlpatterns = [
     path("home/", home, name="home"),
     path("login/", login_view, name="login"),
     path("signup/", signup, name="signup"),
+    path('search/', search_users, name='search_users'),  # Search URL
 ]
 
 # Serve static files in development mode
