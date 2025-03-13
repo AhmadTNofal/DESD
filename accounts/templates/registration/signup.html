@@ -49,48 +49,51 @@
 </head>
 <body>
     <div class="signup-container">
+        <!-- Signup Form: BOTH Account + More Information fields -->
         <div class="container">
             <h2>Create an Account</h2>
             <form id="signup-form" method="POST" onsubmit="validateForm(event)">
                 {% csrf_token %}
-                
-                <label for="username">Username <span class="required">*</span></label>
-                <input type="text" id="username" name="username" required placeholder="Choose a username">
 
-                <label for="surname">Surname <span class="required">*</span></label>
-                <input type="text" id="surname" name="surname" required placeholder="Enter your surname">
+                <!-- Left Side: Basic Info -->
+                <div class="left-section">
+                    <label for="username">Username <span class="required">*</span></label>
+                    <input type="text" id="username" name="username" required placeholder="Choose a username">
 
-                <label for="email">Email <span class="required">*</span></label>
-                <input type="email" id="email" name="email" required placeholder="Enter your email">
+                    <label for="surname">Surname <span class="required">*</span></label>
+                    <input type="text" id="surname" name="surname" required placeholder="Enter your surname">
 
-                <label for="phoneNumber">Phone Number <span class="required">*</span></label>
-                <input type="text" id="phoneNumber" name="phoneNumber" required placeholder="Enter your phone number" maxlength="15">
+                    <label for="email">Email <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email">
 
-                <label for="password">Password <span class="required">*</span></label>
-                <input type="password" id="password" name="password" required placeholder="Choose a strong password">
+                    <label for="phoneNumber">Phone Number <span class="required">*</span></label>
+                    <input type="text" id="phoneNumber" name="phoneNumber" required placeholder="Enter your phone number" maxlength="15">
 
-                <label for="confirm_password">Confirm Password <span class="required">*</span></label>
-                <input type="password" id="confirm_password" name="confirm_password" required placeholder="Re-enter your password">
+                    <label for="password">Password <span class="required">*</span></label>
+                    <input type="password" id="password" name="password" required placeholder="Choose a strong password">
+
+                    <label for="confirm_password">Confirm Password <span class="required">*</span></label>
+                    <input type="password" id="confirm_password" name="confirm_password" required placeholder="Re-enter your password">
+                </div>
+
+                <!-- Right Side: More Information (Inside the Form) -->
+                <div class="right-section">
+                    <h2>More Information</h2>
+
+                    <label for="bio">Bio <span class="required">*</span></label>
+                    <textarea id="bio" name="bio" required placeholder="Tell us about yourself"></textarea>
+
+                    <label for="major">Major <span class="required">*</span></label>
+                    <input type="text" id="major" name="major" required placeholder="Your field of study">
+
+                    <label for="academicYear">Academic Year <span class="required">*</span></label>
+                    <input type="text" id="academicYear" name="academicYear" required placeholder="Your academic year">
+
+                    <label for="campusInvolvement">Campus Involvement <span class="required">*</span></label>
+                    <textarea id="campusInvolvement" name="campusInvolvement" required placeholder="Your activities"></textarea>
+                </div>
 
                 <button type="submit">Sign Up</button>
-            </form>
-            <a href="{% url 'login' %}">Already have an account? Login</a>
-        </div>
-
-        <div class="container">
-            <h2>More Information</h2>
-            <form>
-                <label for="bio">Bio <span class="required">*</span></label>
-                <textarea id="bio" name="bio" required placeholder="Tell us about yourself"></textarea>
-
-                <label for="major">Major <span class="required">*</span></label>
-                <input type="text" id="major" name="major" required placeholder="Your field of study">
-
-                <label for="academicYear">Academic Year <span class="required">*</span></label>
-                <input type="text" id="academicYear" name="academicYear" required placeholder="Your academic year">
-
-                <label for="campusInvolvement">Campus Involvement <span class="required">*</span></label>
-                <textarea id="campusInvolvement" name="campusInvolvement" required placeholder="Your activities"></textarea>
             </form>
         </div>
     </div>

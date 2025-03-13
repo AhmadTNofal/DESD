@@ -2,40 +2,49 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
 /* General Styles */
-body {
+html, body {
     font-family: 'Poppins', sans-serif;
     background: #f5f2eb; /* Creamy white background */
+    height: 100vh; /* Ensure full screen */
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    margin: 0;
-    padding: 20px;
 }
 
-/* Form Container */
+/* Two-Column Signup Layout */
+.signup-container {
+    display: flex;
+    flex-direction: row; /* Side-by-side layout */
+    justify-content: center;
+    align-items: stretch;
+    gap: 30px;
+    width: 90%;
+    max-width: 1000px;
+}
+
+/* Left Side: User Form */
 .container {
     background: #ffffff;
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 450px;
+    width: 50%;
+    max-width: 400px;
     text-align: center;
-    transition: transform 0.3s ease-in-out;
-    animation: fadeIn 0.5s ease-in-out;
 }
 
-/* Fade-in Animation */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Right Side: More Information */
+.more-info {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 50%;
+    max-width: 400px;
+    text-align: center;
 }
 
 /* Form Styling */
@@ -54,14 +63,6 @@ label {
     color: #333;
 }
 
-/* Required Asterisk */
-.required {
-    color: red;
-    font-size: 16px;
-    font-weight: bold;
-    margin-left: 3px;
-}
-
 /* Input Fields */
 input, textarea {
     width: 100%;
@@ -71,18 +72,6 @@ input, textarea {
     font-size: 16px;
     background: #fafafa;
     color: #333;
-    outline: none;
-    transition: border-color 0.3s ease-in-out;
-}
-
-/* Input Focus Effect */
-input:focus, textarea:focus {
-    border-color: #ff758c;
-}
-
-/* Placeholder Styling */
-::placeholder {
-    color: #999;
 }
 
 /* Textarea Styling */
@@ -101,47 +90,21 @@ button {
     font-weight: 600;
     border-radius: 6px;
     cursor: pointer;
-    transition: background 0.3s ease-in-out, transform 0.2s;
     width: 100%;
 }
 
 button:hover {
     background: #e85b72;
-    transform: scale(1.02);
 }
 
-/* Links */
-a {
-    display: block;
-    margin-top: 15px;
-    color: #ff758c;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease-in-out;
-}
-
-a:hover {
-    color: #e85b72;
-    text-decoration: underline;
-}
-
-/* Two-Column Signup Layout */
-.signup-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 20px;
-    width: 90%;
-    max-width: 800px;
-}
-
-/* Adjust Layout for Mobile */
-@media (max-width: 768px) {
+/* Responsive Design */
+@media (max-width: 900px) {
     .signup-container {
-        flex-direction: column;
+        flex-direction: column; /* Stack forms vertically on small screens */
         align-items: center;
     }
-    .signup-container .container {
-        max-width: 100%;
+    .container, .more-info {
+        width: 100%;
+        max-width: 500px;
     }
 }

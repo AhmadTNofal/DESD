@@ -69,7 +69,11 @@ def signup(request):
                 """, [username, surname, email, phoneNumber, password, "user"])
 
                 # Get the userID of the newly inserted user
-                user_id = cursor.lastrowid
+                cursor.execute("SELECT LAST_INSERT_ID()")
+                user_id = cursor.fetchone()[0]  # Fetch userID from the database
+
+                if not user_id:
+                    raise ValueError("User ID not retrieved. Profile insertion aborted.")
 
                 # Insert into Profiles table
                 cursor.execute("""
