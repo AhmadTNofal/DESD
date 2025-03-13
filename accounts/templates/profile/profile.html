@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <title>Profile Settings</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/profile.css' %}">
+</head>
+<body>
+    <a href="{% url 'home' %}" class="back-button">← Back</a>
+    <h1>Profile Settings</h1>
+
+    <div class="profile-container">
+        <form method="post" action="{% url 'edit_profile' %}">
+            {% csrf_token %}
+            
+            <div class="profile-info">
+                <label><strong>Username:</strong></label>
+                <input type="text" name="username" value="{{ user.username }}" required>
+            </div>
+
+            <div class="profile-info">
+                <label><strong>Email:</strong></label>
+                <input type="email" name="email" value="{{ user.email }}" required>
+            </div>
+
+            <div class="profile-info">
+                <label><strong>Surname:</strong></label>
+                <input type="text" name="surname" value="{{ user.surname }}">
+            </div>
+
+            <div class="profile-info">
+                <label><strong>Phone Number:</strong></label>
+                <input type="tel" name="phoneNumber" value="{{ user.phoneNumber }}">
+            </div>
+
+            <div class="profile-info">
+                <label><strong>Permission Level:</strong> (Read-Only)</label>
+                <input type="text" value="{{ user.Permission }}" disabled>
+            </div>
+
+            <button type="submit" class="save-btn">Save Changes</button>
+        </form>
+    </div>
+</body>
+</html>

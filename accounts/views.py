@@ -73,7 +73,7 @@ def signup(request):
 
                 # Insert into Profiles table
                 cursor.execute("""
-                    INSERT INTO Profiles (userID, bio, major, academicYear, campusInvolvement)
+                    INSERT INTO `Profiles` (userID, bio, major, academicYear, campusInvolvement)
                     VALUES (%s, %s, %s, %s, %s)
                 """, [user_id, bio, major, academicYear, campusInvolvement])
 
@@ -115,3 +115,38 @@ def create_community(request):
         form = CommunityForm()
 
     return render(request, "Communities/create_community.html", {"form": form})
+
+@login_required
+def profile_settings(request):
+    return render(request, 'profile/profile.html', {'user': request.user})
+
+
+@login_required
+def edit_profile(request):
+    if request.method == "POST":
+        user = request.user  # Get the logged-in user
+
+        # Debugging: Print user attributes to confirm correct field names
+        print(f"User Object: {user.__dict__}")
+
+        if not hasattr(user, 'userID'):  # Ensure userID exists
+            print("❌ Error: User object does not have 'userID'")
+            messages.error(request, "Error: User object does not have 'userID'")
+            return redirect("profile_settings")
+
+        # Update user fields
+        user.username = request.POST["username"]
+        user.email = request.POST["email"]
+        user.surname = request.POST.get("surname", "")
+        user.phoneNumber = request.POST.get("phoneNumber", "")
+
+        try:
+            user.save()  # ✅ Save user data using Django ORM
+            print("✅ Profile updated successfully!")
+            messages.success(request, "Profile updated successfully!")
+        except Exception as e:
+            print(f"❌ Error: {e}")  # Debugging
+            messages.error(request, f"Error updating profile: {e}")
+
+    return redirect("profile_settings")
+
