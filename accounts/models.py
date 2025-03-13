@@ -53,3 +53,32 @@ class CustomUser(AbstractBaseUser):
     class Meta:
         db_table = 'User'
         managed = False  # Since MySQL manages this table
+
+class Community(models.Model):
+    """ Model representing a community. """
+    communityID = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True)
+    communityDescription = models.TextField(blank=True, null=True)
+    communityCategory = models.CharField(max_length=100, blank=True, null=True)
+    createdBy = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_column="createdBy")  
+    createdAt = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "Communities"  # Match the database table name
+        managed = False  # Since MySQL manages this table
+
+    def __str__(self):
+        return self.name
+
+
+class CommunityMembership(models.Model):
+    """ Model for managing user memberships in communities. """
+    membershipID = models.AutoField(primary_key=True)
+    communityID = models.ForeignKey(Community, on_delete=models.CASCADE, db_column="communityID") 
+    userID = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_column="userID")  
+    role = models.CharField(max_length=50, default="Member")
+    joinedAt = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "CommunityMemberships"  # Match the database table name
+        managed = False  # Since MySQL manages this table

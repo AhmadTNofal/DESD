@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/community.css' %}">
+    <title>Create Community</title>
+</head>
+<body>
+    {% comment %} <nav>
+        <div class="nav-bar">
+            <span class="logo navLogo"><a href="{% url 'communities' %}">Back to Communities</a></span>
+        </div>
+    </nav> {% endcomment %}
+
+    <div class="container">
+        <h2>Create a New Community</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div>
+                <label for="id_name">Community Name:</label>
+                {{ form.name }}
+            </div>
+            <div>
+                <label for="id_communityDescription">Description:</label>
+                {{ form.communityDescription }}
+            </div>
+            <div>
+                <label for="id_communityCategory">Category:</label>
+                {{ form.communityCategory }}
+            </div>
+            <button type="submit">Create Community</button>
+        </form>
+
+        {% if form.errors %}
+        <ul class="error-list">
+            {% for field, errors in form.errors.items %}
+                <li><strong>{{ field }}:</strong> {{ errors.0 }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    
+    </div>
+</body>
+</html>

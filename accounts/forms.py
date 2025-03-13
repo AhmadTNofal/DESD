@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.hashers import make_password
+from .models import Community
 
 class SignupForm(forms.Form):
     username = forms.CharField(max_length=50)
@@ -14,3 +15,23 @@ class SignupForm(forms.Form):
 
     def clean_password(self):
         return make_password(self.cleaned_data["password"])
+
+from django import forms
+from .models import Community
+
+class CommunityForm(forms.ModelForm):
+    """ Form to create a new community. """
+    
+    class Meta:
+        model = Community
+        fields = ["name", "communityDescription", "communityCategory"]
+        labels = {
+            "name": "Community Name",
+            "communityDescription": "Description",
+            "communityCategory": "Category",
+        }
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter community name"}),
+            "communityDescription": forms.Textarea(attrs={"class": "form-control", "placeholder": "Describe your community", "rows": 4}),
+            "communityCategory": forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter category (e.g., Sports, Tech, Music)"}),
+        }

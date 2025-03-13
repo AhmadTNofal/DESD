@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/community.css' %}">
+    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+     <title>Communities</title>
+</head>
+<body>
+    <nav>
+        <div class="nav-bar">
+            <i class='bx bx-menu sidebarOpen' ></i>
+            <span class="logo navLogo"><a href="#">Communities</a></span>
+            <div class="menu">
+                <div class="logo-toggle">
+                    <i class='bx bx-x siderbarClose'></i>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li><a href="#">My Communities</a></li>
+                    <li><a href="#">Join Communities</a></li>
+                    <li><a href="{% url 'create_communities' %}">Create Community</a></li>
+                </ul>
+            </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</body>
+</html>

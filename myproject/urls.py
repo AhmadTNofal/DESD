@@ -21,13 +21,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from accounts import views
-from accounts.views import signup, home, login_view, search_users
+from accounts.views import signup, home, login_view, search_users, communities, create_community
 
 urlpatterns = [
     path("home/", home, name="home"),
     path("login/", login_view, name="login"),
     path("signup/", signup, name="signup"),
-    path('search/', search_users, name='search_users'),  # Search URL
+    path('search/', search_users, name='search_users'),  
+    path("communities/", communities, name="communities"),
+    path("CreateCommunities/", create_community, name="create_communities"),
 ]
 
 # Serve static files in development mode
@@ -39,6 +41,8 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),  # built-in auth routes
     path('accounts/', include('accounts.urls')),  # your app's routes
     path('', home, name='home'),  # Redirect users after login
+    path("communities/", communities, name="communities"),
+    path("CreateCommunities/", create_community, name="create_communities"),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

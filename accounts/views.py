@@ -8,7 +8,8 @@ from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
-from .models import CustomUser
+from .models import CustomUser, Community, CommunityMembership
+from .forms import CommunityForm
 
 @login_required
 def home(request):
@@ -83,3 +84,34 @@ def signup(request):
             messages.error(request, f"Error: {e}")
     
     return render(request, 'registration/signup.html')
+
+def communities(request):
+    return render(request, 'Communities/community.html')
+
+@login_required
+def create_community(request):
+    """ Handles the creation of a new community. """
+    if request.method == "POST":
+        form = CommunityForm(request.POST)
+        if form.is_valid():
+            community = form.save(commit=False)
+            community.createdBy = request.user  # Assign the logged-in user as creator
+            community.save()
+
+            # Assign creator as "Admin" in CommunityMemberships
+            CommunityMembership.objects.create(
+                communityID=community,
+                userID=request.user,
+                role="Admin"
+            )
+
+            messages.success(request, "Community created successfully!")
+            return redirect("communities")  # Redirect to communities page
+        else:
+            print("Form Errors:", form.errors)  # Debugging: Print errors to console
+            messages.error(request, "Error creating community. Please check the form.")
+
+    else:
+        form = CommunityForm()
+
+    return render(request, "Communities/create_community.html", {"form": form})
