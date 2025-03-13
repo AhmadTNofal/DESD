@@ -1,41 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
 </head>
 <body>
-    <!-- Burger Menu Icon -->
-    <span class="menu-icon" onclick="openMenu()">&#9776;</span>
 
-    <!-- Sidebar Menu -->
-    <div id="sidebar" class="sidebar">
-        <span class="close-btn" onclick="closeMenu()">&times;</span>
-        <a href="{% url 'profile_settings' %}">Profile Settings</a>
-        <a href="{% url 'communities' %}">Communities</a>
-        <a href="{% url 'events' %}">Events</a>
-        <a href="{% url 'logout' %}">Logout</a>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="home.html" class="nav-logo">My Website</a>
+
+        <!-- Navigation Links -->
+        <div class="nav-links">
+            <a href="{% url 'profile_settings' %}" class="nav-btn">Profile Settings</a>
+            <a href="{% url 'communities' %}" class="nav-btn">Communities</a>
+            <a href="{% url 'events' %}" class="nav-btn">Events</a>
+            <a href="{% url 'logout' %}" class="nav-btn">Logout</a>
+            <form action="{% url 'search_users' %}" method="GET" class="search-bar-container">
+                <input type="text" name="q" class="search-bar" placeholder="Search users..." required>
+                <button type="submit" class="toggle-filters-btn">Search</button>
+            </form>
+        </div>
+
+        <!-- Hamburger Menu Icon -->
+        <span class="hamburger-menu" onclick="toggleMenu()">&#9776;</span>
+    </nav>
+
+    <!-- Welcome Section -->
+    <div class="container">
+        <h1>Welcome, {{ request.user.username }}!</h1>
+        <p>You are logged in.</p>
+        <p><strong>Permission Level:</strong> {{ request.user.Permission }}</p>
     </div>
 
+    <!-- JavaScript for Menu Toggle -->
     <script>
-        function openMenu() {
-            document.getElementById("sidebar").style.width = "250px";
-        }
-
-        function closeMenu() {
-            document.getElementById("sidebar").style.width = "0";
+        function toggleMenu() {
+            var navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('show-menu');
         }
     </script>
-    <form action="{% url 'search_users' %}" method="GET">
-        <input type="text" name="q" placeholder="Search users..." required>
-        <button type="submit">Search</button>
-    </form>
-    <br>
-    <h1>Welcome, {{ request.user.username }}!</h1>
-    <p>You are logged in.</p>
-    
-    <p><strong>Permission Level:</strong> {{ request.user.Permission }}</p> <!-- ✅ Show user permission -->
 
 </body>
 </html>

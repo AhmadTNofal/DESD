@@ -6,8 +6,25 @@
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/profile.css' %}">
 </head>
 <body>
-    <a href="{% url 'home' %}" class="back-button">← Back</a>
-    <h1>Profile Settings</h1>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="home.html" class="nav-logo">UniHub</a>
+
+        <!-- Navigation Links -->
+        <div class="nav-links">
+            <a href="{% url 'home' %}" class="nav-btn">Home</a>
+            <a href="{% url 'communities' %}" class="nav-btn">Communities</a>
+            <a href="{% url 'events' %}" class="nav-btn">Events</a>
+            <a href="{% url 'logout' %}" class="nav-btn">Logout</a>
+            
+        </div>
+
+        <!-- Hamburger Menu Icon -->
+        <span class="hamburger-menu" onclick="toggleMenu()">&#9776;</span>
+    </nav>
+    <!-- <a href="{% url 'home' %}" class="back-button">← Back</a>
+    <h1>Profile Settings</h1> -->
 
     <div class="profile-container">
         <form method="post" action="{% url 'edit_profile' %}">
@@ -41,5 +58,12 @@
             <button type="submit" class="save-btn">Save Changes</button>
         </form>
     </div>
+
+    <script>
+        function toggleMenu() {
+            var navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('show-menu');
+        }
+    </script>
 </body>
 </html>

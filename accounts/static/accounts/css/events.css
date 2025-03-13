@@ -1,101 +1,384 @@
-/* General Styling */
-body {
-    font-family: Arial, sans-serif;
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* General Styles */
+html, body {
+    font-family: 'Poppins', sans-serif;
+    background: #f5f2eb; /* Creamy white background */
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
 }
 
-.container {
-    max-width: 600px;
-    padding: 20px;
+/* Navbar */
+.navbar {
+    background: #ff758c;
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+/* Hamburger Menu Icon */
+.hamburger-menu {
+    display: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.nav-logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 15px;
+}
+
+/* Default Button Style */
+.nav-btn {
     background: white;
-    border-radius: 10px;
+    color: #ff758c;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.nav-btn:hover {
+    background: #e85b72;
+    color: white;
+}
+
+/* Page Container */
+.container {
+    max-width: 1000px;
+    width: 90%;
+    background: white;
+    margin: 30px auto;
+    padding: 30px;
+    border-radius: 12px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
-h2 {
-    color: #333;
-    margin-bottom: 20px;
+/* Search Bar & Filter Button */
+.search-bar-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    width: 100%;
 }
 
+.search-bar {
+    flex-grow: 1; /* Allows it to expand dynamically */
+    max-width: 500px; /* Increases max width */
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fafafa;
+    color: #333;
+}
+
+
+
 /* Button Styling */
-.button-container {
+.toggle-filters-btn,
+.submit-btn,
+.reset-btn {
+    background: #ff758c;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    text-align: center;
+    white-space: nowrap; /* Prevents wrapping */
+}
+
+.toggle-filters-btn:hover,
+.submit-btn:hover,
+.reset-btn:hover {
+    background: #e85b72;
+}
+
+/* Hidden Advanced Filters */
+.hidden-filters {
+    display: none;
+    margin-top: 15px;
+    padding: 20px;
+    border-radius: 12px;
+    background: #f8f9fa;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Show Filters when Activated */
+.show-filters {
+    display: block;
+}
+
+/* Checkbox & Location Styling */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Adjusts spacing between checkbox and label */
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    justify-content: flex-start; /* Ensures left alignment */
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #ff758c; /* Makes the checkbox match theme color */
+}
+
+/* Adjust alignment inside filtering form */
+.filter-form {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    margin-top: 20px;
+    align-items: center; /* Aligns everything to the left */
+}
+/* Location Field */
+#locationField {
+    margin-top: 10px;
 }
 
-.btn {
+/* Inputs & Select Styling */
+input,
+select {
     width: 100%;
     padding: 12px;
     font-size: 16px;
-    font-weight: bold;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: white;
-    transition: background 0.3s ease;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fafafa;
+    color: #333;
 }
 
-/* Button Colors */
-.create-btn { background-color: #007bff; }
-.create-btn:hover { background-color: #0056b3; }
+/* Event List */
+.event-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+}
 
-.change-btn { background-color: #ffc107; color: black; }
-.change-btn:hover { background-color: #e0a800; }
+/* Event Card */
+.event-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 45%;
+    text-align: left;
+    transition: transform 0.2s ease-in-out;
+}
 
-.cancel-btn { background-color: #dc3545; }
-.cancel-btn:hover { background-color: #c82333; }
+.event-card:hover {
+    transform: scale(1.02);
+}
 
-.home-btn { background-color: #28a745; }
-.home-btn:hover { background-color: #218838; }
+/* Event Title */
+.event-card h3 {
+    color: #ff758c;
+    margin-top: 0;
+}
+h2 {
+    color: #ff758c;
+    margin-bottom: 20px;
+}
 
-/* Forms */
+/* Form Styling */
 form {
     display: flex;
     flex-direction: column;
+    gap: 15px;
+    align-items: center;
 }
 
+/* Labels */
 label {
-    margin: 10px 0 5px;
-    font-weight: bold;
+    font-weight: 600;
+    text-align: left;
+    width: 100%;
+    color: #333;
 }
 
-select, input, button {
+/* Input Fields */
+input, select, textarea {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
+    padding: 12px;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 6px;
+    font-size: 16px;
+    background: #fafafa;
+    color: #333;
+}
+
+/* Textarea Styling */
+textarea {
+    resize: none;
+    height: 80px;
+}
+
+/* Buttons */
+button {
+    background: #ff758c;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.3s ease;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Adds spacing between buttons */
+    margin-top: 10px;
+}
+
+button:hover {
+    background: #e85b72;
+}
+
+/* Special Buttons */
+.cancel-btn {
+    background: #dc3545;
+}
+
+.cancel-btn:hover {
+    background: #c82333;
+}
+
+.change-btn {
+    background: #ffc107;
+    color: black;
+}
+
+.change-btn:hover {
+    background: #e0a800;
 }
 
 /* Back Link */
 .back-link {
     display: block;
-    text-align: center;
     margin-top: 15px;
     text-decoration: none;
-    color: #007bff;
+    color: #ff758c;
+    font-weight: 600;
 }
 
 .back-link:hover {
     text-decoration: underline;
 }
 
-/* Confirmation Message */
-.confirmation {
-    color: red;
-    font-weight: bold;
-}
-
-/* Hide/Show Fields */
+/* Hidden Elements */
 .hidden {
     display: none;
+}
+/* Fade-in Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hamburger-menu {
+        display: block;
+    }
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        background: #ff758c;
+        position: fixed; /* Ensures full-screen effect */
+        top: 60px;
+        right: 0;
+        width: 250px; /* Full width */
+        height: calc(100vh - 60px); /* Full height below navbar */
+        padding: 20px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 0 0 12px 12px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .nav-links.show-menu {
+        display: flex; /* Show when toggled */
+    }
+
+    .nav-btn {
+        background: white;
+        color: #ff758c;
+        display: block;
+        padding: 12px;
+        text-align: center;
+        margin: 10px 0;
+        width: 80%; /* Ensures buttons are aligned properly */
+    }
+
+    .event-card {
+        width: 90%;
+    }
+
+    .search-bar-container {
+        flex-direction: column;
+        width: 80%;
+    }
+
+    .search-bar {
+        width: 100%;
+    }
+    .container {
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 600px) {
+    .button-group {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    .search-bar-container {
+        flex-direction: column;
+    }
+
+    .search-bar {
+        width: 100%;
+    }
+
+    .toggle-filters-btn {
+        width: 100%;
+    }
 }

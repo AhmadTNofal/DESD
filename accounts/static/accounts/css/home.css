@@ -1,120 +1,144 @@
 /* Import Google Font */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
-/* General Styling */
-body {
+/* General Styles */
+html, body {
     font-family: 'Poppins', sans-serif;
     background: #f5f2eb; /* Creamy white background */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
     margin: 0;
-    padding: 20px;
-    text-align: center;
+    padding: 0;
 }
 
-/* Welcome Heading */
-h1 {
-    color: #333;
-    font-size: 28px;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
-
-/* General Text */
-p {
-    color: #555;
-    font-size: 18px;
-    margin-bottom: 10px;
-}
-
-/* Permission Level Styling */
-strong {
-    color: #ff758c;
-}
-
-/* Logout Button */
-a {
-    display: inline-block;
+/* Navbar */
+.navbar {
     background: #ff758c;
     color: white;
-    text-decoration: none;
-    font-weight: 600;
-    padding: 10px 20px;
-    border-radius: 6px;
-    transition: background 0.3s ease-in-out, transform 0.2s;
-    margin-top: 20px;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
-a:hover {
+/* Hamburger Menu Icon */
+.hamburger-menu {
+    display: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Logo */
+.nav-logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+/* Navigation Links */
+.nav-links {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+/* Button Styling */
+.nav-btn {
+    background: white;
+    color: #ff758c;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.nav-btn:hover {
     background: #e85b72;
-    transform: scale(1.05);
+    color: white;
+}
+
+/* Search Bar */
+.search-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-bar {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fafafa;
+    color: #333;
+}
+
+/* Search Button */
+.toggle-filters-btn {
+    background: #ff758c;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.toggle-filters-btn:hover {
+    background: #e85b72;
 }
 
 /* Responsive Design */
-@media (max-width: 600px) {
-    h1 {
-        font-size: 24px;
+@media (max-width: 768px) {
+    /* Show Hamburger Menu */
+    .hamburger-menu {
+        display: block;
     }
-    p {
-        font-size: 16px;
+
+    /* Hide Nav Links Initially */
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        background: #ff758c;
+        position: fixed; /* Ensures full-screen effect */
+        top: 60px;
+        right: 0;
+        width: 250px; /* Full width */
+        height: calc(100vh - 60px); /* Full height below navbar */
+        padding: 20px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 0 0 12px 12px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Show Menu When Activated */
+    .nav-links.show-menu {
+        display: flex;
+    }
+
+    /* Mobile Button Style */
+    .nav-btn {
+        background: white;
+        color: #ff758c;
+        display: block;
+        padding: 12px;
+        text-align: center;
+        margin: 10px 0;
+        width: 80%; /* Ensures buttons are aligned properly */
+    }
+
+    /* Search Bar Adjustment */
+    .search-bar-container {
+        flex-direction: column;
+        width: 80%;
+    }
+
+    .search-bar {
+        width: 100%;
     }
 }
-
-/* Burger Menu Styling */
-.menu-icon {
-    font-size: 30px;
-    cursor: pointer;
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    color: black;
-}
-
-/* Sidebar Menu */
-.sidebar {
-    height: 100%;
-    width: 0;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: #333;
-    overflow-x: hidden;
-    transition: 0.3s;
-    padding-top: 60px;
-    display: flex;
-    flex-direction: column; /* Stack buttons vertically */
-    align-items: center; /* Center items horizontally */
-}
-
-/* Sidebar Menu Buttons */
-.sidebar a {
-    display: 30px; /* Makes buttons only as wide as their content */
-    padding: 10px 15px;
-    text-decoration: none;
-    font-size: 18px;
-    color: white;
-    background-color: #ff758c; /* Slightly different background for contrast */
-    border-radius: 6px; /* Rounded edges */
-    margin: 10px auto; /* Centers the button inside the sidebar */
-    transition: background 0.3s ease-in-out, transform 0.2s;
-    text-align: center;
-}
-
-/* Hover Effect */
-.sidebar a:hover {
-    background-color: #575757;
-    transform: scale(1.05); /* Slight pop effect */
-}
-
-.close-btn {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    font-size: 25px;
-    color: white;
-    cursor: pointer;
-}
-

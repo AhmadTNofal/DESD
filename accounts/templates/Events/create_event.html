@@ -12,6 +12,11 @@
             document.getElementById("locationField").classList.toggle("hidden", isOnline);
             document.getElementById("virtualLinkField").classList.toggle("hidden", !isOnline);
         }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+            document.getElementById("eventDate").setAttribute("min", today);
+        });
     </script>
 </head>
 <body>
@@ -37,7 +42,8 @@
             {{ form.eventTitle }}
 
             <label for="id_eventDate">Event Date:</label>
-            {{ form.eventDate }}
+            <input type="date" id="eventDate" name="eventDate" required>
+
 
             <label for="id_eventTime">Event Time:</label>
             {{ form.eventTime }}

@@ -11,7 +11,7 @@ from django.db.models import Q
 from .models import CustomUser, Community, CommunityMembership
 from .forms import CommunityForm, EventForm
 from django.urls import reverse
-
+from datetime import date
 
 @login_required
 def home(request):
@@ -157,8 +157,76 @@ def edit_profile(request):
     return redirect("profile_settings")
 
 
+
 def events(request):
-    return render(request, 'Events/events.html')
+    """ Fetch and filter events based on user input and include available locations """
+    query = request.GET.get("q", "").strip()
+    selected_date = request.GET.get("date", "")
+    selected_time = request.GET.get("time", "")
+    online_filter = request.GET.get("online", "")
+    location_filter = request.GET.get("location", "")
+
+    if request.user.is_authenticated:
+        user_id = request.user.userID  # FIXED: Use 'userID' instead of 'id'
+    else:
+        user_id = None  # Handle unauthenticated users
+
+    # Fetch only events from communities the user is part of
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, c.name as communityName
+            FROM Events e
+            JOIN Communities c ON e.communityID = c.communityID
+            JOIN CommunityMemberships cm ON cm.communityID = c.communityID
+            WHERE e.eventDate >= %s AND cm.userID = %s
+        """, [date.today(), user_id])
+
+        events = cursor.fetchall()
+
+    # Fetch distinct locations for filtering
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT DISTINCT location FROM Events WHERE location IS NOT NULL ORDER BY location")
+        locations = [row[0] for row in cursor.fetchall()]  # Extract locations from query result
+
+    # Convert raw data into dictionaries
+    filtered_events = []
+    for event in events:
+        event_id, title, event_date, event_time, location, virtual_link, community_name = event
+
+        event_data = {
+            "eventID": event_id,
+            "eventTitle": title,
+            "eventDate": event_date,
+            "eventTime": event_time.strftime("%H:%M"),
+            "location": location,
+            "virtualLink": virtual_link,
+            "is_online": virtual_link is not None,
+            "communityName": community_name
+        }
+
+        # Apply filters
+        if query and query.lower() not in title.lower():
+            continue
+        if selected_date and str(event_date) < selected_date:
+            continue
+        if selected_time and event_data["eventTime"] < selected_time:
+            continue
+        if online_filter == "yes" and not event_data["is_online"]:
+            continue
+        if online_filter == "no" and event_data["is_online"]:
+            continue
+        if location_filter and location_filter.lower() not in (location or "").lower():
+            continue
+
+        filtered_events.append(event_data)
+
+    return render(request, "Events/events.html", {
+        "events": filtered_events,
+        "locations": locations,  # FIXED: Passing locations to the template
+        "query": query
+    })
+
+
 
 @login_required
 def create_event(request):
