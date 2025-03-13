@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
+</head>
+<body>
+    {% block content %}
+        <h2>{{ user.username }}'s Profile</h2>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Surname:</strong> {{ user.surname }}</p>
+        <p><strong>Phone Number:</strong> {{ user.phoneNumber }}</p>
+        <p><strong>Permission Level:</strong> {{ user.Permission }}</p>
+    {% endblock %}
+</body>
+</html>

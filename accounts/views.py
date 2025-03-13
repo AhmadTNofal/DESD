@@ -31,6 +31,89 @@ def search_users(request):
 
     return render(request, 'profile/search_results.html', {'results': results, 'query': query}) 
 
+def search_communities(request):
+    """ Allow users to search for communities by name or category """
+    
+    query = request.GET.get('q', '').strip()  # Get search query
+
+    results = Community.objects.filter(
+        Q(name__icontains=query) | 
+        Q(communityCategory__icontains=query)
+    ) if query else None  # Return results only if query is not empty
+
+    return render(request, 'Communities/search_communities.html', {'results': results, 'query': query})
+
+def search_events(request):
+    """ Allow users to search for events by title, location, or community name """
+    
+    query = request.GET.get('q', '').strip()  # Get search query
+
+    results = []
+    if query:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, c.name as communityName
+                FROM Events e
+                JOIN Communities c ON e.communityID = c.communityID
+                WHERE e.eventTitle LIKE %s OR e.location LIKE %s OR c.name LIKE %s
+            """, [f"%{query}%", f"%{query}%", f"%{query}%"])
+            
+            results = cursor.fetchall()  # Fetch raw query results
+
+    return render(request, 'Events/search_events.html', {'results': results, 'query': query})
+
+def view_profile(request, user_id):
+    """ Display full profile of a user. """
+    user = CustomUser.objects.get(userID=user_id)  # Fetch user by ID
+    return render(request, 'profile/view_profile.html', {'user': user})
+
+def view_community(request, community_id):
+    """ Display community details and allow users to join. """
+    community = Community.objects.get(communityID=community_id)  # Fetch community
+    is_member = CommunityMembership.objects.filter(communityID=community, userID=request.user).exists()  # Check if user is a member
+    return render(request, 'Communities/view_community.html', {'community': community, 'is_member': is_member})
+
+def join_community(request, community_id):
+    """ Allows users to join a community if they are not already members. """
+    community = Community.objects.get(communityID=community_id)  # Fetch community
+
+    if not CommunityMembership.objects.filter(communityID=community, userID=request.user).exists():
+        CommunityMembership.objects.create(
+            communityID=community,
+            userID=request.user,
+            role="Member"
+        )
+        messages.success(request, "You have successfully joined the community!")
+
+    return redirect('view_community', community_id=community_id)
+
+def view_event(request, event_id):
+    """ Display full details of an event. """
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, c.name as communityName
+            FROM Events e
+            JOIN Communities c ON e.communityID = c.communityID
+            WHERE e.eventID = %s
+        """, [event_id])
+        event = cursor.fetchone()  # Fetch event details
+
+    if not event:
+        messages.error(request, "Event not found.")
+        return redirect('search_events')
+
+    event_data = {
+        "eventID": event[0],
+        "eventTitle": event[1],
+        "eventDate": event[2],
+        "eventTime": event[3].strftime("%H:%M"),
+        "location": event[4],
+        "virtualLink": event[5],
+        "communityName": event[6]
+    }
+
+    return render(request, 'Events/view_event.html', {"event": event_data})
+
 @csrf_exempt
 def login_view(request):
     """Custom login view to authenticate users and redirect them to home."""
@@ -226,8 +309,6 @@ def events(request):
         "query": query
     })
 
-
-
 @login_required
 def create_event(request):
     user_id = request.user.userID  # Get logged-in user ID
@@ -329,5 +410,3 @@ def cancel_event(request):
             return redirect('cancel_events')  # Refresh the page after deletion
 
     return render(request, 'Events/cancel_event.html', {'events': events})
-
-

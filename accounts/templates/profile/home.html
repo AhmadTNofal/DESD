@@ -19,8 +19,19 @@
             <a href="{% url 'communities' %}" class="nav-btn">Communities</a>
             <a href="{% url 'events' %}" class="nav-btn">Events</a>
             <a href="{% url 'logout' %}" class="nav-btn">Logout</a>
+            <!--search users-->
             <form action="{% url 'search_users' %}" method="GET" class="search-bar-container">
                 <input type="text" name="q" class="search-bar" placeholder="Search users..." required>
+                <button type="submit" class="toggle-filters-btn">Search</button>
+            </form>
+            <!--search communities-->
+            <form action="{% url 'search_communities' %}" method="GET" class="search-bar-container">
+                <input type="text" name="q" class="search-bar" placeholder="Search communities..." required>
+                <button type="submit" class="toggle-filters-btn">Search</button>
+            </form>
+            <!--search events-->
+            <form action="{% url 'search_events' %}" method="GET" class="search-bar-container">
+                <input type="text" name="q" class="search-bar" placeholder="Search events..." required>
                 <button type="submit" class="toggle-filters-btn">Search</button>
             </form>
         </div>

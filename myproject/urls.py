@@ -21,13 +21,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from accounts import views
-from accounts.views import signup, home, login_view, search_users, communities, create_community, events, create_event,change_event, cancel_event
+from accounts.views import signup, home, login_view, search_users, search_communities, search_events, communities, create_community, events, create_event,change_event, cancel_event
 
 urlpatterns = [
     path("home/", home, name="home"),
     path("login/", login_view, name="login"),
     path("signup/", signup, name="signup"),
-    path('search/', search_users, name='search_users'),  
+    path('search/users/', search_users, name='search_users'),
+    path('search/communities/', search_communities, name='search_communities'),
+    path('search/events/', search_events, name='search_events'),
     path("communities/", communities, name="communities"),
     path("CreateCommunities/", create_community, name="create_communities"),
     path("events/", events, name="events"),

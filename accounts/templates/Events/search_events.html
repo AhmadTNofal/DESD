@@ -7,18 +7,20 @@
 </head>
 <body>
     {% block content %}
-        <h2>Search Results for "{{ query }}"</h2>
+        <h2>Search Results for Events: "{{ query }}"</h2>
         
         {% if results %}
             <ul>
-                {% for user in results %}
+                {% for event in results %}
                     <li>
-                        <strong><a href="{% url 'view_profile' user.userID %}">{{ user.username }}</a></strong> - {{ user.email }} ({{ user.surname }})
+                        <strong><a href="{% url 'view_event' event.0 %}">{{ event.1 }}</a></strong> - {{ event.2 }} ({{ event.3 }})
+                        <br> Location: {{ event.4 }}
+                        <br> Community: {{ event.6 }}
                     </li>
                 {% endfor %}
             </ul>
         {% else %}
-            <p>No users found.</p>
+            <p>No events found.</p>
         {% endif %}
     {% endblock %}
 </body>

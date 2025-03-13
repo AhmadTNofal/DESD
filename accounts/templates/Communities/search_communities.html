@@ -7,18 +7,18 @@
 </head>
 <body>
     {% block content %}
-        <h2>Search Results for "{{ query }}"</h2>
+        <h2>Search Results for Communities: "{{ query }}"</h2>
         
         {% if results %}
             <ul>
-                {% for user in results %}
+                {% for community in results %}
                     <li>
-                        <strong><a href="{% url 'view_profile' user.userID %}">{{ user.username }}</a></strong> - {{ user.email }} ({{ user.surname }})
+                        <strong><a href="{% url 'view_community' community.communityID %}">{{ community.name }}</a></strong> - {{ community.communityCategory }}
                     </li>
                 {% endfor %}
             </ul>
         {% else %}
-            <p>No users found.</p>
+            <p>No communities found.</p>
         {% endif %}
     {% endblock %}
 </body>

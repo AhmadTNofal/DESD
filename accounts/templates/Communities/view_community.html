@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
+</head>
+<body>
+    {% block content %}
+        <h2>{{ community.name }}</h2>
+        <p><strong>Category:</strong> {{ community.communityCategory }}</p>
+        <p><strong>Description:</strong> {{ community.communityDescription }}</p>
+
+        {% if not is_member %}
+            <form method="POST" action="{% url 'join_community' community.communityID %}">
+                {% csrf_token %}
+                <button type="submit" class="toggle-filters-btn">Join Community</button>
+            </form>
+        {% else %}
+            <p>You are already a member of this community.</p>
+        {% endif %}
+    {% endblock %}
+</body>
+</html>
