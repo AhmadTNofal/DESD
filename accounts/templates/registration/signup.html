@@ -24,6 +24,11 @@
                 errorMsg += "Passwords do not match.\n";
             }
 
+            // Check if academic year is only numbers
+            if (!/^\d+$/.test(academicYear)) {
+                errorMsg += "Academic year must contain only numbers.\n";
+            }
+
             // Check if phone number is only numbers
             if (!/^\d+$/.test(phoneNumber)) {
                 errorMsg += "Phone number must contain only numbers.\n";

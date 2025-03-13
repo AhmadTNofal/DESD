@@ -6,6 +6,27 @@
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
 </head>
 <body>
+    <!-- Burger Menu Icon -->
+    <span class="menu-icon" onclick="openMenu()">&#9776;</span>
+
+    <!-- Sidebar Menu -->
+    <div id="sidebar" class="sidebar">
+        <span class="close-btn" onclick="closeMenu()">&times;</span>
+        <a href="">Profile Settings</a>
+        <a href="">Communities</a>
+        <a href="">Events</a>
+        <a href="{% url 'logout' %}">Logout</a>
+    </div>
+
+    <script>
+        function openMenu() {
+            document.getElementById("sidebar").style.width = "250px";
+        }
+
+        function closeMenu() {
+            document.getElementById("sidebar").style.width = "0";
+        }
+    </script>
     <form action="{% url 'search_users' %}" method="GET">
         <input type="text" name="q" placeholder="Search users..." required>
         <button type="submit">Search</button>
@@ -16,6 +37,5 @@
     
     <p><strong>Permission Level:</strong> {{ request.user.Permission }}</p> <!-- ✅ Show user permission -->
 
-    <a href="{% url 'logout' %}">Logout</a>
 </body>
 </html>
