@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancel Event</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/events.css' %}">
+    <script>
+        function confirmCancellation() {
+            return confirm("Are you sure you want to cancel this event? This action cannot be undone.");
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Cancel Event</h2>
+
+        <form method="POST" onsubmit="return confirmCancellation();">
+            {% csrf_token %}
+            <label for="eventID">Select Event to Cancel:</label>
+            <select name="eventID" required>
+                <option value="" disabled selected>Select an event</option>
+                {% for event in events %}
+                    <option value="{{ event.0 }}">{{ event.1 }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="cancel-btn">Cancel Event</button>
+        </form>
+
+        <a href="{% url 'events' %}" class="back-link">Back to Events</a>
+    </div>
+</body>
+</html>

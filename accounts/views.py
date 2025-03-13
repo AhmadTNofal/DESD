@@ -10,6 +10,8 @@ from django.utils.decorators import method_decorator
 from django.db.models import Q
 from .models import CustomUser, Community, CommunityMembership
 from .forms import CommunityForm, EventForm
+from django.urls import reverse
+
 
 @login_required
 def home(request):
@@ -197,3 +199,67 @@ def create_event(request):
         form = EventForm()
 
     return render(request, 'Events/create_event.html', {'form': form, 'communities': communities})
+
+@login_required
+def change_event(request):
+    user_id = request.user.userID  # Get logged-in user ID
+
+    # Fetch all events created by the user
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT eventID, eventTitle FROM Events WHERE createdBy = %s", [user_id])
+        events = cursor.fetchall()  # List of (eventID, eventTitle)
+
+    selected_event = None  # Stores selected event details
+
+    if request.method == "POST":
+        event_id = request.POST.get("eventID")
+
+        # If an event is selected, fetch its details
+        if event_id:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT eventID, eventTitle, eventDate, eventTime, location, virtualLink FROM Events WHERE eventID = %s AND createdBy = %s",
+                    [event_id, user_id]
+                )
+                selected_event = cursor.fetchone()
+
+        # If the form is submitted with updates, save changes
+        if "updateEvent" in request.POST:
+            eventTitle = request.POST.get("eventTitle")
+            eventDate = request.POST.get("eventDate")
+            eventTime = request.POST.get("eventTime")
+            location = request.POST.get("location") if "onlineEvent" not in request.POST else None
+            virtualLink = request.POST.get("virtualLink") if "onlineEvent" in request.POST else None
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE Events SET eventTitle=%s, eventDate=%s, eventTime=%s, location=%s, virtualLink=%s WHERE eventID=%s",
+                    [eventTitle, eventDate, eventTime, location, virtualLink, event_id]
+                )
+
+            return redirect('change_events')  # Refresh page after update
+
+    return render(request, 'Events/change_event.html', {'events': events, 'selected_event': selected_event})
+
+@login_required
+def cancel_event(request):
+    user_id = request.user.userID  # Get logged-in user ID
+
+    # Fetch all events created by the user
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT eventID, eventTitle FROM Events WHERE createdBy = %s", [user_id])
+        events = cursor.fetchall()  # List of (eventID, eventTitle)
+
+    if request.method == "POST":
+        event_id = request.POST.get("eventID")
+
+        # If an event is selected, delete it
+        if event_id:
+            with connection.cursor() as cursor:
+                cursor.execute("DELETE FROM Events WHERE eventID = %s AND createdBy = %s", [event_id, user_id])
+
+            return redirect('cancel_events')  # Refresh the page after deletion
+
+    return render(request, 'Events/cancel_event.html', {'events': events})
+
+

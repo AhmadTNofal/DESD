@@ -9,16 +9,8 @@
     <script>
         function toggleEventType() {
             var isOnline = document.getElementById("onlineEventCheckbox").checked;
-            var locationField = document.getElementById("locationField");
-            var virtualLinkField = document.getElementById("virtualLinkField");
-
-            if (isOnline) {
-                locationField.style.display = "none";
-                virtualLinkField.style.display = "block";
-            } else {
-                locationField.style.display = "block";
-                virtualLinkField.style.display = "none";
-            }
+            document.getElementById("locationField").classList.toggle("hidden", isOnline);
+            document.getElementById("virtualLinkField").classList.toggle("hidden", !isOnline);
         }
     </script>
 </head>
@@ -50,19 +42,16 @@
             <label for="id_eventTime">Event Time:</label>
             {{ form.eventTime }}
 
-            <!-- Online Event Checkbox -->
             <label>
                 <input type="checkbox" id="onlineEventCheckbox" name="onlineEvent" onclick="toggleEventType()"> Online Event
             </label>
 
-            <!-- Location Field (Shown by Default) -->
             <div id="locationField">
                 <label for="id_location">Location:</label>
                 {{ form.location }}
             </div>
 
-            <!-- Virtual Link Field (Hidden by Default) -->
-            <div id="virtualLinkField" style="display: none;">
+            <div id="virtualLinkField" class="hidden">
                 <label for="id_virtualLink">Virtual Link:</label>
                 {{ form.virtualLink }}
             </div>

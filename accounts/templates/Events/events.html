@@ -1,12 +1,22 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Events</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/events.css' %}">
 </head>
 <body>
-    <a href="{% url 'create_events' %}"><button>Create Event</button></a>
-</body> 
-</html>
+    <div class="container">
+        <h2>Events Management</h2>
 
+        <div class="button-container">
+            <a href="{% url 'create_events' %}"><button class="btn create-btn">Create Event</button></a>
+            <a href="{% url 'change_events' %}"><button class="btn change-btn">Change Events</button></a>
+            <a href="{% url 'cancel_events' %}"><button class="btn cancel-btn">Cancel Events</button></a>
+            <a href="{% url 'home' %}"><button class="btn home-btn">Home</button></a>
+        </div>
+    </div>
+</body>
+</html>

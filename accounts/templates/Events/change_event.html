@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Event</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/events.css' %}">
+    <script>
+        function toggleEventType() {
+            var isOnline = document.getElementById("onlineEventCheckbox").checked;
+            document.getElementById("locationField").classList.toggle("hidden", isOnline);
+            document.getElementById("virtualLinkField").classList.toggle("hidden", !isOnline);
+        }
+        function autoSubmitForm() {
+            document.getElementById("eventSelectionForm").submit();
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Change Event</h2>
+
+        <!-- Event Selection Form -->
+        <form method="POST" id="eventSelectionForm">
+            {% csrf_token %}
+            <label for="eventID">Select Event to Modify:</label>
+            <select name="eventID" required onchange="autoSubmitForm()">
+                <option value="" disabled selected>Select an event</option>
+                {% for event in events %}
+                    <option value="{{ event.0 }}" {% if selected_event and selected_event.0 == event.0 %}selected{% endif %}>{{ event.1 }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        {% if selected_event %}
+        <!-- Event Update Form -->
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="eventID" value="{{ selected_event.0 }}">
+
+            <label>Event Title:</label>
+            <input type="text" name="eventTitle" value="{{ selected_event.1 }}" required>
+
+            <label>Event Date:</label>
+            <input type="date" name="eventDate" value="{{ selected_event.2 }}" required>
+
+            <label>Event Time:</label>
+            <input type="time" name="eventTime" value="{{ selected_event.3 }}" required>
+
+            <label>
+                <input type="checkbox" id="onlineEventCheckbox" name="onlineEvent" onclick="toggleEventType()" {% if selected_event.5 %}checked{% endif %}>
+                Online Event
+            </label>
+
+            <div id="locationField" {% if selected_event.5 %}class="hidden"{% endif %}>
+                <label>Location:</label>
+                <input type="text" name="location" value="{{ selected_event.4 }}">
+            </div>
+
+            <div id="virtualLinkField" {% if not selected_event.5 %}class="hidden"{% endif %}>
+                <label>Virtual Link:</label>
+                <input type="text" name="virtualLink" value="{{ selected_event.5 }}">
+            </div>
+
+            <button type="submit" name="updateEvent" class="change-btn">Update Event</button>
+        </form>
+        {% endif %}
+
+        <a href="{% url 'events' %}" class="back-link">Back to Events</a>
+    </div>
+</body>
+</html>

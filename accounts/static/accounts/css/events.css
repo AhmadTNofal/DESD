@@ -1,50 +1,82 @@
+/* General Styling */
 body {
     font-family: Arial, sans-serif;
-    margin: 20px;
-    padding: 20px;
+    margin: 0;
+    padding: 0;
     background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
+
 .container {
-    max-width: 500px;
-    margin: auto;
+    max-width: 600px;
     padding: 20px;
     background: white;
-    border-radius: 5px;
-    box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
+
 h2 {
-    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
 }
-.error {
-    color: red;
-    text-align: center;
+
+/* Button Styling */
+.button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
 }
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    transition: background 0.3s ease;
+}
+
+/* Button Colors */
+.create-btn { background-color: #007bff; }
+.create-btn:hover { background-color: #0056b3; }
+
+.change-btn { background-color: #ffc107; color: black; }
+.change-btn:hover { background-color: #e0a800; }
+
+.cancel-btn { background-color: #dc3545; }
+.cancel-btn:hover { background-color: #c82333; }
+
+.home-btn { background-color: #28a745; }
+.home-btn:hover { background-color: #218838; }
+
+/* Forms */
 form {
     display: flex;
     flex-direction: column;
 }
+
 label {
     margin: 10px 0 5px;
     font-weight: bold;
 }
-input, select, textarea {
+
+select, input, button {
+    width: 100%;
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    width: 100%;
 }
-button {
-    background-color: #28a745;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-button:hover {
-    background-color: #218838;
-}
+
+/* Back Link */
 .back-link {
     display: block;
     text-align: center;
@@ -52,6 +84,18 @@ button:hover {
     text-decoration: none;
     color: #007bff;
 }
+
 .back-link:hover {
     text-decoration: underline;
+}
+
+/* Confirmation Message */
+.confirmation {
+    color: red;
+    font-weight: bold;
+}
+
+/* Hide/Show Fields */
+.hidden {
+    display: none;
 }
