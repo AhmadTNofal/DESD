@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from .models import CustomUser, Community, CommunityMembership
-from .forms import CommunityForm
+from .forms import CommunityForm, EventForm
 
 @login_required
 def home(request):
@@ -150,3 +150,46 @@ def edit_profile(request):
 
     return redirect("profile_settings")
 
+
+def events(request):
+    return render(request, 'Events/events.html')
+
+@login_required
+def create_event(request):
+    user_id = request.user.userID  # Get logged-in user ID
+
+    # Fetch communities where the user is an admin
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT c.communityID, c.name FROM CommunityMemberships cm "
+            "JOIN Communities c ON cm.communityID = c.communityID "
+            "WHERE cm.userID = %s AND cm.role = 'Admin'", [user_id]
+        )
+        communities = cursor.fetchall()
+
+    if not communities:
+        return render(request, 'Events/create_event.html', {'error': "You don't have permission to create events."})
+
+    if request.method == "POST":
+        form = EventForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            community_id = request.POST.get("communityID")  # Get selected community ID
+            is_online = request.POST.get("onlineEvent")  # Check if online checkbox is selected
+
+            location = data['location'] if not is_online else None
+            virtual_link = data['virtualLink'] if is_online else None
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO Events (communityID, eventTitle, eventDate, eventTime, location, virtualLink, createdBy, createdAt)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+                    """,
+                    [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, user_id]
+                )
+            return redirect('events')  # Redirect to events list after creation
+    else:
+        form = EventForm()
+
+    return render(request, 'Events/create_event.html', {'form': form, 'communities': communities})

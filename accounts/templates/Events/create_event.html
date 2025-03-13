@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/events.css' %}">
+    <script>
+        function toggleEventType() {
+            var isOnline = document.getElementById("onlineEventCheckbox").checked;
+            var locationField = document.getElementById("locationField");
+            var virtualLinkField = document.getElementById("virtualLinkField");
+
+            if (isOnline) {
+                locationField.style.display = "none";
+                virtualLinkField.style.display = "block";
+            } else {
+                locationField.style.display = "block";
+                virtualLinkField.style.display = "none";
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Create Event</h2>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <label for="id_communityID">Select Community:</label>
+            <select name="communityID" required>
+                <option value="" disabled selected>Select a community</option>
+                {% for community in communities %}
+                    <option value="{{ community.0 }}">{{ community.1 }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="id_eventTitle">Event Title:</label>
+            {{ form.eventTitle }}
+
+            <label for="id_eventDate">Event Date:</label>
+            {{ form.eventDate }}
+
+            <label for="id_eventTime">Event Time:</label>
+            {{ form.eventTime }}
+
+            <!-- Online Event Checkbox -->
+            <label>
+                <input type="checkbox" id="onlineEventCheckbox" name="onlineEvent" onclick="toggleEventType()"> Online Event
+            </label>
+
+            <!-- Location Field (Shown by Default) -->
+            <div id="locationField">
+                <label for="id_location">Location:</label>
+                {{ form.location }}
+            </div>
+
+            <!-- Virtual Link Field (Hidden by Default) -->
+            <div id="virtualLinkField" style="display: none;">
+                <label for="id_virtualLink">Virtual Link:</label>
+                {{ form.virtualLink }}
+            </div>
+
+            <button type="submit">Create Event</button>
+        </form>
+
+        <a href="{% url 'events' %}" class="back-link">Back to Events</a>
+    </div>
+</body>
+</html>

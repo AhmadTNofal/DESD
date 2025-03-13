@@ -35,3 +35,11 @@ class CommunityForm(forms.ModelForm):
             "communityDescription": forms.Textarea(attrs={"class": "form-control", "placeholder": "Describe your community", "rows": 4}),
             "communityCategory": forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter category (e.g., Sports, Tech, Music)"}),
         }
+
+class EventForm(forms.Form):
+    communityID = forms.IntegerField(label="Community ID")
+    eventTitle = forms.CharField(max_length=100, label="Event Title")
+    eventDate = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label="Event Date")
+    eventTime = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}), label="Event Time")
+    location = forms.CharField(max_length=255, required=False, label="Location")
+    virtualLink = forms.CharField(max_length=255, required=False, label="Virtual Link")
