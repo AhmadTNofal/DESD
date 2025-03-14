@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
 from django.db import models
 
 class CustomUserManager(BaseUserManager):
@@ -82,3 +82,20 @@ class CommunityMembership(models.Model):
     class Meta:
         db_table = "CommunityMemberships"  # Match the database table name
         managed = False  # Since MySQL manages this table
+
+class Profile(models.Model):
+    profileID = models.AutoField(primary_key=True)  # Explicitly define the primary key
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, db_column="userID")  # Ensure correct linking
+    bio = models.TextField(blank=True, null=True)
+    major = models.CharField(max_length=100, blank=True, null=True)
+    academicYear = models.IntegerField(blank=True, null=True)
+    campusInvolvement = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = "Profiles"  # Match the exact MySQL table name
+        managed = False  # Since MySQL manages this table
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
+

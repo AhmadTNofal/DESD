@@ -4,46 +4,24 @@
 /* General Styles */
 html, body {
     font-family: 'Poppins', sans-serif;
-    background: #f5f2eb; /* Creamy white background */
-    height: 100vh; /* Ensure full screen */
+    background: #f5f2eb;
+    min-height: 100vh;
     margin: 0;
     padding: 0;
-    overflow-y: auto;
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow-y: auto;
 }
 
-/* Two-Column Signup Layout */
+/* Signup Container */
 .signup-container {
-    display: flex;
-    flex-direction: row; /* Side-by-side layout */
-    justify-content: center;
-    align-items: stretch;
-    gap: 30px;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     width: 90%;
-    max-width: 1000px;
-}
-
-/* Left Side: User Form */
-.container {
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    width: 50%;
-    max-width: 400px;
-    text-align: center;
-}
-
-/* Right Side: More Information */
-.more-info {
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    width: 50%;
-    max-width: 400px;
+    max-width: 900px;
     text-align: center;
 }
 
@@ -55,29 +33,60 @@ form {
     align-items: center;
 }
 
+/* Two-Column Layout */
+.form-columns {
+    display: flex;
+    gap: 30px;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* Individual Sections (Separate Containers) */
+.form-section {
+    width: 48%;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background: #fdf5f5;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Left Column: Basic Info */
+.basic-info {
+    background: #fdf5f5;
+}
+
+/* Right Column: More Info */
+.more-info {
+    background: #fdf5f5; 
+}
+
+/* Section Headers */
+h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
 /* Labels */
 label {
     font-weight: 600;
-    text-align: left;
-    width: 100%;
     color: #333;
+    text-align: left;
 }
 
 /* Input Fields */
 input, textarea {
-    width: 100%;
+    width: 90%;
     padding: 12px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 16px;
     background: #fafafa;
     color: #333;
-}
-
-/* Textarea Styling */
-textarea {
-    resize: none;
-    height: 80px;
 }
 
 /* Button Styling */
@@ -98,13 +107,12 @@ button:hover {
 }
 
 /* Responsive Design */
-@media (max-width: 900px) {
-    .signup-container {
-        flex-direction: column; /* Stack forms vertically on small screens */
-        align-items: center;
+@media (max-width: 800px) {
+    .form-columns {
+        flex-direction: column; /* Stack columns on small screens */
+        gap: 15px;
     }
-    .container, .more-info {
+    .form-section {
         width: 100%;
-        max-width: 500px;
     }
 }

@@ -147,7 +147,23 @@ def signup(request):
 
         try:
             with connection.cursor() as cursor:
-                # Insert into User table
+                # ✅ Check if the username already exists
+                cursor.execute("SELECT COUNT(*) FROM `User` WHERE username = %s", [username])
+                username_exists = cursor.fetchone()[0] > 0
+
+                # ✅ Check if the email is already registered
+                cursor.execute("SELECT COUNT(*) FROM `User` WHERE email = %s", [email])
+                email_exists = cursor.fetchone()[0] > 0
+
+                if username_exists:
+                    messages.error(request, "Username is already taken. Please choose another.")
+                if email_exists:
+                    messages.error(request, "Email is already in use. Please use a different email.")
+
+                if username_exists or email_exists:
+                    return redirect("signup")  # Redirect back to signup page to show error
+
+                # ✅ If username & email are unique, proceed with signup
                 cursor.execute("""
                     INSERT INTO `User` (username, surname, email, phoneNumber, password, Permission)
                     VALUES (%s, %s, %s, %s, %s, %s)
@@ -166,13 +182,20 @@ def signup(request):
                     VALUES (%s, %s, %s, %s, %s)
                 """, [user_id, bio, major, academicYear, campusInvolvement])
 
-            messages.success(request, "Signup successful! Please login.")
-            return redirect("login")  # Redirect to login page
+            # ✅ Authenticate and Log in the user
+            user = CustomUser.objects.get(userID=user_id)  # Get the newly created user
+            user.backend = 'django.contrib.auth.backends.ModelBackend'  # Required to log in manually
+            login(request, user)  # Log the user in
+
+            messages.success(request, "Signup successful! Redirecting to homepage...")
+            return redirect("home")  # Redirect to homepage
 
         except Exception as e:
             messages.error(request, f"Error: {e}")
     
     return render(request, 'registration/signup.html')
+
+
 
 def communities(request):
     return render(request, 'Communities/community.html')
@@ -207,37 +230,61 @@ def create_community(request):
 
 @login_required
 def profile_settings(request):
-    return render(request, 'profile/profile.html', {'user': request.user})
+    user = request.user  # Get logged-in user
+    profile = Profile.objects.filter(user=user).first()  # Use `.first()` to avoid errors if profile doesn't exist
 
+    if not profile:
+        messages.error(request, "Profile not found.")
+        return redirect("home")
+
+    # Debugging Output
+    print(f"User: {user.username}, Profile ID: {profile.profileID}, Bio: {profile.bio}, Major: {profile.major}, Year: {profile.academicYear}, Involvement: {profile.campusInvolvement}")
+
+    return render(request, 'profile/profile.html', {'user': user, 'profile': profile})
+
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Profile  # Import Profile model
 
 @login_required
 def edit_profile(request):
+    user = request.user  # Get logged-in user
+    profile = Profile.objects.filter(user=user).first()
+
+    if not profile:
+        messages.error(request, "Profile not found.")
+        return redirect("profile_settings")
+
     if request.method == "POST":
-        user = request.user  # Get the logged-in user
-
-        # Debugging: Print user attributes to confirm correct field names
-        print(f"User Object: {user.__dict__}")
-
-        if not hasattr(user, 'userID'):  # Ensure userID exists
-            print("❌ Error: User object does not have 'userID'")
-            messages.error(request, "Error: User object does not have 'userID'")
-            return redirect("profile_settings")
-
-        # Update user fields
+        # Update User Model Fields
         user.username = request.POST["username"]
         user.email = request.POST["email"]
         user.surname = request.POST.get("surname", "")
         user.phoneNumber = request.POST.get("phoneNumber", "")
 
+        # Update Profile Model Fields
+        profile.bio = request.POST.get("bio", profile.bio)
+        profile.major = request.POST.get("major", profile.major)
+        profile.academicYear = request.POST.get("academicYear", profile.academicYear)
+        profile.campusInvolvement = request.POST.get("campusInvolvement", profile.campusInvolvement)
+
         try:
-            user.save()  # ✅ Save user data using Django ORM
-            print("✅ Profile updated successfully!")
+            user.save()  # Save User Data
+            profile.save()  # Save Profile Data
             messages.success(request, "Profile updated successfully!")
         except Exception as e:
-            print(f"❌ Error: {e}")  # Debugging
             messages.error(request, f"Error updating profile: {e}")
 
-    return redirect("profile_settings")
+        return redirect("profile_settings")
+
+    return render(request, "profile/profile.html", {"user": user, "profile": profile})
+
+
+
 
 
 

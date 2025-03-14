@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signup</title>
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/auth.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/signup.css' %}">
+    
     <script>
         function validateForm(event) {
             event.preventDefault(); // Prevent form submission until validation
@@ -13,10 +14,7 @@
             let password = document.getElementById("password").value;
             let confirmPassword = document.getElementById("confirm_password").value;
             let phoneNumber = document.getElementById("phoneNumber").value;
-            let bio = document.getElementById("bio").value.trim();
-            let major = document.getElementById("major").value.trim();
             let academicYear = document.getElementById("academicYear").value.trim();
-            let campusInvolvement = document.getElementById("campusInvolvement").value.trim();
             let errorMsg = "";
 
             // Check if passwords match
@@ -34,11 +32,6 @@
                 errorMsg += "Phone number must contain only numbers.\n";
             }
 
-            // Check if all required fields in "More Information" are filled
-            if (!bio || !major || !academicYear || !campusInvolvement) {
-                errorMsg += "All fields in 'More Information' must be filled.\n";
-            }
-
             if (errorMsg) {
                 alert(errorMsg); // Show error message
             } else {
@@ -49,53 +42,62 @@
 </head>
 <body>
     <div class="signup-container">
-        <!-- Signup Form: BOTH Account + More Information fields -->
-        <div class="container">
-            <h2>Create an Account</h2>
-            <form id="signup-form" method="POST" onsubmit="validateForm(event)">
-                {% csrf_token %}
+        <h2>Create an Account</h2>
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <p style="color: red;">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
 
-                <!-- Left Side: Basic Info -->
-                <div class="left-section">
-                    <label for="username">Username <span class="required">*</span></label>
+        <form id="signup-form" method="POST" onsubmit="validateForm(event)">
+            {% csrf_token %}
+
+            <div class="form-columns">
+                <!-- Left Column: Basic Information -->
+                <div class="form-section basic-info">
+                    <h3>Basic Information</h3>
+
+                    <label for="username">Username *</label>
                     <input type="text" id="username" name="username" required placeholder="Choose a username">
 
-                    <label for="surname">Surname <span class="required">*</span></label>
+                    <label for="surname">Surname *</label>
                     <input type="text" id="surname" name="surname" required placeholder="Enter your surname">
 
-                    <label for="email">Email <span class="required">*</span></label>
+                    <label for="email">Email *</label>
                     <input type="email" id="email" name="email" required placeholder="Enter your email">
 
-                    <label for="phoneNumber">Phone Number <span class="required">*</span></label>
+                    <label for="phoneNumber">Phone Number *</label>
                     <input type="text" id="phoneNumber" name="phoneNumber" required placeholder="Enter your phone number" maxlength="15">
 
-                    <label for="password">Password <span class="required">*</span></label>
+                    <label for="password">Password *</label>
                     <input type="password" id="password" name="password" required placeholder="Choose a strong password">
 
-                    <label for="confirm_password">Confirm Password <span class="required">*</span></label>
+                    <label for="confirm_password">Confirm Password *</label>
                     <input type="password" id="confirm_password" name="confirm_password" required placeholder="Re-enter your password">
                 </div>
 
-                <!-- Right Side: More Information (Inside the Form) -->
-                <div class="right-section">
-                    <h2>More Information</h2>
+                <!-- Right Column: More Information -->
+                <div class="form-section more-info">
+                    <h3>More Information</h3>
 
-                    <label for="bio">Bio <span class="required">*</span></label>
+                    <label for="bio">Bio *</label>
                     <textarea id="bio" name="bio" required placeholder="Tell us about yourself"></textarea>
 
-                    <label for="major">Major <span class="required">*</span></label>
+                    <label for="major">Major *</label>
                     <input type="text" id="major" name="major" required placeholder="Your field of study">
 
-                    <label for="academicYear">Academic Year <span class="required">*</span></label>
+                    <label for="academicYear">Academic Year *</label>
                     <input type="text" id="academicYear" name="academicYear" required placeholder="Your academic year">
 
-                    <label for="campusInvolvement">Campus Involvement <span class="required">*</span></label>
+                    <label for="campusInvolvement">Campus Involvement *</label>
                     <textarea id="campusInvolvement" name="campusInvolvement" required placeholder="Your activities"></textarea>
                 </div>
+            </div>
 
-                <button type="submit">Sign Up</button>
-            </form>
-        </div>
+            <button type="submit">Sign Up</button>
+        </form>
     </div>
 </body>
 </html>
