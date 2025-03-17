@@ -8,7 +8,7 @@ from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
-from .models import CustomUser, Community, CommunityMembership
+from .models import CustomUser, Community, CommunityMembership, Profile
 from .forms import CommunityForm, EventForm
 from django.urls import reverse
 from datetime import date
@@ -242,14 +242,6 @@ def profile_settings(request):
 
     return render(request, 'profile/profile.html', {'user': user, 'profile': profile})
 
-
-
-
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .models import Profile  # Import Profile model
-
 @login_required
 def edit_profile(request):
     user = request.user  # Get logged-in user
@@ -282,11 +274,6 @@ def edit_profile(request):
         return redirect("profile_settings")
 
     return render(request, "profile/profile.html", {"user": user, "profile": profile})
-
-
-
-
-
 
 def events(request):
     """ Fetch and filter events based on user input and include available locations """
@@ -457,3 +444,52 @@ def cancel_event(request):
             return redirect('cancel_events')  # Refresh the page after deletion
 
     return render(request, 'Events/cancel_event.html', {'events': events})
+
+@login_required
+def join_community(request):
+    """ Display communities that the user has NOT joined with full details. """
+    
+    user = request.user  # Get logged-in user
+    user_id = user.userID  # Assuming `userID` is the primary key in `CustomUser`
+
+    # Fetch communities that the user has NOT joined, including details
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT c.communityID, c.name, c.communityDescription, c.communityCategory, u.username as createdBy, c.createdAt
+            FROM Communities c
+            JOIN User u ON c.createdBy = u.userID
+            WHERE c.communityID NOT IN (
+                SELECT communityID FROM CommunityMemberships WHERE userID = %s
+            )
+        """, [user_id])
+        non_joined_communities = cursor.fetchall()  # List of (communityID, name, description, category, createdBy, createdAt)
+
+    return render(request, 'Communities/join_community.html', {
+        'non_joined_communities': non_joined_communities
+    })
+
+@login_required
+def join_community_action(request, community_id):
+    """ Allow users to join a community as a 'Member' """
+    
+    user = request.user  # Get logged-in user
+    user_id = user.userID  # Ensure this matches your database schema
+
+    # Check if the user is already a member
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT COUNT(*) FROM CommunityMemberships WHERE communityID = %s AND userID = %s
+        """, [community_id, user_id])
+        is_member = cursor.fetchone()[0] > 0  # If count > 0, user is already a member
+
+    if not is_member:
+        # Insert new membership as "Member"
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO CommunityMemberships (communityID, userID, role, joinedAt)
+                VALUES (%s, %s, 'Member', NOW())
+            """, [community_id, user_id])
+
+        messages.success(request, "You have successfully joined the community!")
+
+    return redirect('join_community')  # Refresh the page after joining

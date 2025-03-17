@@ -21,7 +21,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from accounts import views
-from accounts.views import signup, home, login_view, search_users, search_communities, search_events, communities, create_community, events, create_event,change_event, cancel_event
+from accounts.views import signup, home, login_view, search_users, search_communities, search_events, communities, create_community, events, create_event,change_event, cancel_event, join_community
 
 urlpatterns = [
     path("home/", home, name="home"),
@@ -36,6 +36,7 @@ urlpatterns = [
     path("CreateEvents/", create_event, name="create_events"),
     path("ChangeEvents/", change_event, name="change_event"),
     path("CancelEvents/", cancel_event, name="cancel_event"),
+    path("JoinCommunity/", join_community, name="join_community"),
 ]
 
 # Serve static files in development mode
@@ -53,8 +54,7 @@ urlpatterns = [
     path("CreateEvents/", create_event, name="create_events"),
     path("ChangeEvents/", change_event, name="change_events"),
     path("CancelEvents/", cancel_event, name="cancel_events"),
-   
-
+    path("JoinCommunity/", join_community, name="join_community"),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

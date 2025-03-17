@@ -5,6 +5,7 @@
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/community.css' %}">
      <title>Communities</title>
+
 </head>
 <body>
     <nav>
@@ -18,7 +19,7 @@
                 <ul class="nav-links">
                     <li><a href="{% url 'home' %}">Home</a></li>
                     <li><a href="#">My Communities</a></li>
-                    <li><a href="#">Join Communities</a></li>
+                    <li><a href="{% url 'join_community' %}">Join Communities</a></li>
                     <li><a href="{% url 'create_communities' %}">Create Community</a></li>
                 </ul>
             </div>
