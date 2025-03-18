@@ -1,0 +1,82 @@
+/* General Styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f5f2eb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Post Form Container */
+.post-container {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* Messages */
+.messages p {
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: 500;
+    text-align: center;
+}
+.error {
+    background-color: #ffdddd;
+    color: #d8000c;
+}
+.success {
+    background-color: #ddffdd;
+    color: #4F8A10;
+}
+
+/* Form Inputs */
+label {
+    font-weight: bold;
+    display: block;
+    text-align: left;
+    margin: 10px 0 5px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+/* Submit Button */
+button {
+    background: #ff758c;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+button:hover {
+    background: #e85b72;
+}
+
+/* Back Button */
+.back-button {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    text-decoration: none;
+    color: #ff758c;
+    font-weight: 600;
+}

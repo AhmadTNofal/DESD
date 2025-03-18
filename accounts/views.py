@@ -12,6 +12,8 @@ from .models import CustomUser, Community, CommunityMembership, Profile
 from .forms import CommunityForm, EventForm
 from django.urls import reverse
 from datetime import date
+from .models import Post 
+from .forms import PostForm  
 
 @login_required
 def home(request):
@@ -760,3 +762,19 @@ def join_community_action(request, community_id):
 
     # Redirect back to the same page the user came from
     return redirect(request.META.get('HTTP_REFERER', 'communities'))
+
+@login_required
+def create_post(request):
+    """ Allow logged-in users to create a post """
+    if request.method == "POST":
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user  # Assign the logged-in user as the author
+            post.save()
+            messages.success(request, "Post created successfully!")
+            return redirect("home")  # Redirect back to homepage
+    else:
+        form = PostForm()
+
+    return render(request, "profile/create_post.html", {"form": form})

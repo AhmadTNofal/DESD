@@ -47,6 +47,14 @@
         <p><strong>Permission Level:</strong> {{ request.user.Permission }}</p>
     </div>
 
+    <!-- "Create Post" Floating Button -->
+    <a href="{% url 'create_post' %}" class="create-post-btn">
+        +
+        <span class="tooltip">Create Post</span>
+    </a>
+    
+
+
     <!-- JavaScript for Menu Toggle -->
     <script>
         function toggleMenu() {

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.hashers import make_password
-from .models import Community
+from .models import Community, Post
 
 class SignupForm(forms.Form):
     username = forms.CharField(max_length=50)
@@ -43,3 +43,8 @@ class EventForm(forms.Form):
     eventTime = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}), label="Event Time")
     location = forms.CharField(max_length=255, required=False, label="Location")
     virtualLink = forms.CharField(max_length=255, required=False, label="Virtual Link")
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['title', 'content']  # ✅ Ensure the fields match your model
