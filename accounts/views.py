@@ -548,3 +548,139 @@ def leave_community(request, community_id):
         messages.error(request, "You are not a member of this community.")
 
     return redirect('my_communities')  # Redirect back to "My Communities"
+
+@login_required
+def view_community(request, community_id):
+    """Display community details with different views for Admins and Members."""
+    
+    user = request.user  # Get logged-in user
+    user_id = user.userID  # Assuming `userID` is the primary key in `CustomUser`
+
+    # Fetch community details
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT c.communityID, c.name, c.communityDescription, c.communityCategory, 
+                   GROUP_CONCAT(DISTINCT u.username SEPARATOR ', ') AS admins, 
+                   c.createdAt
+            FROM Communities c
+            JOIN CommunityMemberships admins ON c.communityID = admins.communityID
+            JOIN User u ON admins.userID = u.userID
+            WHERE c.communityID = %s
+            AND admins.role = 'Admin'
+            GROUP BY c.communityID, c.name, c.communityDescription, c.communityCategory, c.createdAt
+        """, [community_id])
+
+        community = cursor.fetchone()  # Fetch community details
+    
+    if not community:
+        messages.error(request, "Community not found.")
+        return redirect("my_communities")
+
+    # Fetch all members of the community
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT u.userID, u.username, cm.role
+            FROM CommunityMemberships cm
+            JOIN User u ON cm.userID = u.userID
+            WHERE cm.communityID = %s
+        """, [community_id])
+
+        members = cursor.fetchall()  # List of (userID, username, role)
+
+    # Check if the logged-in user is an Admin
+    user_role = "Member"
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT role FROM CommunityMemberships 
+            WHERE communityID = %s AND userID = %s
+        """, [community_id, user_id])
+        role = cursor.fetchone()
+    
+    if role:
+        user_role = role[0]  # Set the user's role (Admin or Member)
+
+    return render(request, "Communities/view_community.html", {
+        "community": community,
+        "members": members,
+        "user_role": user_role
+    })
+
+@login_required
+def remove_member(request, community_id, user_id):
+    """ Allows an Admin to remove a Member from a community. """
+    
+    admin_id = request.user.userID  # Get logged-in admin user ID
+
+    # Check if the logged-in user is an Admin of this community
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT COUNT(*) FROM CommunityMemberships 
+            WHERE communityID = %s AND userID = %s AND role = 'Admin'
+        """, [community_id, admin_id])
+        is_admin = cursor.fetchone()[0] > 0  # If count > 0, user is an Admin
+
+    if not is_admin:
+        messages.error(request, "You do not have permission to remove members.")
+        return redirect('view_community', community_id=community_id)
+
+    # Check if the user being removed is an Admin
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT role FROM CommunityMemberships 
+            WHERE communityID = %s AND userID = %s
+        """, [community_id, user_id])
+        member_role = cursor.fetchone()
+
+    if member_role and member_role[0] == "Admin":
+        messages.error(request, "You cannot remove another Admin.")
+        return redirect('view_community', community_id=community_id)
+
+    # Remove the member from the community
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            DELETE FROM CommunityMemberships WHERE communityID = %s AND userID = %s
+        """, [community_id, user_id])
+
+    messages.success(request, "Member removed successfully.")
+    return redirect('view_community', community_id=community_id)
+
+@login_required
+def promote_member(request, community_id, user_id):
+    """ Allows an Admin to promote a Member to Admin. """
+    
+    admin_id = request.user.userID  # Get logged-in Admin's ID
+
+    # Check if the logged-in user is an Admin of this community
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT COUNT(*) FROM CommunityMemberships 
+            WHERE communityID = %s AND userID = %s AND role = 'Admin'
+        """, [community_id, admin_id])
+        is_admin = cursor.fetchone()[0] > 0  # If count > 0, user is an Admin
+
+    if not is_admin:
+        messages.error(request, "You do not have permission to promote members.")
+        return redirect('view_community', community_id=community_id)
+
+    # Check if the user being promoted is already an Admin
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT role FROM CommunityMemberships 
+            WHERE communityID = %s AND userID = %s
+        """, [community_id, user_id])
+        member_role = cursor.fetchone()
+
+    if member_role and member_role[0] == "Admin":
+        messages.error(request, "This user is already an Admin.")
+        return redirect('view_community', community_id=community_id)
+
+    # Promote the member to Admin
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            UPDATE CommunityMemberships 
+            SET role = 'Admin' 
+            WHERE communityID = %s AND userID = %s
+        """, [community_id, user_id])
+
+    messages.success(request, "Member successfully promoted to Admin.")
+    return redirect('view_community', community_id=community_id)

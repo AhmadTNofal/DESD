@@ -1,24 +1,137 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Search</title>
+    <meta charset="UTF-8">
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/community.css' %}">
+    <title>{{ community.1 }} - Community Details</title>
+    <style>
+        .community-container {
+            max-width: 800px;
+            margin: 100px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        .community-box h3 {
+            color: #333;
+        }
+
+        .community-box p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .members-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .member-box {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .admin-badge {
+            color: red;
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .promote-btn, .remove-btn {
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .promote-btn {
+            background: green;
+            color: white;
+        }
+
+        .promote-btn:hover {
+            background: darkgreen;
+        }
+
+        .remove-btn {
+            background: red;
+            color: white;
+        }
+
+        .remove-btn:hover {
+            background: darkred;
+        }
+    </style>
 </head>
 <body>
-    {% block content %}
-        <h2>{{ community.name }}</h2>
-        <p><strong>Category:</strong> {{ community.communityCategory }}</p>
-        <p><strong>Description:</strong> {{ community.communityDescription }}</p>
+    <!-- Navbar -->
+    <nav>
+        <div class="nav-bar">
+            <i class='bx bx-menu sidebarOpen'></i>
+            <span class="logo navLogo"><a href="{% url 'communities' %}">Communities</a></span>
+            <div class="menu">
+                <div class="logo-toggle">
+                    <i class='bx bx-x siderbarClose'></i>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li><a href="{% url 'my_communities' %}">My Communities</a></li>
+                    <li><a href="{% url 'join_community' %}">Join Communities</a></li>
+                    <li><a href="{% url 'create_communities' %}">Create Community</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-        {% if not is_member %}
-            <form method="POST" action="{% url 'join_community' community.communityID %}">
-                {% csrf_token %}
-                <button type="submit" class="toggle-filters-btn">Join Community</button>
-            </form>
-        {% else %}
-            <p>You are already a member of this community.</p>
-        {% endif %}
-    {% endblock %}
+    <div class="community-container">
+        <h2>{{ community.1 }}</h2>
+        <p><strong>Description:</strong> {{ community.2 }}</p>
+        <p><strong>Category:</strong> {{ community.3 }}</p>
+        <p><strong>Admins:</strong> {{ community.4 }}</p>
+        <p><strong>Created At:</strong> {{ community.5 }}</p>
+
+        <h3>Community Members</h3>
+        <div class="members-container">
+            {% for member in members %}
+            <div class="member-box">
+                <span>{{ member.1 }} - <span class="admin-badge">{{ member.2 }}</span></span>
+                {% if user_role == "Admin" and member.2 != "Admin" %}
+                <div class="action-buttons">
+                    <!-- Promote to Admin -->
+                    <form method="POST" action="{% url 'promote_member' community.0 member.0 %}">
+                        {% csrf_token %}
+                        <button type="submit" class="promote-btn">Promote</button>
+                    </form>
+
+                    <!-- Remove Member -->
+                    <form method="POST" action="{% url 'remove_member' community.0 member.0 %}">
+                        {% csrf_token %}
+                        <button type="submit" class="remove-btn">Remove</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
 </body>
 </html>
