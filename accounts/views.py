@@ -195,8 +195,54 @@ def signup(request):
     
     return render(request, 'registration/signup.html')
 
+@login_required
 def communities(request):
-    return render(request, 'Communities/community.html')
+    """ Display all communities and events related to the user. """
+    
+    user = request.user  # Get logged-in user
+    user_id = user.userID  # Assuming `userID` is the primary key in `CustomUser`
+
+    # Fetch communities the user is a member of
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT c.communityID, c.name, c.communityDescription, c.communityCategory 
+            FROM Communities c
+            JOIN CommunityMemberships cm ON c.communityID = cm.communityID
+            WHERE cm.userID = %s
+        """, [user_id])
+        
+        joined_communities = cursor.fetchall()  # List of (communityID, name, description, category)
+
+    # Fetch communities the user is NOT in
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT c.communityID, c.name, c.communityDescription, c.communityCategory 
+            FROM Communities c
+            WHERE c.communityID NOT IN (
+                SELECT communityID FROM CommunityMemberships WHERE userID = %s
+            )
+        """, [user_id])
+        
+        non_joined_communities = cursor.fetchall()  # List of (communityID, name, description, category)
+
+    # Fetch events from the user's communities
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, c.name AS communityName
+            FROM Events e
+            JOIN Communities c ON e.communityID = c.communityID
+            JOIN CommunityMemberships cm ON cm.communityID = c.communityID
+            WHERE cm.userID = %s
+            ORDER BY e.eventDate ASC
+        """, [user_id])
+        
+        events = cursor.fetchall()  # List of (eventID, eventTitle, eventDate, eventTime, location, virtualLink, communityName)
+
+    return render(request, 'Communities/community.html', {
+        'joined_communities': joined_communities,
+        'non_joined_communities': non_joined_communities,
+        'events': events
+    })
 
 @login_required
 def create_community(request):
@@ -547,11 +593,11 @@ def leave_community(request, community_id):
     else:
         messages.error(request, "You are not a member of this community.")
 
-    return redirect('my_communities')  # Redirect back to "My Communities"
+    return redirect('communities')  # Redirect back to the main communities page
 
 @login_required
 def view_community(request, community_id):
-    """Display community details with different views for Admins and Members."""
+    """ Display community details with different views for Admins and Members. """
     
     user = request.user  # Get logged-in user
     user_id = user.userID  # Assuming `userID` is the primary key in `CustomUser`
@@ -574,7 +620,7 @@ def view_community(request, community_id):
     
     if not community:
         messages.error(request, "Community not found.")
-        return redirect("my_communities")
+        return redirect("communities")
 
     # Fetch all members of the community
     with connection.cursor() as cursor:
@@ -587,8 +633,9 @@ def view_community(request, community_id):
 
         members = cursor.fetchall()  # List of (userID, username, role)
 
-    # Check if the logged-in user is an Admin
-    user_role = "Member"
+    # Check if the logged-in user is a Member
+    is_member = False
+    user_role = "Guest"
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT role FROM CommunityMemberships 
@@ -597,12 +644,14 @@ def view_community(request, community_id):
         role = cursor.fetchone()
     
     if role:
+        is_member = True  # The user is part of the community
         user_role = role[0]  # Set the user's role (Admin or Member)
 
     return render(request, "Communities/view_community.html", {
         "community": community,
         "members": members,
-        "user_role": user_role
+        "user_role": user_role,
+        "is_member": is_member
     })
 
 @login_required
@@ -684,3 +733,30 @@ def promote_member(request, community_id, user_id):
 
     messages.success(request, "Member successfully promoted to Admin.")
     return redirect('view_community', community_id=community_id)
+
+@login_required
+def join_community_action(request, community_id):
+    """ Allows users to join a community as a 'Member' and stay on the same page. """
+    
+    user = request.user  # Get logged-in user
+    user_id = user.userID  # Ensure this matches your database schema
+
+    # Check if the user is already a member
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT COUNT(*) FROM CommunityMemberships WHERE communityID = %s AND userID = %s
+        """, [community_id, user_id])
+        is_member = cursor.fetchone()[0] > 0  # If count > 0, user is already a member
+
+    if not is_member:
+        # Insert new membership as "Member"
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO CommunityMemberships (communityID, userID, role, joinedAt)
+                VALUES (%s, %s, 'Member', NOW())
+            """, [community_id, user_id])
+
+        messages.success(request, "You have successfully joined the community!")
+
+    # Redirect back to the same page the user came from
+    return redirect(request.META.get('HTTP_REFERER', 'communities'))

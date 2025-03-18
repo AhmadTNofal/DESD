@@ -25,7 +25,7 @@ urlpatterns = [
     path('joinCommunity/<int:community_id>/join/', join_community_action, name='join_community_action'),
 
     path('myCommunities/', my_communites, name='my_communities'),
-    path('myCommunities/<int:community_id>/leave/', leave_community, name='leave_community'),
+    path('community/<int:community_id>/leave/', leave_community, name='leave_community'),
 
     path('community/<int:community_id>/remove/<int:user_id>/', remove_member, name='remove_member'),
 

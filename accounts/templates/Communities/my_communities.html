@@ -103,11 +103,6 @@
     <!-- View Community Details Button -->
     <a href="{% url 'view_community' community.0 %}" class="view-btn">View Community</a>
 
-    <!-- Leave Community Button -->
-    <form method="POST" action="{% url 'leave_community' community.0 %}">
-        {% csrf_token %}
-        <button type="submit" class="leave-btn">Leave Community</button>
-    </form>
 </div>
 {% empty %}
 <p>You are not a member of any communities.</p>

@@ -5,16 +5,83 @@
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/community.css' %}">
     <title>Communities</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 100px auto;
+            padding: 20px;
+        }
+
+        .section {
+            background: white;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .community-box, .event-box {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 15px;
+        }
+
+        .join-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .join-btn:hover {
+            background: #218838;
+        }
+
+        .view-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .view-btn:hover {
+            background: #0056b3;
+        }
+    </style>
 </head>
 <body>
+
+    <!-- Navbar -->
     <nav>
         <div class="nav-bar">
-            <i class='bx bx-menu sidebarOpen' ></i>
-            <span class="logo navLogo"><a href="{% url 'communities' %}">Communities</a></span>
+            <span class="logo navLogo"><a href="#">Communities</a></span>
             <div class="menu">
-                <div class="logo-toggle">
-                    <i class='bx bx-x siderbarClose'></i>
-                </div>
                 <ul class="nav-links">
                     <li><a href="{% url 'home' %}">Home</a></li>
                     <li><a href="{% url 'my_communities' %}">My Communities</a></li>
@@ -22,9 +89,74 @@
                     <li><a href="{% url 'create_communities' %}">Create Community</a></li>
                 </ul>
             </div>
-                </div>
-            </div>
         </div>
     </nav>
+
+    <div class="container">
+
+        <!-- Events Section -->
+        <div class="section">
+            <h2>Upcoming Events</h2>
+            {% if events %}
+                {% for event in events %}
+                <div class="event-box">
+                    <div>
+                        <strong>{{ event.1 }}</strong> ({{ event.6 }})<br>
+                        <small>{{ event.2 }} at {{ event.3 }}</small><br>
+                        {% if event.4 %}
+                            📍 Location: {{ event.4 }}
+                        {% elif event.5 %}
+                            🔗 <a href="{{ event.5 }}" target="_blank">Join Online</a>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'view_event' event.0 %}" class="view-btn">View Details</a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No upcoming events.</p>
+            {% endif %}
+        </div>
+
+        <!-- User's Communities Section -->
+        <div class="section">
+            <h2>My Communities</h2>
+            {% if joined_communities %}
+                {% for community in joined_communities %}
+                <div class="community-box">
+                    <div>
+                        <strong>{{ community.1 }}</strong> ({{ community.3 }})<br>
+                        <small>{{ community.2 }}</small>
+                    </div>
+                    <a href="{% url 'view_community' community.0 %}" class="view-btn">View Community</a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>You are not part of any communities.</p>
+            {% endif %}
+        </div>
+
+        <!-- Joinable Communities Section -->
+        <div class="section">
+            <h2>Communities You Can Join</h2>
+            {% if non_joined_communities %}
+                {% for community in non_joined_communities %}
+                <div class="community-box">
+                    <div>
+                        <strong>{{ community.1 }}</strong> ({{ community.3 }})<br>
+                        <small>{{ community.2 }}</small>
+                    </div>
+                    <form method="POST" action="{% url 'join_community_action' community.0 %}">
+                        {% csrf_token %}
+                        <button type="submit" class="join-btn">Join</button>
+                    </form>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>There are no available communities to join.</p>
+            {% endif %}
+        </div>
+
+    </div>
+
 </body>
 </html>
