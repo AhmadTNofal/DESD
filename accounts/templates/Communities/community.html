@@ -4,21 +4,20 @@
     <meta charset="UTF-8">
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/community.css' %}">
-     <title>Communities</title>
-
+    <title>Communities</title>
 </head>
 <body>
     <nav>
         <div class="nav-bar">
             <i class='bx bx-menu sidebarOpen' ></i>
-            <span class="logo navLogo"><a href="#">Communities</a></span>
+            <span class="logo navLogo"><a href="{% url 'communities' %}">Communities</a></span>
             <div class="menu">
                 <div class="logo-toggle">
                     <i class='bx bx-x siderbarClose'></i>
                 </div>
                 <ul class="nav-links">
                     <li><a href="{% url 'home' %}">Home</a></li>
-                    <li><a href="#">My Communities</a></li>
+                    <li><a href="{% url 'my_communities' %}">My Communities</a></li>
                     <li><a href="{% url 'join_community' %}">Join Communities</a></li>
                     <li><a href="{% url 'create_communities' %}">Create Community</a></li>
                 </ul>

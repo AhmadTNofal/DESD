@@ -195,8 +195,6 @@ def signup(request):
     
     return render(request, 'registration/signup.html')
 
-
-
 def communities(request):
     return render(request, 'Communities/community.html')
 
@@ -492,4 +490,61 @@ def join_community_action(request, community_id):
 
         messages.success(request, "You have successfully joined the community!")
 
-    return redirect('join_community')  # Refresh the page after joining
+    return redirect('join_community')  
+
+@login_required
+def my_communites(request):
+    """ Display communities that the user has joined along with their role. """
+    
+    user = request.user  # Get logged-in user
+    user_id = user.userID  # Assuming `userID` is the primary key in `CustomUser`
+
+    # Fetch communities where the user is a member, including their role and admin list
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT c.communityID, c.name, c.communityDescription, c.communityCategory, 
+                    GROUP_CONCAT(DISTINCT u.username SEPARATOR ', ') AS admins, 
+                    cm.role, c.createdAt
+            FROM Communities c
+            JOIN CommunityMemberships cm ON c.communityID = cm.communityID
+            JOIN CommunityMemberships admins ON c.communityID = admins.communityID
+            JOIN User u ON admins.userID = u.userID
+            WHERE cm.userID = %s
+            AND admins.role = 'Admin'
+            GROUP BY c.communityID, c.name, c.communityDescription, c.communityCategory, cm.role, c.createdAt
+        """, [user_id])
+        
+        joined_communities = cursor.fetchall()  # List of (communityID, name, description, category, admins, role, createdAt)
+
+    return render(request, 'Communities/my_communities.html', {
+        'joined_communities': joined_communities
+    })
+
+@login_required
+def leave_community(request, community_id):
+    """ Allows a user to leave a community if they are a member. """
+
+    user = request.user  # Get logged-in user
+    user_id = user.userID  # Assuming `userID` is the primary key in `CustomUser`
+
+    # Check if the user is a member of the community
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT COUNT(*) FROM CommunityMemberships 
+            WHERE communityID = %s AND userID = %s
+        """, [community_id, user_id])
+        is_member = cursor.fetchone()[0] > 0  # If count > 0, user is a member
+
+    if is_member:
+        # Remove the user from the community
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                DELETE FROM CommunityMemberships 
+                WHERE communityID = %s AND userID = %s
+            """, [community_id, user_id])
+
+        messages.success(request, "You have successfully left the community.")
+    else:
+        messages.error(request, "You are not a member of this community.")
+
+    return redirect('my_communities')  # Redirect back to "My Communities"

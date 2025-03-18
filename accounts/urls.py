@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 from accounts.views import signup
 from accounts.views import home, search_users
-from .views import home, login_view, signup, search_communities, search_events, view_profile, view_community, join_community, view_event, profile_settings, edit_profile, join_community, join_community_action
+from .views import home, login_view, signup, search_communities, search_events, view_profile, view_community, join_community, view_event, profile_settings, edit_profile, join_community, join_community_action, my_communites, leave_community
 
 urlpatterns = [
     path("home/", home, name="home"),  
@@ -22,7 +22,10 @@ urlpatterns = [
     path('profile/edit/', edit_profile, name='edit_profile'),
 
     path('joinCommunity/', join_community, name='join_community'),
-    path('joinCommunity/<int:community_id>/join/', join_community_action, name='join_community_action'),  # FIXED
+    path('joinCommunity/<int:community_id>/join/', join_community_action, name='join_community_action'),
+
+    path('myCommunities/', my_communites, name='my_communities'),
+    path('myCommunities/<int:community_id>/leave/', leave_community, name='leave_community'),
 
 ]
 

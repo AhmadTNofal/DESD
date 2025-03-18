@@ -9,7 +9,19 @@
 <body>
     {% comment %} <nav>
         <div class="nav-bar">
-            <span class="logo navLogo"><a href="{% url 'communities' %}">Back to Communities</a></span>
+            <i class='bx bx-menu sidebarOpen' ></i>
+            <span class="logo navLogo"><a href="{% url 'communities' %}">Communities</a></span>
+            <div class="menu">
+                <div class="logo-toggle">
+                    <i class='bx bx-x siderbarClose'></i>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li><a href="{% url 'my_communities' %}">My Communities</a></li>
+                    <li><a href="{% url 'join_community' %}">Join Communities</a></li>
+                    <li><a href="{% url 'create_communities' %}">Create Community</a></li>
+                </ul>
+            </div>
         </div>
     </nav> {% endcomment %}
 
