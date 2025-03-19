@@ -57,6 +57,6 @@ urlpatterns = [
     path("CancelEvents/", cancel_event, name="cancel_events"),
     path("JoinCommunity/", join_community, name="join_community"),
     path("MyCommunities/", my_communites, name="my_communities"),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -9,7 +9,7 @@
 
     <!-- Navbar -->
     <nav class="navbar">
-        <a href="home.html" class="nav-logo">UniHub</a>
+        <a href="{% url 'home' %}" class="nav-logo">UniHub</a>
 
         <!-- Navigation Links -->
         <div class="nav-links">
@@ -17,46 +17,55 @@
             <a href="{% url 'communities' %}" class="nav-btn">Communities</a>
             <a href="{% url 'events' %}" class="nav-btn">Events</a>
             <a href="{% url 'logout' %}" class="nav-btn">Logout</a>
-            
         </div>
 
         <!-- Hamburger Menu Icon -->
         <span class="hamburger-menu" onclick="toggleMenu()">&#9776;</span>
     </nav>
-    <!-- <a href="{% url 'home' %}" class="back-button">← Back</a>
-    <h1>Profile Settings</h1> -->
 
     <div class="profile-container">
-        <form method="post" action="{% url 'edit_profile' %}">
+        <form method="post" action="{% url 'edit_profile' %}" enctype="multipart/form-data">
             {% csrf_token %}
-            
-            <!-- User Fields -->
-        <label for="username">Username:</label>
-        <input type="text" name="username" value="{{ user.username }}" required>
 
-        <label for="email">Email:</label>
-        <input type="email" name="email" value="{{ user.email }}" required>
+            <!-- Profile Picture Display -->
+            <div class="profile-picture-container">
+                {% if profile.profile_picture %}
+                    <img id="profilePreview" src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-picture">
+                {% else %}
+                    <img id="profilePreview" src="{% static 'accounts/images/default-profile.png' %}" alt="Default Profile" class="profile-picture">
+                {% endif %}
+            </div>
 
-        <label for="surname">Surname:</label>
-        <input type="text" name="surname" value="{{ user.surname }}">
+            <!-- Profile Picture Upload -->
+            <label for="profile_picture">Change Profile Picture:</label>
+            <input type="file" name="profile_picture" id="profile_picture" accept="image/*" onchange="previewImage(event)">
 
-        <label for="phoneNumber">Phone Number:</label>
-        <input type="text" name="phoneNumber" value="{{ user.phoneNumber }}">
+            <!-- Other form fields -->
+            <label for="username">Username:</label>
+            <input type="text" name="username" value="{{ user.username }}" required>
 
-        <!-- Profile Fields -->
-        <label for="bio">Bio:</label>
-        <textarea name="bio">{{ profile.bio }}</textarea>
+            <label for="email">Email:</label>
+            <input type="email" name="email" value="{{ user.email }}" required>
 
-        <label for="major">Major:</label>
-        <input type="text" name="major" value="{{ profile.major }}">
+            <label for="surname">Surname:</label>
+            <input type="text" name="surname" value="{{ user.surname }}">
 
-        <label for="academicYear">Academic Year:</label>
-        <input type="number" name="academicYear" value="{{ profile.academicYear }}">
+            <label for="phoneNumber">Phone Number:</label>
+            <input type="text" name="phoneNumber" value="{{ user.phoneNumber }}">
 
-        <label for="campusInvolvement">Campus Involvement:</label>
-        <input type="text" name="campusInvolvement" value="{{ profile.campusInvolvement }}">
+            <label for="bio">Bio:</label>
+            <textarea name="bio">{{ profile.bio }}</textarea>
 
-        <button type="submit">Save Changes</button>
+            <label for="major">Major:</label>
+            <input type="text" name="major" value="{{ profile.major }}">
+
+            <label for="academicYear">Academic Year:</label>
+            <input type="number" name="academicYear" value="{{ profile.academicYear }}">
+
+            <label for="campusInvolvement">Campus Involvement:</label>
+            <input type="text" name="campusInvolvement" value="{{ profile.campusInvolvement }}">
+
+            <button type="submit">Save Changes</button>
         </form>
     </div>
 
@@ -65,6 +74,16 @@
             var navLinks = document.querySelector('.nav-links');
             navLinks.classList.toggle('show-menu');
         }
+
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function(){
+                var output = document.getElementById('profilePreview');
+                output.src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
     </script>
+
 </body>
 </html>

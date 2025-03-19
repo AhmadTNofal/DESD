@@ -3,6 +3,8 @@ from . import views
 from accounts.views import signup
 from accounts.views import home, search_users
 from .views import home, login_view, signup, search_communities, search_events, view_profile, view_community, join_community, view_event, profile_settings, edit_profile, join_community, join_community_action, my_communites, leave_community, remove_member, promote_member, create_post
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("home/", home, name="home"),  
@@ -32,5 +34,5 @@ urlpatterns = [
     path('community/<int:community_id>/promote/<int:user_id>/', promote_member, name='promote_member'),
 
     path('create_post/', create_post, name='create_post'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

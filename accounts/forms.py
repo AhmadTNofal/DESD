@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.hashers import make_password
-from .models import Community, Post
+from .models import Community, Post, Profile
 
 class SignupForm(forms.Form):
     username = forms.CharField(max_length=50)
@@ -48,3 +48,8 @@ class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ['title', 'content']  # ✅ Ensure the fields match your model
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['bio', 'major', 'academicYear', 'campusInvolvement', 'profile_picture']

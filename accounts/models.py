@@ -90,6 +90,7 @@ class Profile(models.Model):
     major = models.CharField(max_length=100, blank=True, null=True)
     academicYear = models.IntegerField(blank=True, null=True)
     campusInvolvement = models.TextField(blank=True, null=True)
+    profile_picture = models.ImageField(upload_to="profile_pics/", default="profile_pics/default.jpg")
 
     class Meta:
         db_table = "Profiles"  # Match the exact MySQL table name
@@ -106,5 +107,9 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+def user_directory_path(instance, filename):
+    """Upload images to 'media/profile_pics/user_<id>/<filename>'"""
+    return f'profile_pics/user_{instance.user.id}/{filename}'
 
 

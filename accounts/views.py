@@ -13,7 +13,8 @@ from .forms import CommunityForm, EventForm
 from django.urls import reverse
 from datetime import date
 from .models import Post 
-from .forms import PostForm  
+from .forms import PostForm 
+from django.core.files.storage import default_storage 
 
 @login_required
 def home(request):
@@ -290,29 +291,27 @@ def profile_settings(request):
 
 @login_required
 def edit_profile(request):
-    user = request.user  # Get logged-in user
-    profile = Profile.objects.filter(user=user).first()
-
-    if not profile:
-        messages.error(request, "Profile not found.")
-        return redirect("profile_settings")
+    user = request.user  
+    profile, created = Profile.objects.get_or_create(user=user)  
 
     if request.method == "POST":
-        # Update User Model Fields
         user.username = request.POST["username"]
         user.email = request.POST["email"]
         user.surname = request.POST.get("surname", "")
         user.phoneNumber = request.POST.get("phoneNumber", "")
 
-        # Update Profile Model Fields
         profile.bio = request.POST.get("bio", profile.bio)
         profile.major = request.POST.get("major", profile.major)
         profile.academicYear = request.POST.get("academicYear", profile.academicYear)
         profile.campusInvolvement = request.POST.get("campusInvolvement", profile.campusInvolvement)
 
+        # ✅ Handle Profile Picture Upload
+        if 'profile_picture' in request.FILES:
+            profile.profile_picture = request.FILES['profile_picture']
+
         try:
-            user.save()  # Save User Data
-            profile.save()  # Save Profile Data
+            user.save()  
+            profile.save()  
             messages.success(request, "Profile updated successfully!")
         except Exception as e:
             messages.error(request, f"Error updating profile: {e}")
@@ -320,6 +319,8 @@ def edit_profile(request):
         return redirect("profile_settings")
 
     return render(request, "profile/profile.html", {"user": user, "profile": profile})
+
+
 
 def events(request):
     """ Fetch and filter events based on user input and include available locations """
