@@ -74,7 +74,7 @@
             var navLinks = document.querySelector('.nav-links');
             navLinks.classList.toggle('show-menu');
         }
-
+    
         function previewImage(event) {
             var reader = new FileReader();
             reader.onload = function(){
@@ -83,7 +83,29 @@
             };
             reader.readAsDataURL(event.target.files[0]);
         }
+    
+        function validateForm(event) {
+            let phoneNumber = document.querySelector('input[name="phoneNumber"]').value.trim();
+            let errorMsg = "";
+    
+            // Check if phone number contains only numbers
+            if (!/^\d+$/.test(phoneNumber)) {
+                errorMsg += "Phone number must contain only numbers.\n";
+            }
+    
+            if (errorMsg) {
+                event.preventDefault(); // Prevent form submission
+                alert(errorMsg); // Show error message
+            }
+        }
+    
+        // Attach validation to form submission
+        document.addEventListener("DOMContentLoaded", function() {
+            let form = document.querySelector("form");
+            form.addEventListener("submit", validateForm);
+        });
     </script>
+    
 
 </body>
 </html>
