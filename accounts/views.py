@@ -20,7 +20,8 @@ from django.core.files.storage import default_storage
 def home(request):
     """Render the home page after successful login."""
     return render(request, "profile/home.html", {"permission": request.user.Permission})
-
+def search_page(request):
+    return render(request, "profile/search.html")
 def search_users(request):
     """ Allow users to search for others by username, email, or surname """
     
@@ -322,6 +323,7 @@ def edit_profile(request):
 
 
 
+@login_required
 def events(request):
     """ Fetch and filter events based on user input and include available locations """
     query = request.GET.get("q", "").strip()
@@ -330,15 +332,12 @@ def events(request):
     online_filter = request.GET.get("online", "")
     location_filter = request.GET.get("location", "")
 
-    if request.user.is_authenticated:
-        user_id = request.user.userID  # FIXED: Use 'userID' instead of 'id'
-    else:
-        user_id = None  # Handle unauthenticated users
+    user_id = request.user.userID if request.user.is_authenticated else None
 
-    # Fetch only events from communities the user is part of
+    # Fetch events from communities the user is part of
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, c.name as communityName
+            SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, e.description, c.name as communityName
             FROM Events e
             JOIN Communities c ON e.communityID = c.communityID
             JOIN CommunityMemberships cm ON cm.communityID = c.communityID
@@ -350,12 +349,12 @@ def events(request):
     # Fetch distinct locations for filtering
     with connection.cursor() as cursor:
         cursor.execute("SELECT DISTINCT location FROM Events WHERE location IS NOT NULL ORDER BY location")
-        locations = [row[0] for row in cursor.fetchall()]  # Extract locations from query result
+        locations = [row[0] for row in cursor.fetchall()]
 
     # Convert raw data into dictionaries
     filtered_events = []
     for event in events:
-        event_id, title, event_date, event_time, location, virtual_link, community_name = event
+        event_id, title, event_date, event_time, location, virtual_link, description, community_name = event
 
         event_data = {
             "eventID": event_id,
@@ -364,6 +363,7 @@ def events(request):
             "eventTime": event_time.strftime("%H:%M"),
             "location": location,
             "virtualLink": virtual_link,
+            "description": description,
             "is_online": virtual_link is not None,
             "communityName": community_name
         }
@@ -386,10 +386,37 @@ def events(request):
 
     return render(request, "Events/events.html", {
         "events": filtered_events,
-        "locations": locations,  # FIXED: Passing locations to the template
+        "locations": locations,
         "query": query
     })
 
+@login_required
+def event_details(request, event_id):
+    """ Fetch and display event details """
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, e.description, c.name as communityName
+            FROM Events e
+            JOIN Communities c ON e.communityID = c.communityID
+            WHERE e.eventID = %s
+        """, [event_id])
+
+        event = cursor.fetchone()
+
+    if not event:
+        return redirect("events")
+
+    event_data = {
+        "eventTitle": event[0],
+        "eventDate": event[1],
+        "eventTime": event[2].strftime("%H:%M"),
+        "location": event[3],
+        "virtualLink": event[4],
+        "description": event[5],
+        "communityName": event[6]
+    }
+
+    return render(request, "Events/event_details.html", {"event": event_data})
 @login_required
 def create_event(request):
     user_id = request.user.userID  # Get logged-in user ID
@@ -415,20 +442,22 @@ def create_event(request):
 
             location = data['location'] if not is_online else None
             virtual_link = data['virtualLink'] if is_online else None
+            description = data['description']
 
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    INSERT INTO Events (communityID, eventTitle, eventDate, eventTime, location, virtualLink, createdBy, createdAt)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+                    INSERT INTO Events (communityID, eventTitle, eventDate, eventTime, location, virtualLink, description, createdBy, createdAt)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
                     """,
-                    [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, user_id]
+                    [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, description, user_id]
                 )
             return redirect('events')  # Redirect to events list after creation
     else:
         form = EventForm()
 
     return render(request, 'Events/create_event.html', {'form': form, 'communities': communities})
+
 
 @login_required
 def change_event(request):
@@ -448,7 +477,7 @@ def change_event(request):
         if event_id:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT eventID, eventTitle, eventDate, eventTime, location, virtualLink FROM Events WHERE eventID = %s AND createdBy = %s",
+                    "SELECT eventID, eventTitle, eventDate, eventTime, location, virtualLink, description FROM Events WHERE eventID = %s AND createdBy = %s",
                     [event_id, user_id]
                 )
                 selected_event = cursor.fetchone()
@@ -460,11 +489,12 @@ def change_event(request):
             eventTime = request.POST.get("eventTime")
             location = request.POST.get("location") if "onlineEvent" not in request.POST else None
             virtualLink = request.POST.get("virtualLink") if "onlineEvent" in request.POST else None
+            description = request.POST.get("description")
 
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "UPDATE Events SET eventTitle=%s, eventDate=%s, eventTime=%s, location=%s, virtualLink=%s WHERE eventID=%s",
-                    [eventTitle, eventDate, eventTime, location, virtualLink, event_id]
+                    "UPDATE Events SET eventTitle=%s, eventDate=%s, eventTime=%s, location=%s, virtualLink=%s, description=%s WHERE eventID=%s",
+                    [eventTitle, eventDate, eventTime, location, virtualLink, description, event_id]
                 )
 
             return redirect('change_events')  # Refresh page after update

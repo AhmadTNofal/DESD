@@ -6,6 +6,7 @@
     <title>Cancel Event</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/events.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script>
         function confirmCancellation() {
             return confirm("Are you sure you want to cancel this event? This action cannot be undone.");
@@ -29,7 +30,25 @@
             <button type="submit" class="cancel-btn">Cancel Event</button>
         </form>
 
-        <a href="{% url 'events' %}" class="back-link">Back to Events</a>
+        
     </div>
+    <nav class="bottom-navbar">
+        <a href="{% url 'events' %}" class="nav-item">
+            <i class="fa fa-arrow-left"></i>
+            <span class="tooltip">Events</span>
+        </a>
+        <a href="{% url 'create_events' %}" class="nav-item">
+            <i class="fa-solid fa-plus"></i>
+            <span class="tooltip">Create Event</span>
+        </a>
+        <a href="{% url 'change_events' %}" class="nav-item">
+            <i class="fa-solid fa-edit"></i>
+            <span class="tooltip">Change Event</span>
+        </a>
+        <a href="{% url 'home' %}" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span class="tooltip">Home</span>
+        </a>
+    </nav>
 </body>
 </html>

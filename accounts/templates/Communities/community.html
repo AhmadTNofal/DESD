@@ -4,93 +4,13 @@
     <meta charset="UTF-8">
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/community.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <title>Communities</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 100px auto;
-            padding: 20px;
-        }
-
-        .section {
-            background: white;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        h2 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .community-box, .event-box {
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 15px;
-        }
-
-        .join-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .join-btn:hover {
-            background: #218838;
-        }
-
-        .view-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .view-btn:hover {
-            background: #0056b3;
-        }
-    </style>
+    
 </head>
 <body>
 
-    <!-- Navbar -->
-    <nav>
-        <div class="nav-bar">
-            <span class="logo navLogo"><a href="#">Communities</a></span>
-            <div class="menu">
-                <ul class="nav-links">
-                    <li><a href="{% url 'home' %}">Home</a></li>
-                    <li><a href="{% url 'my_communities' %}">My Communities</a></li>
-                    <li><a href="{% url 'join_community' %}">Join Communities</a></li>
-                    <li><a href="{% url 'create_communities' %}">Create Community</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+
 
     <div class="container">
 
@@ -157,6 +77,23 @@
         </div>
 
     </div>
-
+    <nav class="bottom-navbar">
+        <a href="{% url 'home' %}" class="nav-item">
+            <i class="fa fa-home"></i>  <!-- Communities Icon -->
+            <span class="tooltip">Home</span>
+        </a>
+        <a href="{% url 'my_communities' %}" class="nav-item">
+            <i class="fa fa-users"></i>  <!-- Events Icon -->
+            <span class="tooltip">My Communities</span>
+        </a>
+        <a href="{% url 'join_community' %}" class="nav-item">
+            <i class="fa fa-sign-in"></i>  <!-- Search Icon -->
+            <span class="tooltip">Join Communities</span>
+        </a>
+        <a href="{% url 'create_communities' %}" class="nav-item">
+            <i class="fa fa-plus"></i>  <!-- Profile Icon -->
+            <span class="tooltip">Create Communities</span>
+        </a>
+    </nav>
 </body>
 </html>

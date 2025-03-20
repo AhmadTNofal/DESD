@@ -6,62 +6,70 @@
     <title>Home</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
+        
+        <!-- Correct Font Awesome Link -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
+    
+
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <a href="home.html" class="nav-logo">UniHub</a>
-
-        <!-- Navigation Links -->
-        <div class="nav-links">
-            <a href="{% url 'profile_settings' %}" class="nav-btn">Profile Settings</a>
-            <a href="{% url 'communities' %}" class="nav-btn">Communities</a>
-            <a href="{% url 'events' %}" class="nav-btn">Events</a>
-            <a href="{% url 'logout' %}" class="nav-btn">Logout</a>
-            <!--search users-->
-            <form action="{% url 'search_users' %}" method="GET" class="search-bar-container">
-                <input type="text" name="q" class="search-bar" placeholder="Search users..." required>
-                <button type="submit" class="toggle-filters-btn">Search</button>
-            </form>
-            <!--search communities-->
-            <form action="{% url 'search_communities' %}" method="GET" class="search-bar-container">
-                <input type="text" name="q" class="search-bar" placeholder="Search communities..." required>
-                <button type="submit" class="toggle-filters-btn">Search</button>
-            </form>
-            <!--search events-->
-            <form action="{% url 'search_events' %}" method="GET" class="search-bar-container">
-                <input type="text" name="q" class="search-bar" placeholder="Search events..." required>
-                <button type="submit" class="toggle-filters-btn">Search</button>
-            </form>
-        </div>
-
-        <!-- Hamburger Menu Icon -->
-        <span class="hamburger-menu" onclick="toggleMenu()">&#9776;</span>
-    </nav>
-
-    <!-- Welcome Section -->
+    <!-- Main Feed -->
     <div class="container">
         <h1>Welcome, {{ request.user.username }}!</h1>
-        <p>You are logged in.</p>
-        <p><strong>Permission Level:</strong> {{ request.user.Permission }}</p>
+
+        <div class="feed">
+            <div class="post">
+                <img src="{% static 'accounts/images/sample.jpg' %}" alt="Post Image">
+                <div class="post-content">
+                    <p><strong>Username</strong></p>
+                    <p>This is a sample post description.</p>
+                </div>
+            </div>
+            
+            <div class="post">
+                <img src="{% static 'accounts/images/sample2.jpg' %}" alt="Post Image">
+                <div class="post-content">
+                    <p><strong>Username</strong></p>
+                    <p>Another post example.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- "Create Post" Floating Button -->
+    <!-- Floating "Create Post" Button -->
     <a href="{% url 'create_post' %}" class="create-post-btn">
         +
         <span class="tooltip">Create Post</span>
     </a>
+
+    <!-- Bottom Navbar -->
+    <nav class="bottom-navbar">
+        <a href="{% url 'communities' %}" class="nav-item">
+            <i class="fa-solid fa-users"></i>  <!-- Communities Icon -->
+            <span class="tooltip">Communities</span>
+        </a>
+        <a href="{% url 'events' %}" class="nav-item">
+            <i class="fa-solid fa-calendar"></i>  <!-- Events Icon -->
+            <span class="tooltip">Events</span>
+        </a>
+        
+        <div class="nav-item create-post-btn">
+            <a href="{% url 'create_post' %}" class="create-icon">
+                <i class="fa-solid fa-plus"></i>
+            </a>
+            <span class="tooltip">Create</span>
+        </div>
+        <a href="{% url 'search_page' %}" class="nav-item">
+            <i class="fa-solid fa-magnifying-glass"></i>  <!-- Search Icon -->
+            <span class="tooltip">Search</span>
+        </a>
+        <a href="{% url 'profile_settings' %}" class="nav-item">
+            <i class="fa-solid fa-user"></i>  <!-- Profile Icon -->
+            <span class="tooltip">Profile</span>
+        </a>
+    </nav>
     
-
-
-    <!-- JavaScript for Menu Toggle -->
-    <script>
-        function toggleMenu() {
-            var navLinks = document.querySelector('.nav-links');
-            navLinks.classList.toggle('show-menu');
-        }
-    </script>
 
 </body>
 </html>

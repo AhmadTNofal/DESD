@@ -43,6 +43,7 @@ class EventForm(forms.Form):
     eventTime = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}), label="Event Time")
     location = forms.CharField(max_length=255, required=False, label="Location")
     virtualLink = forms.CharField(max_length=255, required=False, label="Virtual Link")
+    description = forms.CharField(widget=forms.Textarea, required=True)
 
 class PostForm(forms.ModelForm):
     class Meta:

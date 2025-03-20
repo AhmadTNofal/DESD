@@ -4,88 +4,11 @@
     <meta charset="UTF-8">
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/community.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <title>My Communities</title>
-    <style>
-        .community-container {
-            max-width: 800px;
-            margin: 100px auto 0 auto;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .community-box {
-            background: white;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            text-align: left;
-        }
-
-        .community-box h3 {
-            margin: 5px 0;
-            color: #333;
-        }
-
-        .community-box p {
-            font-size: 14px;
-            color: #555;
-        }
-
-        .community-info {
-            margin-bottom: 10px;
-        }
-
-        .leave-btn {
-            background: red;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .leave-btn:hover {
-            background: darkred;
-        }
-
-        .view-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .view-btn:hover {
-            background: #0056b3;
-        }
-    </style>
+    
 </head>
 <body>
-    <!-- Navbar -->
-    <nav>
-        <div class="nav-bar">
-            <i class='bx bx-menu sidebarOpen'></i>
-            <span class="logo navLogo"><a href="{% url 'communities' %}">Communities</a></span>
-            <div class="menu">
-                <div class="logo-toggle">
-                    <i class='bx bx-x siderbarClose'></i>
-                </div>
-                <ul class="nav-links">
-                    <li><a href="{% url 'home' %}">Home</a></li>
-                    <li><a href="{% url 'my_communities' %}">My Communities</a></li>
-                    <li><a href="{% url 'join_community' %}">Join Communities</a></li>
-                    <li><a href="{% url 'create_communities' %}">Create Community</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
 
     <!-- Communities List -->
     <div class="community-container">
@@ -108,5 +31,23 @@
 <p>You are not a member of any communities.</p>
 {% endfor %}
 
+<nav class="bottom-navbar">
+    <a href="{% url 'communities' %}" class="nav-item">
+        <i class="fa fa-arrow-left"></i>
+        <span class="tooltip">Communities</span>
+    </a>
+    <a href="{% url 'join_community' %}" class="nav-item">
+        <i class="fa fa-sign-in"></i>  <!-- Search Icon -->
+        <span class="tooltip">Join Communities</span>
+    </a>
+    <a href="{% url 'create_communities' %}" class="nav-item">
+        <i class="fa fa-plus"></i>  <!-- Profile Icon -->
+        <span class="tooltip">Create Communities</span>
+    </a>
+    <a href="{% url 'home' %}" class="nav-item">
+        <i class="fa fa-home"></i>  <!-- Communities Icon -->
+        <span class="tooltip">Home</span>
+    </a>
+</nav>
 </body>
 </html>

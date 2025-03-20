@@ -10,22 +10,56 @@ html, body {
 }
 
 /* Navbar */
-.navbar {
-    background: #ff758c;
-    color: white;
-    padding: 15px 30px;
+.bottom-navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    position: relative;
+    padding: 10px 0;
+    border-top: 1px solid #dbdbdb;
+    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
 }
 
+
 /* Hamburger Menu Icon */
-.hamburger-menu {
-    display: none;
+.nav-item {
+    text-decoration: none;
+    color: #000000;
     font-size: 24px;
-    cursor: pointer;
+    position: relative;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.3s ease;
+}
+
+.nav-item:hover {
+    opacity: 0.6;
+}
+
+/* Tooltip Styling */
+.tooltip {
+    position: absolute;
+    bottom: 50px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.nav-item:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
 }
 
 .nav-logo {
@@ -92,26 +126,70 @@ html, body {
 
 
 /* Button Styling */
-.toggle-filters-btn,
-.submit-btn,
-.reset-btn {
-    background: #ff758c;
+/* Search, Apply, Reset, and Additional Filters Buttons */
+.search-btn, .toggle-filters-btn, .apply-filters-btn, .reset-filters-btn {
+    background: linear-gradient(135deg, #ff758c, #ff7eb3); /* Gradient effect */
     color: white;
     border: none;
     padding: 12px 20px;
     font-size: 16px;
-    font-weight: 600;
-    border-radius: 6px;
+    font-weight: bold;
+    border-radius: 30px;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease-in-out;
     text-align: center;
-    white-space: nowrap; /* Prevents wrapping */
+    width: 90%;
+    max-width: 250px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.toggle-filters-btn:hover,
-.submit-btn:hover,
-.reset-btn:hover {
-    background: #e85b72;
+.search-btn:hover, .toggle-filters-btn:hover, .apply-filters-btn:hover, .reset-filters-btn:hover {
+    background: linear-gradient(135deg, #e85b72, #ff5f99);
+    transform: translateY(-2px); /* Slight lift on hover */
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Centering buttons */
+.button-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+/* Apply Filters Button */
+.apply-filters-btn {
+    background: linear-gradient(135deg, #57cc99, #38a3a5); /* Greenish gradient */
+}
+
+.apply-filters-btn:hover {
+    background: linear-gradient(135deg, #38a3a5, #2b8a72);
+}
+
+/* Reset Filters Button */
+.reset-filters-btn {
+    background: linear-gradient(135deg, #ffaf40, #ff9100); /* Orange gradient */
+}
+
+.reset-filters-btn:hover {
+    background: linear-gradient(135deg, #ff9100, #ff7b00);
+}
+
+
+.details-btn {
+    background-color: #ff758c;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.details-btn:hover {
+    background-color: #0056b3;
 }
 
 /* Hidden Advanced Filters */
@@ -241,16 +319,19 @@ textarea {
 
 /* Buttons */
 button {
-    background: #ff758c;
+    background: linear-gradient(135deg, #ff758c, #ff7eb3); /* Gradient effect */
     color: white;
     border: none;
-    padding: 12px;
-    font-size: 18px;
-    font-weight: 600;
-    border-radius: 6px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 30px;
     cursor: pointer;
-    width: 100%;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+    width: 90%;
+    max-width: 250px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .button-group {

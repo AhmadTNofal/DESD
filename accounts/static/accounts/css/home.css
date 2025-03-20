@@ -1,127 +1,110 @@
-/* Import Google Font */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
-/* General Styles */
 html, body {
     font-family: 'Poppins', sans-serif;
-    background: #f5f2eb; /* Creamy white background */
+    background: #fafafa;
     margin: 0;
     padding: 0;
 }
 
-/* Navbar */
-.navbar {
-    background: #ff758c;
-    color: white;
-    padding: 15px 30px;
+.container {
+    max-width: 600px;
+    margin: 50px auto;
+    text-align: center;
+}
+
+.feed {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    position: relative;
+    flex-direction: column;
+    gap: 20px;
 }
 
-/* Hamburger Menu Icon */
-.hamburger-menu {
-    display: none;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-/* Logo */
-.nav-logo {
-    font-size: 22px;
-    font-weight: bold;
-    color: white;
-    text-decoration: none;
-}
-
-/* Navigation Links */
-.nav-links {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
-/* Button Styling */
-.nav-btn {
+.post {
     background: white;
-    color: #ff758c;
-    padding: 8px 15px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: background 0.3s ease, color 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.nav-btn:hover {
-    background: #e85b72;
-    color: white;
+.post img {
+    width: 100%;
+    height: auto;
 }
 
-/* Search Bar */
-.search-bar-container {
+.post-content {
+    padding: 15px;
+    text-align: left;
+}
+
+/* Bottom Navbar */
+.bottom-navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
     display: flex;
+    justify-content: space-around;
     align-items: center;
-    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid #dbdbdb;
+    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.search-bar {
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background: #fafafa;
+/* Navigation Icons */
+.nav-item {
+    text-decoration: none;
     color: #333;
+    font-size: 24px;
+    position: relative;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.3s ease;
 }
 
-/* Search Button */
-.toggle-filters-btn {
-    background: #ff758c;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.3s ease;
+.nav-item:hover {
+    opacity: 0.6;
 }
 
-.toggle-filters-btn:hover {
-    background: #e85b72;
-}
-
-/* Floating "Create Post" Button */
+/* Centered Create Post Button */
 .create-post-btn {
-    position: fixed;  /* Stays in the same place when scrolling */
-    bottom: 20px;     /* Distance from the bottom */
-    right: 20px;      /* Distance from the right */
-    background-color: #ff758c;
-    color: white;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+    position: relative;
+    background-color: transparent;
+    width: auto;
+}
+
+.create-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 30px;
-    font-weight: bold;
-    text-decoration: none;
+    background-color: #ff4f4f;
+    color: white;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    font-size: 26px;
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-    transition: background 0.3s ease-in-out, transform 0.2s;
+    text-decoration: none;
 }
 
-/* Hover Effect */
-.create-post-btn:hover {
-    background-color: #e85b72;
-    transform: scale(1.1);
+.create-icon i {
+    margin: 0;
+}
+
+.create-icon:hover {
+    background-color: #e82e2e;
 }
 
 /* Tooltip Styling */
 .tooltip {
     position: absolute;
-    bottom: 70px; /* Position above the button */
+    bottom: 50px;
     background-color: rgba(0, 0, 0, 0.8);
     color: white;
     padding: 5px 10px;
@@ -133,60 +116,68 @@ html, body {
     transition: opacity 0.3s ease-in-out;
 }
 
-/* Show tooltip on hover */
-.create-post-btn:hover .tooltip {
+.nav-item:hover .tooltip {
     opacity: 1;
     visibility: visible;
 }
 
-/* Responsive Design */
+/* General Search Bar Styling */
+.search-bar-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 15px auto;
+    width: 90%;
+    max-width: 500px;
+    background: white;
+    padding: 10px;
+    border-radius: 25px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Search Input Field */
+.search-bar {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 20px;
+    outline: none;
+    background: #f1f1f1;
+    color: #333;
+}
+
+/* Search Button */
+.toggle-filters-btn {
+    background: #ff4f4f;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-left: 10px;
+}
+
+.toggle-filters-btn:hover {
+    background: #e82e2e;
+}
+
+/* Mobile-Friendly Adjustments */
 @media (max-width: 768px) {
-    /* Show Hamburger Menu */
-    .hamburger-menu {
-        display: block;
-    }
-
-    /* Hide Nav Links Initially */
-    .nav-links {
-        display: none;
-        flex-direction: column;
-        background: #ff758c;
-        position: fixed; /* Ensures full-screen effect */
-        top: 60px;
-        right: 0;
-        width: 250px; /* Full width */
-        height: calc(100vh - 60px); /* Full height below navbar */
-        padding: 20px;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        border-radius: 0 0 12px 12px;
-        justify-content: center;
-        align-items: center;
-    }
-
-    /* Show Menu When Activated */
-    .nav-links.show-menu {
-        display: flex;
-    }
-
-    /* Mobile Button Style */
-    .nav-btn {
-        background: white;
-        color: #ff758c;
-        display: block;
-        padding: 12px;
-        text-align: center;
-        margin: 10px 0;
-        width: 80%; /* Ensures buttons are aligned properly */
-    }
-
-    /* Search Bar Adjustment */
     .search-bar-container {
-        flex-direction: column;
-        width: 80%;
+        width: 95%;
     }
 
     .search-bar {
-        width: 100%;
+        font-size: 14px;
     }
 
+    .toggle-filters-btn {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
 }
+

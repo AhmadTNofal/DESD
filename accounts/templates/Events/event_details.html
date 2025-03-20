@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/events.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h2>{{ event.eventTitle }}</h2>
+        <p><strong>Community:</strong> {{ event.communityName }}</p>
+        <p><strong>Date:</strong> {{ event.eventDate }}</p>
+        <p><strong>Time:</strong> {{ event.eventTime }}</p>
+        <p><strong>Description:</strong> {{ event.description }}</p>
+
+        {% if event.virtualLink %}
+            <p><strong>Online Event:</strong> <a href="{{ event.virtualLink }}" target="_blank">Join Link</a></p>
+        {% else %}
+            <p><strong>Location:</strong> {{ event.location }}</p>
+        {% endif %}
+
+        <a href="{% url 'events' %}" class="back-link">Back to Events</a>
+    </div>
+</body>
+</html>

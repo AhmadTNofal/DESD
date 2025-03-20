@@ -6,6 +6,7 @@
     <title>Change Event</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/events.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script>
         function toggleEventType() {
             var isOnline = document.getElementById("onlineEventCheckbox").checked;
@@ -63,11 +64,33 @@
                 <input type="text" name="virtualLink" value="{{ selected_event.5 }}">
             </div>
 
+            <label for="description">Event Description:</label>
+            <textarea name="description" required>{{ selected_event.6 }}</textarea>
+
             <button type="submit" name="updateEvent" class="change-btn">Update Event</button>
         </form>
         {% endif %}
 
-        <a href="{% url 'events' %}" class="back-link">Back to Events</a>
+        
     </div>
+    <nav class="bottom-navbar">
+        <a href="{% url 'events' %}" class="nav-item">
+            <i class="fa fa-arrow-left"></i>
+            <span class="tooltip">Events</span>
+        </a>
+        <a href="{% url 'create_events' %}" class="nav-item">
+            <i class="fa-solid fa-plus"></i>
+            <span class="tooltip">Create Event</span>
+        </a>
+        
+        <a href="{% url 'cancel_events' %}" class="nav-item">
+            <i class="fa-solid fa-ban"></i>
+            <span class="tooltip">Cancel Event</span>
+        </a>
+        <a href="{% url 'home' %}" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span class="tooltip">Home</span>
+        </a>
+    </nav>
 </body>
 </html>

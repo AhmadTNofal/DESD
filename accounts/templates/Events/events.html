@@ -6,6 +6,9 @@
     <title>Events</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/events.css' %}">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <script>
         function toggleFilters() {
@@ -25,7 +28,7 @@
         }
 
         function resetFilters() {
-            window.location.href = window.location.pathname; // Reloads the page without query parameters
+            window.location.href = window.location.pathname;
         }
 
         window.onload = function() {
@@ -33,13 +36,6 @@
             document.getElementById("datePicker").setAttribute("min", today);
             toggleLocationInput();
         };
-        document.addEventListener("DOMContentLoaded", function() {
-            let timeInput = document.getElementById("timePicker");
-            if (timeInput && timeInput.value) {
-                let formattedTime = timeInput.value.substring(0, 5); // Ensures HH:MM format
-                timeInput.value = formattedTime;
-            }
-        });
 
         function toggleMenu() {
             var menu = document.getElementById("navLinks");
@@ -49,66 +45,49 @@
 </head>
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <a href="{% url 'home' %}" class="nav-logo">Home</a>
-        <div class="hamburger-menu" onclick="toggleMenu()">☰</div>
-        <div class="nav-links" id="navLinks">
-            <a href="{% url 'create_events' %}" class="nav-btn">Create Event</a>
-            <a href="{% url 'change_events' %}" class="nav-btn">Change Events</a>
-            <a href="{% url 'cancel_events' %}" class="nav-btn">Cancel Events</a>
-        </div>
-    </nav>
-
-    <!-- Events Page -->
     <div class="container">
         <h2>Find an Event</h2>
 
-        <!-- Search Bar & Additional Filters Button -->
-        <form method="GET" class="filter-form">
-            <div class="search-bar-container">
-                <input type="text" name="q" class="search-bar" placeholder="Search event name..." value="{{ request.GET.q }}">
-                <button type="button" class="toggle-filters-btn" onclick="toggleFilters()">Additional Filters</button>
-            </div>
-
-
-            <!-- Advanced Filters (Initially Hidden) -->
-            <div id="advancedFilters" class="hidden-filters">
-                <label class="checkbox-container">
-                    <input type="checkbox" name="online" id="onlineEvent" value="yes"
-                        {% if request.GET.online == "yes" %}checked{% endif %} onclick="toggleLocationInput()">
-                    Online Event
-                </label>
-
-
-                <!-- Location Selection (Hidden if Online is Checked) -->
-                
-                <div id="locationField">
-                    <label for="location">Select Location:</label>
-                    <select name="location">
-                        <option value="">All Locations</option>
-                        {% for location in locations %}
-                            <option value="{{ location }}" {% if request.GET.location == location %}selected{% endif %}>
-                                {{ location }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-
-                <label for="date">Date:</label>
-                <input type="date" name="date" id="datePicker" value="{{ request.GET.date }}">
-
-                <label for="time">Time:</label>
-                <input type="time" name="time" id="timePicker" value="{{ request.GET.time }}">
-
-            </div>
-
-            <div class="button-group">
-                <button type="submit" class="submit-btn">Apply Filters</button>
-                <button type="button" class="reset-btn" onclick="resetFilters()">Reset Filters</button>
-            </div>
+        <!-- Search Bar -->
+        <form method="GET" class="search-bar-container">
+            <input type="text" name="q" class="search-bar" placeholder="Search event name..." value="{{ request.GET.q }}">
+            <button type="submit" class="toggle-filters-btn">Search</button>
         </form>
+
+        <!-- Advanced Filters Button -->
+        <button type="button" class="toggle-filters-btn" onclick="toggleFilters()">Additional Filters</button>
+
+        <!-- Advanced Filters (Initially Hidden) -->
+        <div id="advancedFilters" class="hidden-filters">
+            <label class="checkbox-container">
+                <input type="checkbox" name="online" id="onlineEvent" value="yes"
+                    {% if request.GET.online == "yes" %}checked{% endif %} onclick="toggleLocationInput()">
+                Online Event
+            </label>
+
+            <div id="locationField">
+                <label for="location">Select Location:</label>
+                <select name="location">
+                    <option value="">All Locations</option>
+                    {% for location in locations %}
+                        <option value="{{ location }}" {% if request.GET.location == location %}selected{% endif %}>
+                            {{ location }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <label for="date">Date:</label>
+            <input type="date" name="date" id="datePicker" value="{{ request.GET.date }}">
+
+            <label for="time">Time:</label>
+            <input type="time" name="time" id="timePicker" value="{{ request.GET.time }}">
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="submit-btn">Apply Filters</button>
+            <button type="button" class="reset-btn" onclick="resetFilters()">Reset Filters</button>
+        </div>
 
         <!-- Event Listing -->
         <div class="event-list">
@@ -119,12 +98,16 @@
                         <p><strong>Community:</strong> {{ event.communityName }}</p>
                         <p><strong>Date:</strong> {{ event.eventDate }}</p>
                         <p><strong>Time:</strong> {{ event.eventTime }}</p>
-        
+
                         {% if event.is_online %}
                             <p><strong>Online Event:</strong> <a href="{{ event.virtualLink }}" target="_blank">Join Link</a></p>
                         {% else %}
                             <p><strong>Location:</strong> {{ event.location }}</p>
                         {% endif %}
+
+                        <form action="{% url 'event_details' event.eventID %}" method="get">
+                            <button type="submit" class="details-btn">View Details</button>
+                        </form>
                     </div>
                 {% endfor %}
             {% else %}
@@ -132,5 +115,26 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- Bottom Navbar -->
+    <nav class="bottom-navbar">
+        <a href="{% url 'home' %}" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span class="tooltip">Home</span>
+        </a>
+        <a href="{% url 'create_events' %}" class="nav-item">
+            <i class="fa-solid fa-plus"></i>
+            <span class="tooltip">Create Event</span>
+        </a>
+        <a href="{% url 'change_events' %}" class="nav-item">
+            <i class="fa-solid fa-edit"></i>
+            <span class="tooltip">Change Event</span>
+        </a>
+        <a href="{% url 'cancel_events' %}" class="nav-item">
+            <i class="fa-solid fa-ban"></i>
+            <span class="tooltip">Cancel Event</span>
+        </a>
+    </nav>
+
 </body>
 </html>
