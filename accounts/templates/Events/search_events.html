@@ -10,17 +10,21 @@
         <h2>Search Results for Events: "{{ query }}"</h2>
         
         {% if results %}
-            <ul>
+            <div class="results-grid">
                 {% for event in results %}
-                    <li>
-                        <strong><a href="{% url 'view_event' event.0 %}">{{ event.1 }}</a></strong> - {{ event.2 }} ({{ event.3 }})
-                        <br> Location: {{ event.4 }}
-                        <br> Community: {{ event.6 }}
-                    </li>
+                    <div class="result-card">
+                        <h3 class="result-title">
+                            <a href="{% url 'view_event' event.0 %}">{{ event.1 }}</a>
+                        </h3>
+                        <p class="result-info">Community: {{ event.6 }}</p>
+                        <p class="result-info">Date: {{ event.2 }} ({{ event.3 }})</p>
+                        <p class="result-info">Location: {{ event.4 }}</p>
+                        <a href="{% url 'view_event' event.0 %}" class="view-details-btn">View Details</a>
+                    </div>
                 {% endfor %}
-            </ul>
+            </div>
         {% else %}
-            <p>No events found.</p>
+            <p class="no-results">No events found.</p>
         {% endif %}
     {% endblock %}
 </body>

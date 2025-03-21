@@ -395,3 +395,107 @@ html, body {
 .profile-details strong {
     font-weight: 600;
 }
+
+/* Results Grid */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 10px;
+}
+
+/* Result Card */
+.result-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+}
+
+.result-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Result Title */
+.result-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 10px;
+}
+
+.result-title a {
+    color: #ff4f4f;
+    text-decoration: none;
+}
+
+.result-title a:hover {
+    text-decoration: underline;
+}
+
+/* Result Info */
+.result-info {
+    font-size: 14px;
+    color: #333;
+    margin: 5px 0;
+}
+
+/* View Details Button */
+.view-details-btn {
+    display: inline-block;
+    background-color: #ff4f4f;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.view-details-btn:hover {
+    background-color: #e82e2e;
+}
+
+/* No Results Message */
+.no-results {
+    color: #b3b3b3;
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+}
+
+/* General Page Styling */
+h2 {
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+    margin: 20px 0;
+}
+
+/* Mobile-Friendly Adjustments */
+@media (max-width: 768px) {
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .result-card {
+        padding: 15px;
+    }
+
+    .result-title {
+        font-size: 16px;
+    }
+
+    .result-info {
+        font-size: 13px;
+    }
+
+    .view-details-btn {
+        font-size: 13px;
+        padding: 8px 15px;
+    }
+}

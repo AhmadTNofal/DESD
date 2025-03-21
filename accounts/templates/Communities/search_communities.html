@@ -11,15 +11,19 @@
         <h2>Search Results for Communities: "{{ query }}"</h2>
         
         {% if results %}
-            <ul>
+            <div class="results-grid">
                 {% for community in results %}
-                    <li>
-                        <strong><a href="{% url 'view_community' community.communityID %}">{{ community.name }}</a></strong> - {{ community.communityCategory }}
-                    </li>
+                    <div class="result-card">
+                        <h3 class="result-title">
+                            <a href="{% url 'view_community' community.communityID %}">{{ community.name }}</a>
+                        </h3>
+                        <p class="result-info">Category: {{ community.communityCategory }}</p>
+                        <a href="{% url 'view_community' community.communityID %}" class="view-details-btn">View Details</a>
+                    </div>
                 {% endfor %}
-            </ul>
+            </div>
         {% else %}
-            <p>No communities found.</p>
+            <p class="no-results">No communities found.</p>
         {% endif %}
     {% endblock %}
 </body>
