@@ -24,16 +24,22 @@ def search_page(request):
     return render(request, "profile/search.html")
 def search_users(request):
     """ Allow users to search for others by username, email, or surname """
-    
-    query = request.GET.get('q', '').strip() # Get the search query from the request and remove whitespace
-    
-    results = CustomUser.objects.filter(
-        Q(username__icontains=query) | 
-        Q(email__icontains=query) | 
-        Q(surname__icontains=query)
-    ) if query else None  # Return None if query is empty
 
-    return render(request, 'profile/search_results.html', {'results': results, 'query': query}) 
+    query = request.GET.get('q', '').strip()  # Get the search query
+
+    if not query:
+        return render(request, 'profile/search_results.html', {'results': None, 'query': query})
+
+    # Query users and join with Profiles to get the profile picture
+    results = CustomUser.objects.raw("""
+        SELECT u.userID, u.username, u.surname, u.email, 
+               p.profile_picture 
+        FROM User u
+        LEFT JOIN Profiles p ON u.userID = p.userID
+        WHERE u.username LIKE %s OR u.email LIKE %s OR u.surname LIKE %s
+    """, [f"%{query}%", f"%{query}%", f"%{query}%"])
+
+    return render(request, 'profile/search_results.html', {'results': results, 'query': query})
 
 def search_communities(request):
     """ Allow users to search for communities by name or category """
@@ -69,7 +75,8 @@ def search_events(request):
 def view_profile(request, user_id):
     """ Display full profile of a user. """
     user = CustomUser.objects.get(userID=user_id)  # Fetch user by ID
-    return render(request, 'profile/view_profile.html', {'user': user})
+    profile = Profile.objects.filter(user=user).first() # Fetch profile
+    return render(request, 'profile/view_profile.html', {'user': user,'profile': profile})
 
 def view_community(request, community_id):
     """ Display community details and allow users to join. """

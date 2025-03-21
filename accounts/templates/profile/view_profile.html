@@ -6,12 +6,30 @@
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
 </head>
 <body>
-    {% block content %}
-        <h2>{{ user.username }}'s Profile</h2>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Surname:</strong> {{ user.surname }}</p>
-        <p><strong>Phone Number:</strong> {{ user.phoneNumber }}</p>
-        <p><strong>Permission Level:</strong> {{ user.Permission }}</p>
-    {% endblock %}
+    <div class="profile-container">
+        <!-- Username -->
+        <h2 class="username">{{ user.username }}</h2>
+
+        <!-- Profile Picture and Name -->
+        <div class="profile-header">
+            {% if profile and profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-picture">
+            {% else %}
+                <img src="{% static 'images/default_profile.jpg' %}" alt="Default Profile Picture" class="profile-picture">
+            {% endif %}
+            <span class="full-name">{{ user.surname }}</span>
+        </div>
+
+        <!-- Bio -->
+        <p class="bio">{{ profile.bio|default:"Not provided" }}</p>
+
+        <!-- Additional Info -->
+        <div class="profile-details">
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Major:</strong> {{ profile.major|default:"Not provided" }}</p>
+            <p><strong>Academic Year:</strong> {{ profile.academicYear|default:"Not provided" }}</p>
+            <p><strong>Campus Involvement:</strong> {{ profile.campusInvolvement|default:"Not provided" }}</p>
+        </div>
+    </div>
 </body>
 </html>

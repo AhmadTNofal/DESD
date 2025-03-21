@@ -15,26 +15,38 @@
     <div class="container">
         <h1>Search</h1>
     
-        <!-- Search Users -->
-        <form action="{% url 'search_users' %}" method="GET" class="search-bar-container">
-            <input type="text" name="q" class="search-bar" placeholder="Search users..." required>
-            <button type="submit" class="toggle-filters-btn">Search</button>
+        <form id="searchForm" method="GET">
+            <div class="search-container">
+                <select id="searchType" name="type" onchange="updateFormAction()">
+                    <option value="users" selected>Users</option>
+                    <option value="communities">Communities</option>
+                    <option value="events">Events</option>
+                </select>
+                <input type="text" name="q" placeholder="Search..." required>
+                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
         </form>
-    
-        <!-- Search Communities -->
-        <form action="{% url 'search_communities' %}" method="GET" class="search-bar-container">
-            <input type="text" name="q" class="search-bar" placeholder="Search communities..." required>
-            <button type="submit" class="toggle-filters-btn">Search</button>
-        </form>
-    
-        <!-- Search Events -->
-        <form action="{% url 'search_events' %}" method="GET" class="search-bar-container">
-            <input type="text" name="q" class="search-bar" placeholder="Search events..." required>
-            <button type="submit" class="toggle-filters-btn">Search</button>
-        </form>
+
+        <script>
+            function updateFormAction() {
+                let searchType = document.getElementById("searchType").value;
+                let form = document.getElementById("searchForm");
+
+                if (searchType === "users") {
+                    form.action = "{% url 'search_users' %}";
+                } else if (searchType === "communities") {
+                    form.action = "{% url 'search_communities' %}";
+                } else if (searchType === "events") {
+                    form.action = "{% url 'search_events' %}";
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", function() {
+                updateFormAction();
+            });
+        </script>
     </div>
     
-
     <!-- Bottom Navbar (Without Create Post Button) -->
     <nav class="bottom-navbar">
         <a href="{% url 'home' %}" class="nav-item">

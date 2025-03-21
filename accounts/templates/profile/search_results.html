@@ -7,18 +7,24 @@
 </head>
 <body>
     {% block content %}
-        <h2>Search Results for "{{ query }}"</h2>
+        <h1>Search Results for "{{ query }}"</h1>
         
         {% if results %}
-            <ul>
-                {% for user in results %}
-                    <li>
-                        <strong><a href="{% url 'view_profile' user.userID %}">{{ user.username }}</a></strong> - {{ user.email }} ({{ user.surname }})
-                    </li>
-                {% endfor %}
-            </ul>
+            <div class="search-results-container">
+                <ul class="search-results-list">
+                    {% for user in results %}
+                        <li class="search-result-item">
+                            <img src="/media/{{ user.profile_picture }}" alt="Profile Picture" class="profile-pic">
+                            <div class="search-text">
+                                <a href="{% url 'view_profile' user.userID %}" class="username">{{ user.username }}</a>
+                                <p class="full-name">{{ user.surname }}</p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
         {% else %}
-            <p>No users found.</p>
+            <p class="no-results">No users found.</p>
         {% endif %}
     {% endblock %}
 </body>
