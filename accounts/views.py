@@ -20,8 +20,10 @@ from django.core.files.storage import default_storage
 def home(request):
     """Render the home page after successful login."""
     return render(request, "profile/home.html", {"permission": request.user.Permission})
+
 def search_page(request):
     return render(request, "profile/search.html")
+
 def search_users(request):
     """ Allow users to search for others by username, email, or surname """
 
@@ -33,7 +35,7 @@ def search_users(request):
     # Query users and join with Profiles to get the profile picture
     results = CustomUser.objects.raw("""
         SELECT u.userID, u.username, u.surname, u.email, 
-               p.profile_picture 
+                p.profile_picture 
         FROM User u
         LEFT JOIN Profiles p ON u.userID = p.userID
         WHERE u.username LIKE %s OR u.email LIKE %s OR u.surname LIKE %s
@@ -328,8 +330,6 @@ def edit_profile(request):
 
     return render(request, "profile/profile.html", {"user": user, "profile": profile})
 
-
-
 @login_required
 def events(request):
     """ Fetch and filter events based on user input and include available locations """
@@ -424,6 +424,7 @@ def event_details(request, event_id):
     }
 
     return render(request, "Events/event_details.html", {"event": event_data})
+
 @login_required
 def create_event(request):
     user_id = request.user.userID  # Get logged-in user ID
@@ -464,7 +465,6 @@ def create_event(request):
         form = EventForm()
 
     return render(request, 'Events/create_event.html', {'form': form, 'communities': communities})
-
 
 @login_required
 def change_event(request):
@@ -816,3 +816,6 @@ def create_post(request):
         form = PostForm()
 
     return render(request, "profile/create_post.html", {"form": form})
+
+def admin_view(request):
+    return render(request, "profile/admin.html", {"permission": request.user.Permission})

@@ -7,13 +7,10 @@
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
         
-        <!-- Correct Font Awesome Link -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
-    
 
 <body>
-
     <!-- Main Feed -->
     <div class="container">
         <h1>Welcome, {{ request.user.username }}!</h1>
@@ -62,8 +59,12 @@
             <i class="fa-solid fa-user"></i>  <!-- Profile Icon -->
             <span class="tooltip">Profile</span>
         </a>
+        {% if request.user.Permission == "Admin" %}
+        <a href="{% url 'admin_view' %}" class="nav-item">
+            <i class="fa-solid fa-user-shield"></i>  <!-- Admin Icon -->
+            <span class="tooltip">Admin</span>
+        </a>
+        {% endif %}    
     </nav>
-    
-
 </body>
 </html>
