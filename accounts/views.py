@@ -15,6 +15,7 @@ from datetime import date
 from .models import Post 
 from .forms import PostForm 
 from django.core.files.storage import default_storage 
+from django.views.decorators.http import require_POST
 
 @login_required
 def home(request):
@@ -817,5 +818,31 @@ def create_post(request):
 
     return render(request, "profile/create_post.html", {"form": form})
 
+@login_required
 def admin_view(request):
-    return render(request, "profile/admin.html", {"permission": request.user.Permission})
+    users = CustomUser.objects.all()
+    return render(request, "profile/admin.html", {"users": users, "permission": request.user.Permission})
+
+@require_POST
+@login_required
+def promote_user(request):
+    """ Promote a user to Admin after verifying password """
+    user_id = request.POST.get("user_id")
+    password = request.POST.get("password")
+
+    # Verify password
+    if not request.user.check_password(password):
+        messages.error(request, "Incorrect password. Promotion cancelled.")
+        return redirect("admin_view")
+
+    # Update permission
+    try:
+        target_user = CustomUser.objects.get(userID=user_id)
+        target_user.Permission = "Admin"
+        target_user.save()
+        messages.success(request, f"{target_user.username} has been promoted to Admin.")
+    except CustomUser.DoesNotExist:
+        messages.error(request, "User not found.")
+
+    return redirect("admin_view")
+

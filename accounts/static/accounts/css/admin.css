@@ -1,57 +1,240 @@
-.admin-panel {
-    padding: 20px;
+/* ====== Main Admin Panel Layout ====== */
+.admin-panel-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
 }
 
-.admin-panel h1 {
+.admin-container-card {
+    max-width: 900px;
+    width: 100%;
+    padding: 30px;
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    background-color: #fff;
+}
+
+/* ====== Collapsible Header ====== */
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
     margin-bottom: 20px;
-    font-size: 2rem;
 }
 
-.user-grid {
+.admin-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.arrow {
+    font-size: 1.4rem;
+    user-select: none;
+    transition: transform 0.2s ease;
+}
+
+.arrow.collapsed {
+    transform: rotate(180deg);
+}
+
+/* ====== User List Wrapper ====== */
+.user-list {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+/* ====== User Card ====== */
+.user-card {
+    border: 1px solid #dcdcdc;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 15px;
+    background-color: #fdfdfd;
+    transition: background 0.2s ease;
+}
+
+.user-card:hover {
+    background-color: #f7faff;
+}
+
+.user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.username {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.user-info {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: #555;
 }
 
-.user-card {
+.user-info span {
+    flex: 1 1 45%;
+    min-width: 200px;
+}
+
+/* ====== Admin Badge ====== */
+.badge-admin {
+    background-color: #2ecc71;
+    color: white;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    border-radius: 12px;
+    margin-left: 10px;
+}
+
+/* ====== Action Button ====== */
+.btn-make-admin {
+    background-color: #3498db;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 10px;
+}
+
+.btn-make-admin:hover {
+    background-color: #2980b9;
+}
+
+/* ====== Modal ====== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background: #fff;
+    padding: 24px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-input {
+    width: 100%;
+    padding: 10px;
+    margin: 16px 0;
     border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 16px;
-    width: 250px;
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.user-card h3 {
-    margin: 0 0 10px;
-    font-size: 1.2rem;
-}
-
-.user-card p {
-    margin: 4px 0;
+    border-radius: 6px;
     font-size: 0.95rem;
 }
 
-.promote-btn {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 6px 12px;
-    background-color: #28a745;
-    color: #fff;
-    border-radius: 4px;
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.modal-btn.confirm {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.modal-btn.cancel {
+    background-color: #e74c3c;
+    color: white;
+}
+
+/* ====== Search Bar ====== */
+.search-bar {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.search-bar input {
+    width: 100%;
+    max-width: 500px;
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.bottom-navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid #dbdbdb;
+    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== NAVBAR ===== */
+.admin-navbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #34495e;
+    color: white;
+    padding: 16px;
+    position: relative;
+    border-bottom: 3px solid #2c3e50;
+}
+
+.nav-title {
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.nav-home-icon {
+    position: absolute;
+    left: 20px;
     text-decoration: none;
-    font-size: 0.9rem;
-    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    height: 100%;
 }
 
-.promote-btn:hover {
-    background-color: #218838;
+.home-icon-svg {
+    width: 30px;
+    height: 30px;
+    color: white;
+    transition: transform 0.2s ease, color 0.2s ease;
 }
 
-.already-admin {
-    color: #888;
-    font-style: italic;
-    font-size: 0.9rem;
-    margin-top: 10px;
-    display: inline-block;
+.nav-home-icon:hover .home-icon-svg {
+    color: #1abc9c;
+    transform: scale(1.1);
 }
+

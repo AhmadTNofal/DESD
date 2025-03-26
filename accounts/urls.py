@@ -35,5 +35,7 @@ urlpatterns = [
     path('community/<int:community_id>/promote/<int:user_id>/', promote_member, name='promote_member'),
 
     path('create_post/', create_post, name='create_post'),
+    
+    path('promote-user/', views.promote_user, name='promote_user'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

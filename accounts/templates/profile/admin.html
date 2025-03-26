@@ -1,12 +1,127 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Admin Panel</title>
+    {% load static %}
     <link rel="stylesheet" href="{% static 'accounts/css/admin.css' %}">
 </head>
 <body>
+    <nav class="admin-navbar">
+        <a href="{% url 'home' %}" class="nav-home-icon" title="Go Home">
+            <svg xmlns="http://www.w3.org/2000/svg" class="home-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12L12 3l9 9" />
+                <path d="M9 21V12h6v9" />
+            </svg>
+        </a>
+        <h1 class="nav-title">Admin Panel</h1>
+    </nav>
 
+    <div class="admin-panel-wrapper">
+        <div class="card admin-container-card">
+            <!-- Collapsible Header -->
+            <div class="admin-header" onclick="toggleUsers()">
+                <h2 class="text-center">Users</h2>
+                <span id="toggleArrow" class="arrow">&#9650;</span>
+            </div>
+
+        <!-- Search Input -->
+        <div id="searchBar" class="search-bar">
+            <input type="text" id="userSearch" onkeyup="filterUsers()" placeholder="Search users by name, email, or username...">
+        </div>
+
+            <!-- User List -->
+            <div id="userList" class="user-list">
+                {% for user in users %}
+                <div class="user-card">
+                    <div class="user-header">
+                        <h4 class="username">
+                            {{ user.username|title }}
+                            {% if user.Permission == "Admin" %}
+                            <span class="badge-admin">Admin</span>
+                            {% endif %}
+                        </h4>
+                        {% if user.Permission != "Admin" %}
+                        <button class="btn-make-admin" onclick="openModal('{{ user.userID }}', '{{ user.username }}')">Make Admin</button>
+                        {% endif %}
+                    </div>
+                    <div class="user-info">
+                        <span><strong>Name:</strong> {{ user.surname }}</span>
+                        <span><strong>Email:</strong> {{ user.email }}</span>
+                        <span><strong>Phone:</strong> {{ user.phoneNumber }}</span>
+                        <span><strong>Role:</strong> {{ user.Permission }}</span>
+                        <span><strong>Last Login:</strong>
+                            {% if user.last_login %}
+                                {{ user.last_login|date:"M d, Y" }} at {{ user.last_login|time:"H:i:s" }}
+                            {% else %}
+                                Never
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Promotion Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h4>Promote <span id="targetUsername"></span> to Admin</h4>
+            <form method="POST" action="{% url 'promote_user' %}">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" id="targetUserID">
+                <input type="password" name="password" class="modal-input" placeholder="Enter your password" required>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-btn confirm">Confirm</button>
+                    <button type="button" class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function openModal(userID, username) {
+            document.getElementById('targetUserID').value = userID;
+            document.getElementById('targetUsername').innerText = username;
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        let isCollapsed = false;
+        function toggleUsers() {
+            const list = document.getElementById("userList");
+            const arrow = document.getElementById("toggleArrow");
+            const searchBar = document.getElementById("searchBar");
+        
+            isCollapsed = !isCollapsed;
+        
+            if (isCollapsed) {
+                list.style.display = "none";
+                searchBar.style.display = "none";
+                arrow.classList.add("collapsed");
+            } else {
+                list.style.display = "block";
+                searchBar.style.display = "block";
+                arrow.classList.remove("collapsed");
+            }
+        }
+        
+
+        function filterUsers() {
+            const input = document.getElementById('userSearch');
+            const filter = input.value.toLowerCase();
+            const userCards = document.querySelectorAll('.user-card');
+
+            userCards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(filter) ? "block" : "none";
+            });
+        }
+    </script>
 </body>
 </html>
