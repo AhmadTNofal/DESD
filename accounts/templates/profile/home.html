@@ -6,11 +6,18 @@
     <title>Home</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
-        
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 
 <body>
+    <!-- Top Search Bar -->
+    <div class="top-bar">
+        <a href="{% url 'search_page' %}" class="search-icon">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span class="tooltip">Search</span>
+        </a>
+    </div>
+
     <!-- Main Feed -->
     <div class="container">
         <h1>Welcome, {{ request.user.username }}!</h1>
@@ -19,16 +26,23 @@
             <div class="post">
                 <img src="{% static 'accounts/images/sample.jpg' %}" alt="Post Image">
                 <div class="post-content">
-                    <p><strong>Username</strong></p>
-                    <p>This is a sample post description.</p>
+                    <p><strong>Faris Sara</strong></p>
+                    <p>Wow!</p>
                 </div>
             </div>
             
             <div class="post">
                 <img src="{% static 'accounts/images/sample2.jpg' %}" alt="Post Image">
                 <div class="post-content">
-                    <p><strong>Username</strong></p>
-                    <p>Another post example.</p>
+                    <p><strong>Qais Alhendi</strong></p>
+                    <p>Graduation Day!</p>
+                </div>
+            </div>
+            <div class="post">
+                <img src="{% static 'accounts/images/sample3.jpg' %}" alt="Post Image">
+                <div class="post-content">
+                    <p><strong>Omar Halasa</strong></p>
+                    <p>Done Uni!!.</p>
                 </div>
             </div>
         </div>
@@ -44,17 +58,12 @@
             <i class="fa-solid fa-calendar"></i>  <!-- Events Icon -->
             <span class="tooltip">Events</span>
         </a>
-        
         <div class="nav-item create-post-btn">
             <a href="{% url 'create_post' %}" class="create-icon">
                 <i class="fa-solid fa-plus"></i>
             </a>
             <span class="tooltip">Create</span>
         </div>
-        <a href="{% url 'search_page' %}" class="nav-item">
-            <i class="fa-solid fa-magnifying-glass"></i>  <!-- Search Icon -->
-            <span class="tooltip">Search</span>
-        </a>
         <a href="{% url 'profile_settings' %}" class="nav-item">
             <i class="fa-solid fa-user"></i>  <!-- Profile Icon -->
             <span class="tooltip">Profile</span>

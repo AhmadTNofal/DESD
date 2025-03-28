@@ -1,169 +1,94 @@
+/* Import Google Font */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
+/* Import Font Awesome for icons */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
+
+/* General Styles */
 html, body {
     font-family: 'Poppins', sans-serif;
-    background: #f5f2eb; /* Creamy white background */
+    background: #fafafa; /* Instagram-like light gray background */
     margin: 0;
     padding: 0;
 }
-/* h1 {
-    color: #333;
-} */
+
+/* Navbar */
 .navbar {
-    background: #ff758c;
-    color: white;
-    padding: 15px 30px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    position: relative;
+    padding: 10px 0;
+    border-top: 1px solid #dbdbdb;
+    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
 }
 
-/* Hamburger Menu Icon */
-.hamburger-menu {
-    display: none;
+/* Nav Item Styling */
+.nav-item {
+    text-decoration: none;
+    color: #262626; /* Instagram’s dark gray for icons */
     font-size: 24px;
-    cursor: pointer;
-}
-
-/* Logo */
-.nav-logo {
-    font-size: 22px;
-    font-weight: bold;
-    color: white;
-    text-decoration: none;
-}
-
-/* Navigation Links */
-.nav-links {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
-/* Button Styling */
-.nav-btn {
-    background: white;
-    color: #ff758c;
-    padding: 8px 15px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: background 0.3s ease, color 0.3s ease;
-}
-
-.nav-btn:hover {
-    background: #e85b72;
-    color: white;
-}
-
-.profile-container {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
-    max-width: 450px;
-    margin: 40px auto;
-    text-align: center;
-    transition: all 0.3s ease-in-out;
-}
-
-/* Smooth hover effect for a subtle lift */
-.profile-container:hover {
-    box-shadow: 0px 12px 25px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-}
-
-/* Profile Information Styling */
-.profile-info {
-    text-align: left;
-    margin: 15px 0;
-    font-size: 16px;
-    font-weight: 500;
-    color: #333;
-}
-
-/* Profile Labels */
-.profile-info label {
-    font-weight: 600;
-    color: #555;
-    display: block;
-    margin-bottom: 5px;
-}
-
-/* Input Fields */
-.profile-container input {
-    width: 100%;
+    position: relative;
     padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: #f9f9f9;
-    color: #333;
-    transition: border 0.3s ease-in-out, background 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.3s ease;
 }
 
-/* Focus Effect */
-.profile-container input:focus {
-    border: 1px solid #ff758c;
-    background: white;
-    outline: none;
+.nav-item:hover {
+    opacity: 0.6;
 }
 
-/* Save Button */
-.profile-container button {
-    background: #ff758c;
-    color: white;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-    transition: background 0.3s ease-in-out, transform 0.2s;
-}
-
-/* Button Hover Effect */
-.profile-container button:hover {
-    background: #e85b72;
-    transform: scale(1.03);
-}
-
-/* Back Button Styling */
-.back-button {
+/* Tooltip Styling */
+.tooltip {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    background: #ff758c;
+    bottom: 50px;
+    background-color: rgba(0, 0, 0, 0.8);
     color: white;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 600;
-    padding: 8px 15px;
+    padding: 5px 10px;
     border-radius: 6px;
-    transition: background 0.3s ease-in-out, transform 0.2s;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out;
 }
 
-.back-button:hover {
-    background: #e85b72;
-    transform: scale(1.05);
+.nav-item:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
 }
 
-/* Centering Profile Container */
+/* Profile Container (Instagram-like) */
 .profile-container {
-    width: 50%;
-    margin: auto;
-    text-align: center;
+    max-width: 935px; /* Instagram’s typical container width */
+    width: 90%;
+    background: white;
+    margin: 30px auto 80px; /* Space for bottom navbar */
+    padding: 0; /* Padding handled by inner sections */
+    border: 1px solid #dbdbdb; /* Subtle border like Instagram */
+    border-radius: 8px; /* Slightly rounded corners */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Very light shadow */
+    overflow: hidden; /* Ensures content stays within rounded borders */
+}
+
+/* Profile Header Section (like Instagram’s profile top) */
+.profile-header {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #dbdbdb;
 }
 
 /* Profile Picture Display */
 .profile-picture-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
+    margin-right: 30px;
 }
 
 .profile-picture {
@@ -171,56 +96,135 @@ html, body {
     height: 150px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #ff758c; /* Optional: Add a border */
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    border: 2px solid #fafafa; /* Instagram-like thin border */
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1); /* Subtle inner ring */
 }
 
-
-@media (max-width: 1024px) {
-    .nav-links {
-        justify-content: flex-end; /* Align to right for better spacing */
-        flex-wrap: wrap;
-    }
+/* Profile Form Section */
+.profile-form {
+    padding: 20px;
 }
+
+/* Form Styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start; /* Left-aligned like Instagram bio/settings */
+}
+
+/* Labels */
+label {
+    font-weight: 600;
+    color: #262626; /* Instagram’s dark gray text */
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+/* Input Fields */
+input, textarea {
+    width: 100%;
+    max-width: 400px; /* Limits field width for better layout */
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    background: #fafafa;
+    color: #262626;
+    transition: border-color 0.3s ease-in-out;
+}
+
+input:focus, textarea:focus {
+    border-color: #3897f0; /* Instagram’s blue accent on focus */
+    outline: none;
+}
+
+/* Textarea Styling */
+textarea {
+    resize: vertical; /* Allows vertical resizing like Instagram bio */
+    height: 60px;
+}
+
+/* Save Button */
+.profile-container button {
+    background: #3897f0; /* Instagram’s blue button */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+    width: auto; /* Button width adjusts to content */
+    max-width: 200px;
+    align-self: center; /* Centers button */
+}
+
+.profile-container button:hover {
+    background: #357abd; /* Darker blue on hover */
+}
+
+/* Back Button Styling */
+.back-button {
+    display: block;
+    margin: 15px auto;
+    text-decoration: none;
+    color: #3897f0; /* Instagram blue */
+    font-weight: 600;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.back-button:hover {
+    color: #357abd;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-    /* Show Hamburger Menu */
-    .hamburger-menu {
-        display: block;
+    .profile-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 15px auto 70px; /* Adjusted for smaller screens */
+        border-radius: 0; /* No rounding on mobile for full-width feel */
     }
 
-    /* Hide Nav Links Initially */
-    .nav-links {
-        display: none;
+    .profile-header {
         flex-direction: column;
-        background: #ff758c;
-        position: fixed; /* Ensures full-screen effect */
-        top: 60px;
-        right: 0;
-        width: 250px; /* Full width */
-        height: calc(100vh - 60px); /* Full height below navbar */
-        padding: 20px;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        border-radius: 0 0 12px 12px;
-        justify-content: center;
-        align-items: center;
+        align-items: flex-start;
+        padding: 15px;
     }
 
-    /* Show Menu When Activated */
-    .nav-links.show-menu {
-        display: flex;
+    .profile-picture-container {
+        margin-right: 0;
+        margin-bottom: 15px;
     }
 
-    /* Mobile Button Style */
-    .nav-btn {
-        background: white;
-        color: #ff758c;
-        display: block;
-        padding: 12px;
-        text-align: center;
-        margin: 10px 0;
-        width: 80%; /* Ensures buttons are aligned properly */
+    .profile-picture {
+        width: 100px;
+        height: 100px;
     }
 
+    .navbar {
+        padding: 5px 0;
+    }
 
-    
+    .nav-item {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .profile-form {
+        padding: 15px;
+    }
+
+    input, textarea {
+        max-width: 100%; /* Full width on small screens */
+    }
+
+    .profile-container button {
+        width: 100%;
+        max-width: none;
+    }
 }

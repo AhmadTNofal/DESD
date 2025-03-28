@@ -4,30 +4,13 @@
     {% load static %}
     <title>Profile Settings</title>
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/profile.css' %}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-
-    <!-- Navbar -->
-    <nav class="navbar">
-        <a href="{% url 'home' %}" class="nav-logo">UniHub</a>
-
-        <!-- Navigation Links -->
-        <div class="nav-links">
-            <a href="{% url 'home' %}" class="nav-btn">Home</a>
-            <a href="{% url 'communities' %}" class="nav-btn">Communities</a>
-            <a href="{% url 'events' %}" class="nav-btn">Events</a>
-            <a href="{% url 'logout' %}" class="nav-btn">Logout</a>
-        </div>
-
-        <!-- Hamburger Menu Icon -->
-        <span class="hamburger-menu" onclick="toggleMenu()">&#9776;</span>
-    </nav>
-
     <div class="profile-container">
-        <form method="post" action="{% url 'edit_profile' %}" enctype="multipart/form-data">
-            {% csrf_token %}
-
-            <!-- Profile Picture Display -->
+        <!-- Profile Header -->
+        <div class="profile-header">
             <div class="profile-picture-container">
                 {% if profile.profile_picture %}
                     <img id="profilePreview" src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-picture">
@@ -35,46 +18,65 @@
                     <img id="profilePreview" src="{% static 'accounts/images/default-profile.png' %}" alt="Default Profile" class="profile-picture">
                 {% endif %}
             </div>
+        </div>
 
-            <!-- Profile Picture Upload -->
-            <label for="profile_picture">Change Profile Picture:</label>
-            <input type="file" name="profile_picture" id="profile_picture" accept="image/*" onchange="previewImage(event)">
+        <!-- Profile Form -->
+        <div class="profile-form">
+            <form method="post" action="{% url 'edit_profile' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="profile_picture">Change Profile Picture:</label>
+                <input type="file" name="profile_picture" id="profile_picture" accept="image/*" onchange="previewImage(event)">
 
-            <!-- Other form fields -->
-            <label for="username">Username:</label>
-            <input type="text" name="username" value="{{ user.username }}" required>
+                <label for="username">Username:</label>
+                <input type="text" name="username" value="{{ user.username }}" required>
 
-            <label for="email">Email:</label>
-            <input type="email" name="email" value="{{ user.email }}" required>
+                <label for="email">Email:</label>
+                <input type="email" name="email" value="{{ user.email }}" required>
 
-            <label for="surname">Surname:</label>
-            <input type="text" name="surname" value="{{ user.surname }}">
+                <label for="surname">Surname:</label>
+                <input type="text" name="surname" value="{{ user.surname }}">
 
-            <label for="phoneNumber">Phone Number:</label>
-            <input type="text" name="phoneNumber" value="{{ user.phoneNumber }}">
+                <label for="phoneNumber">Phone Number:</label>
+                <input type="text" name="phoneNumber" value="{{ user.phoneNumber }}">
 
-            <label for="bio">Bio:</label>
-            <textarea name="bio">{{ profile.bio }}</textarea>
+                <label for="bio">Bio:</label>
+                <textarea name="bio">{{ profile.bio }}</textarea>
 
-            <label for="major">Major:</label>
-            <input type="text" name="major" value="{{ profile.major }}">
+                <label for="major">Major:</label>
+                <input type="text" name="major" value="{{ profile.major }}">
 
-            <label for="academicYear">Academic Year:</label>
-            <input type="number" name="academicYear" value="{{ profile.academicYear }}">
+                <label for="academicYear">Academic Year:</label>
+                <input type="number" name="academicYear" value="{{ profile.academicYear }}">
 
-            <label for="campusInvolvement">Campus Involvement:</label>
-            <input type="text" name="campusInvolvement" value="{{ profile.campusInvolvement }}">
+                <label for="campusInvolvement">Campus Involvement:</label>
+                <input type="text" name="campusInvolvement" value="{{ profile.campusInvolvement }}">
 
-            <button type="submit">Save Changes</button>
-        </form>
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
     </div>
 
+    <!-- Bottom Navbar -->
+    <nav class="navbar">
+        <a href="{% url 'home' %}" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span class="tooltip">Home</span>
+        </a>
+        <a href="{% url 'communities' %}" class="nav-item">
+            <i class="fa-solid fa-users"></i>
+            <span class="tooltip">Communities</span>
+        </a>
+        <a href="{% url 'events' %}" class="nav-item">
+            <i class="fa-solid fa-calendar"></i>
+            <span class="tooltip">Events</span>
+        </a>
+        <a href="{% url 'logout' %}" class="nav-item">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span class="tooltip">Logout</span>
+        </a>
+    </nav>
+
     <script>
-        function toggleMenu() {
-            var navLinks = document.querySelector('.nav-links');
-            navLinks.classList.toggle('show-menu');
-        }
-    
         function previewImage(event) {
             var reader = new FileReader();
             reader.onload = function(){
@@ -88,24 +90,20 @@
             let phoneNumber = document.querySelector('input[name="phoneNumber"]').value.trim();
             let errorMsg = "";
     
-            // Check if phone number contains only numbers
             if (!/^\d+$/.test(phoneNumber)) {
                 errorMsg += "Phone number must contain only numbers.\n";
             }
     
             if (errorMsg) {
-                event.preventDefault(); // Prevent form submission
-                alert(errorMsg); // Show error message
+                event.preventDefault();
+                alert(errorMsg);
             }
         }
     
-        // Attach validation to form submission
         document.addEventListener("DOMContentLoaded", function() {
             let form = document.querySelector("form");
             form.addEventListener("submit", validateForm);
         });
     </script>
-    
-
 </body>
 </html>

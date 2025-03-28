@@ -31,6 +31,54 @@ html, body {
     height: auto;
 }
 
+.top-bar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 60px; /* Fixed width for the search icon area */
+    padding: 10px;
+    background: #fafafa;
+    
+    z-index: 1000; /* Above other content */
+    display: flex;
+    justify-content: flex-end;
+}
+
+.search-icon {
+    text-decoration: none;
+    color: #262626; /* Instagram’s dark gray */
+    font-size: 24px;
+    position: relative;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    transition: opacity 0.3s ease;
+}
+
+.search-icon:hover {
+    opacity: 0.6;
+}
+
+.search-icon .tooltip {
+    position: absolute;
+    top: -40px; /* Position above the icon */
+    right: 50%;
+    transform: translateX(50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fafafa;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.search-icon:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+}
 .post-content {
     padding: 15px;
     text-align: left;
