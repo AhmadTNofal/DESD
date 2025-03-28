@@ -135,7 +135,7 @@ input, textarea {
 }
 
 input:focus, textarea:focus {
-    border-color: #3897f0; /* Instagram’s blue accent on focus */
+    border-color: #ff758c; /* Instagram’s blue accent on focus */
     outline: none;
 }
 
@@ -147,7 +147,7 @@ textarea {
 
 /* Save Button */
 .profile-container button {
-    background: #3897f0; /* Instagram’s blue button */
+    background: #ff758c; /* Instagram’s blue button */
     color: white;
     border: none;
     padding: 10px 20px;
@@ -162,7 +162,7 @@ textarea {
 }
 
 .profile-container button:hover {
-    background: #357abd; /* Darker blue on hover */
+    background: #ff758c; /* Darker blue on hover */
 }
 
 /* Back Button Styling */
@@ -177,7 +177,7 @@ textarea {
 }
 
 .back-button:hover {
-    color: #357abd;
+    color: #ff758c;
 }
 
 /* Responsive Design */

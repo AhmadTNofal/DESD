@@ -83,7 +83,28 @@ html, body {
     padding: 15px;
     text-align: left;
 }
+.post-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
 
+.like-btn, .comment-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #262626; /* Instagram’s dark gray */
+    transition: color 0.3s ease;
+}
+
+.like-btn.liked {
+    color: #ed4956; /* Instagram’s red when liked */
+}
+
+.comment-btn {
+    color: #262626; /* Static for now */
+}
 /* Bottom Navbar */
 .bottom-navbar {
     position: fixed;
@@ -545,5 +566,11 @@ h2 {
     .view-details-btn {
         font-size: 13px;
         padding: 8px 15px;
+    }
+    .like-btn, .comment-btn {
+        font-size: 18px;
+    }
+    .post-content {
+        padding: 10px;
     }
 }

@@ -26,14 +26,30 @@
             <div class="post">
                 <img src="{% static 'accounts/images/sample.jpg' %}" alt="Post Image">
                 <div class="post-content">
+                    <div class="post-actions">
+                        <button class="like-btn" onclick="toggleLike(this)">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                        <button class="comment-btn">
+                            <i class="fa-regular fa-comment"></i>
+                        </button>
+                    </div>
                     <p><strong>Faris Sara</strong></p>
-                    <p>Wow!</p>
+                    <p>Wow!</p>  
                 </div>
             </div>
             
             <div class="post">
                 <img src="{% static 'accounts/images/sample2.jpg' %}" alt="Post Image">
                 <div class="post-content">
+                    <div class="post-actions">
+                        <button class="like-btn" onclick="toggleLike(this)">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                        <button class="comment-btn">
+                            <i class="fa-regular fa-comment"></i>
+                        </button>
+                    </div>
                     <p><strong>Qais Alhendi</strong></p>
                     <p>Graduation Day!</p>
                 </div>
@@ -41,6 +57,14 @@
             <div class="post">
                 <img src="{% static 'accounts/images/sample3.jpg' %}" alt="Post Image">
                 <div class="post-content">
+                    <div class="post-actions">
+                        <button class="like-btn" onclick="toggleLike(this)">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                        <button class="comment-btn">
+                            <i class="fa-regular fa-comment"></i>
+                        </button>
+                    </div>
                     <p><strong>Omar Halasa</strong></p>
                     <p>Done Uni!!.</p>
                 </div>
@@ -75,5 +99,12 @@
         </a>
         {% endif %}    
     </nav>
+
+    <!-- JavaScript for Like Button Toggle -->
+    <script>
+        function toggleLike(button) {
+            button.classList.toggle('liked');
+        }
+    </script>
 </body>
 </html>
