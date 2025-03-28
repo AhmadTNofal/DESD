@@ -1,0 +1,208 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* Import Font Awesome for icons */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css');
+
+/* General Styles */
+html, body {
+    font-family: 'Poppins', sans-serif;
+    background: #fafafa; /* Instagram’s light gray background */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Container (Enhanced Instagram-like) */
+.container {
+    max-width: 600px; /* Slightly narrower for a more focused form layout */
+    width: 90%;
+    background: white;
+    margin: 40px auto 90px; /* Increased margin for better spacing */
+    padding: 30px 40px; /* More padding for a spacious feel */
+    border: 1px solid #dbdbdb; /* Instagram’s subtle border */
+    border-radius: 12px; /* Slightly more rounded corners */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Softer, more pronounced shadow */
+    text-align: center;
+}
+
+/* Heading */
+h2 {
+    font-size: 26px; /* Slightly larger for emphasis */
+    font-weight: 600;
+    color: #262626; /* Instagram’s dark gray */
+    margin-bottom: 25px; /* More spacing below */
+}
+
+/* Form Styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Increased gap for better separation */
+    align-items: center;
+}
+
+/* Form Fields */
+form div {
+    width: 100%;
+    max-width: 450px; /* Slightly wider fields for better usability */
+    text-align: left;
+}
+
+/* Labels */
+label {
+    font-weight: 400;
+    display: block;
+    margin-bottom: 6px; /* Slightly more spacing */
+    color: #8e8e8e; /* Instagram’s muted gray for labels */
+    font-size: 14px;
+}
+
+/* Input Fields */
+input, textarea, select {
+    width: 100%;
+    padding: 12px; /* Slightly more padding for comfort */
+    font-size: 14px;
+    border: 1px solid #dbdbdb; /* Instagram’s border color */
+    border-radius: 4px;
+    background: #fafafa; /* Light gray background */
+    color: #262626;
+    transition: border-color 0.3s ease-in-out;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #ff758c; /* Pink to match the button */
+    outline: none;
+}
+
+/* Placeholder Styling */
+input::placeholder, textarea::placeholder {
+    color: #8e8e8e;
+}
+
+/* Button Styling (Pink) */
+button {
+    background: #ff758c; /* Pink, matching events.css */
+    color: white;
+    border: none;
+    padding: 12px 24px; /* Slightly more padding */
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    max-width: 250px; /* Slightly wider button */
+    margin-top: 20px; /* More spacing above */
+    transition: background 0.3s ease-in-out, transform 0.2s ease;
+}
+
+button:hover {
+    background: #e85b72; /* Darker pink on hover, matching events.css */
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+/* Error Messages */
+.error-list {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0 0;
+    color: #ed4956; /* Instagram’s red for errors */
+    font-size: 14px;
+    text-align: left;
+    width: 100%;
+    max-width: 450px; /* Match form field width */
+}
+
+.error-list li {
+    margin: 5px 0;
+}
+
+.error-list strong {
+    font-weight: 600;
+}
+
+/* Bottom Navbar */
+.bottom-navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid #dbdbdb;
+    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+}
+
+/* Navigation Icons */
+.nav-item {
+    text-decoration: none;
+    color: #262626; /* Instagram’s dark gray */
+    font-size: 24px;
+    position: relative;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.3s ease;
+}
+
+.nav-item:hover {
+    opacity: 0.6;
+}
+
+/* Tooltip Styling */
+.tooltip {
+    position: absolute;
+    bottom: 50px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.nav-item:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+        padding: 20px 30px; /* Slightly less padding on mobile */
+        margin: 20px auto 70px;
+    }
+
+    h2 {
+        font-size: 22px;
+    }
+
+    form div {
+        max-width: 100%;
+    }
+
+    button {
+        width: 100%;
+        max-width: none;
+    }
+
+    .error-list {
+        font-size: 12px;
+    }
+
+    .nav-item {
+        font-size: 20px;
+    }
+}

@@ -1,0 +1,224 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* Import Font Awesome for icons */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css');
+
+/* General Page Styling */
+html, body {
+    font-family: 'Poppins', sans-serif;
+    background: #fafafa; /* Instagram’s light gray background */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Community Container (Instagram-like) */
+.community-container {
+    max-width: 935px; /* Instagram’s typical container width */
+    width: 90%;
+    background: white;
+    margin: 30px auto 80px; /* Space for bottom navbar */
+    padding: 20px;
+    border: 1px solid #dbdbdb; /* Instagram’s subtle border */
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    text-align: left;
+}
+
+/* Section Titles */
+h2, h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #262626; /* Instagram’s dark gray */
+    margin-bottom: 20px;
+}
+
+/* Community Details */
+.community-container p {
+    font-size: 16px;
+    color: #262626;
+    margin: 10px 0;
+}
+
+.community-container p strong {
+    font-weight: 600;
+}
+
+/* Members Container */
+.members-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Member Box */
+.member-box {
+    background: #fff;
+    padding: 15px;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 300px;
+}
+
+.member-box span {
+    font-size: 14px;
+    color: #262626;
+}
+
+/* Admin Badge */
+.admin-badge {
+    color: #3897f0; /* Instagram’s blue for admin status */
+    font-weight: 600;
+    margin-left: 5px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.promote-btn, .remove-btn {
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.3s ease;
+}
+
+.promote-btn {
+    background: #3897f0; /* Instagram’s blue */
+    color: white;
+}
+
+.promote-btn:hover {
+    background: #357abd; /* Darker blue on hover */
+}
+
+.remove-btn {
+    background: #ed4956; /* Instagram’s red */
+    color: white;
+}
+
+.remove-btn:hover {
+    background: #d43f4b; /* Darker red on hover */
+}
+
+/* Leave Button */
+.leave-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.leave-btn {
+    background: #ed4956; /* Instagram’s red */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.3s ease;
+}
+
+.leave-btn:hover {
+    background: #d43f4b; /* Darker red on hover */
+}
+
+/* Bottom Navbar */
+.bottom-navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid #dbdbdb;
+    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+}
+
+/* Navigation Icons */
+.nav-item {
+    text-decoration: none;
+    color: #262626; /* Instagram’s dark gray */
+    font-size: 24px;
+    position: relative;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.3s ease;
+}
+
+.nav-item:hover {
+    opacity: 0.6;
+}
+
+/* Tooltip Styling */
+.tooltip {
+    position: absolute;
+    bottom: 50px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.nav-item:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .community-container {
+        width: 95%;
+        padding: 15px;
+        margin: 20px auto 70px;
+    }
+
+    h2, h3 {
+        font-size: 20px;
+    }
+
+    .member-box {
+        max-width: 100%;
+        padding: 10px;
+    }
+
+    .promote-btn, .remove-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+
+    .leave-btn {
+        padding: 8px 15px;
+        font-size: 13px;
+    }
+
+    .nav-item {
+        font-size: 20px;
+    }
+}

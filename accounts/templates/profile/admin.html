@@ -8,11 +8,8 @@
 </head>
 <body>
     <nav class="admin-navbar">
-        <a href="{% url 'home' %}" class="nav-home-icon" title="Go Home">
-            <svg xmlns="http://www.w3.org/2000/svg" class="home-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 12L12 3l9 9" />
-                <path d="M9 21V12h6v9" />
-            </svg>
+        <a href="{% url 'home' %}" class="nav-home-icon">
+            <i class="fa-solid fa-house"></i>
         </a>
         <h1 class="nav-title">Admin Panel</h1>
     </nav>
@@ -22,13 +19,13 @@
             <!-- Collapsible Header -->
             <div class="admin-header" onclick="toggleUsers()">
                 <h2 class="text-center">Users</h2>
-                <span id="toggleArrow" class="arrow">&#9650;</span>
+                <span id="toggleArrow" class="arrow">▲</span>
             </div>
 
-        <!-- Search Input -->
-        <div id="searchBar" class="search-bar">
-            <input type="text" id="userSearch" onkeyup="filterUsers()" placeholder="Search users by name, email, or username...">
-        </div>
+            <!-- Search Input -->
+            <div id="searchBar" class="search-bar">
+                <input type="text" id="userSearch" onkeyup="filterUsers()" placeholder="Search users by name, email, or username...">
+            </div>
 
             <!-- User List -->
             <div id="userList" class="user-list">
@@ -110,7 +107,6 @@
                 arrow.classList.remove("collapsed");
             }
         }
-        
 
         function filterUsers() {
             const input = document.getElementById('userSearch');

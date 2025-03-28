@@ -3,110 +3,11 @@
 <head>
     <meta charset="UTF-8">
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/community.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/view_community.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <title>{{ community.1 }} - Community Details</title>
-    <style>
-        .community-container {
-            max-width: 800px;
-            margin: 100px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            text-align: left;
-        }
-
-        .members-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .member-box {
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .admin-badge {
-            color: red;
-            font-weight: bold;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-
-        .promote-btn, .remove-btn {
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 12px;
-        }
-
-        .promote-btn {
-            background: green;
-            color: white;
-        }
-
-        .promote-btn:hover {
-            background: darkgreen;
-        }
-
-        .remove-btn {
-            background: red;
-            color: white;
-        }
-
-        .remove-btn:hover {
-            background: darkred;
-        }
-
-        /* Leave Button */
-        .leave-container {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .leave-btn {
-            background: red;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .leave-btn:hover {
-            background: darkred;
-        }
-    </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav>
-        <div class="nav-bar">
-            <span class="logo navLogo"><a href="#">Community Details</a></span>
-            <div class="menu">
-                <ul class="nav-links">
-                    <li><a href="{% url 'home' %}">Home</a></li>
-                    <li><a href="{% url 'my_communities' %}">My Communities</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
     <div class="community-container">
         <h2>{{ community.1 }}</h2>
         <p><strong>Description:</strong> {{ community.2 }}</p>
@@ -149,5 +50,25 @@
         {% endif %}
     </div>
 
+    <!-- Bottom Navbar -->
+    <nav class="bottom-navbar">
+        <a href="{% url 'communities' %}" class="nav-item">
+            <i class="fa fa-arrow-left"></i>
+            <span class="tooltip">Communities</span>
+        </a>
+        
+        <a href="{% url 'my_communities' %}" class="nav-item">
+            <i class="fa fa-users"></i>  <!-- Events Icon -->
+            <span class="tooltip">My Communities</span>
+        </a>
+        <a href="{% url 'join_community' %}" class="nav-item">
+            <i class="fa fa-sign-in"></i>  <!-- Search Icon -->
+            <span class="tooltip">Join Communities</span>
+        </a>
+        <a href="{% url 'home' %}" class="nav-item">
+            <i class="fa fa-home"></i>  <!-- Communities Icon -->
+            <span class="tooltip">Home</span>
+        </a>
+    </nav>
 </body>
 </html>

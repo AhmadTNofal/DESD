@@ -4,7 +4,7 @@
 /* General Styles */
 html, body {
     font-family: 'Poppins', sans-serif;
-    background: #f5f2eb; /* Light cream background (same as signup) */
+    background: #fafafa; /* Instagram’s light gray background */
     height: 100vh;
     margin: 0;
     padding: 0;
@@ -16,83 +16,126 @@ html, body {
 /* Login Container */
 .container {
     background: #ffffff; /* White background */
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px 50px; /* Increased padding for a larger feel */
+    border: 1px solid #dbdbdb; /* Instagram’s subtle border */
+    border-radius: 8px; /* Slightly rounded corners */
     width: 90%;
-    max-width: 400px;
+    max-width: 500px; /* Increased from 350px to 500px for a bigger container */
     text-align: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Very light shadow */
 }
 
 /* Heading */
 h2 {
-    font-size: 24px;
+    font-size: 32px; /* Slightly larger to match the bigger container */
     font-weight: 600;
-    color: #333;
-    margin-bottom: 20px;
+    color: #262626; /* Instagram’s dark gray */
+    margin-bottom: 25px; /* Increased spacing */
 }
 
 /* Labels */
 label {
-    font-weight: 600;
+    font-weight: 400; /* Lighter weight for a cleaner look */
     display: block;
     text-align: left;
-    margin: 10px 0 5px;
-    color: #333;
+    margin: 12px 0 6px; /* Slightly more spacing */
+    color: #8e8e8e; /* Instagram’s muted gray for labels */
+    font-size: 14px; /* Increased from 12px for better readability */
 }
 
 /* Input Fields */
 input {
     width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 16px;
-    background: #fafafa;
-    color: #333;
+    padding: 12px; /* Increased padding for larger inputs */
+    border: 1px solid #dbdbdb; /* Instagram’s border color */
+    border-radius: 4px; /* Softer corners */
+    font-size: 16px; /* Increased from 14px for better proportion */
+    background: #fafafa; /* Light gray background */
+    color: #262626; /* Dark gray text */
+    box-sizing: border-box; /* Ensures padding doesn’t affect width */
+}
+
+input:focus {
+    border-color: #ff758c; /* Instagram’s blue on focus */
+    outline: none;
+}
+
+/* Placeholder Styling */
+input::placeholder {
+    color: #8e8e8e; /* Instagram’s placeholder color */
+    font-size: 16px; /* Match input size */
 }
 
 /* Button Styling */
 button {
-    background: #ff758c; /* Same as signup */
+    background: #ff758c; /* Instagram’s blue */
     color: white;
     border: none;
-    padding: 12px;
-    font-size: 18px;
+    padding: 10px; /* Slightly thicker button */
+    font-size: 16px; /* Increased from 14px */
     font-weight: 600;
-    border-radius: 6px;
+    border-radius: 8px; /* More rounded */
     cursor: pointer;
     width: 100%;
-    margin-top: 20px;
+    margin-top: 20px; /* Increased spacing */
+    transition: background 0.3s ease-in-out;
 }
 
 button:hover {
-    background: #e85b72;
+    background: #ed4956; /* Darker blue on hover */
 }
 
 /* Signup Link */
 a {
     display: block;
-    margin-top: 15px;
-    font-size: 16px;
-    color: #ff758c;
+    margin-top: 20px; /* Increased spacing */
+    font-size: 16px; /* Increased from 14px */
+    color: #ff758c; /* Instagram’s blue */
     text-decoration: none;
 }
 
 a:hover {
-    color: #e85b72;
+    color: #ed4956; /* Darker blue on hover */
 }
 
 /* Error Message */
 p {
-    color: red;
-    font-size: 14px;
-    margin-top: 10px;
+    color: #ed4956; /* Instagram’s red for errors */
+    font-size: 14px; /* Increased from 12px */
+    margin-top: 12px; /* Slightly more spacing */
 }
 
 /* Responsive Design */
 @media (max-width: 500px) {
     .container {
         width: 95%;
+        padding: 20px 40px; /* Adjusted padding for mobile */
+        border-radius: 0; /* No rounding on mobile for full-width feel */
+    }
+
+    h2 {
+        font-size: 28px; /* Adjusted for mobile */
+    }
+
+    label {
+        font-size: 12px; /* Slightly smaller on mobile */
+    }
+
+    input {
+        padding: 10px; /* Slightly smaller on mobile */
+        font-size: 14px;
+    }
+
+    button {
+        padding: 8px; /* Slightly thinner on mobile */
+        font-size: 14px;
+    }
+
+    a {
+        font-size: 14px;
+    }
+
+    p {
+        font-size: 12px;
     }
 }

@@ -1,36 +1,94 @@
-/* ====== Main Admin Panel Layout ====== */
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* Import Font Awesome for icons */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css');
+
+/* General Styles */
+html, body {
+    font-family: 'Poppins', sans-serif;
+    background: #ecf0f1; /* Light gray background typical of admin panels */
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+/* Admin Navbar */
+.admin-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #2c3e50; /* Dark blue-gray for admin header */
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center the title */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.nav-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    text-align: center;
+    flex-grow: 1; /* Allow title to take available space */
+}
+
+.nav-home-icon {
+    position: absolute;
+    left: 20px;
+    text-decoration: none;
+    color: white;
+    font-size: 24px;
+    transition: color 0.3s ease;
+}
+
+.nav-home-icon:hover {
+    color: #1abc9c; /* Teal accent on hover */
+}
+
+/* Main Admin Panel Layout */
 .admin-panel-wrapper {
     display: flex;
     justify-content: center;
-    margin-top: 50px;
+    margin: 80px auto 20px; /* Space for top navbar */
+    padding: 20px;
 }
 
 .admin-container-card {
-    max-width: 900px;
+    max-width: 1200px; /* Wider for admin panel */
     width: 100%;
-    padding: 30px;
-    border: 2px solid #e0e0e0;
-    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #bdc3c7; /* Subtle gray border */
+    border-radius: 4px; /* Sharper corners */
     background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* ====== Collapsible Header ====== */
+/* Collapsible Header */
 .admin-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
     margin-bottom: 20px;
+    padding: 10px;
+    background: #34495e; /* Darker header */
+    color: white;
+    border-radius: 4px;
 }
 
 .admin-header h2 {
-    font-size: 1.5rem;
+    font-size: 22px;
     font-weight: 600;
+    margin: 0;
 }
 
 .arrow {
-    font-size: 1.4rem;
-    user-select: none;
+    font-size: 18px;
     transition: transform 0.2s ease;
 }
 
@@ -38,24 +96,47 @@
     transform: rotate(180deg);
 }
 
-/* ====== User List Wrapper ====== */
+/* Search Bar */
+.search-bar {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.search-bar input {
+    width: 100%;
+    max-width: 600px;
+    padding: 12px 16px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 14px;
+    background: #f9f9f9;
+    color: #333;
+    outline: none;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.search-bar input::placeholder {
+    color: #7f8c8d;
+}
+
+/* User List Wrapper */
 .user-list {
     transition: all 0.3s ease;
     overflow: hidden;
 }
 
-/* ====== User Card ====== */
+/* User Card */
 .user-card {
-    border: 1px solid #dcdcdc;
-    border-radius: 12px;
-    padding: 16px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    padding: 15px;
     margin-bottom: 15px;
-    background-color: #fdfdfd;
-    transition: background 0.2s ease;
+    background-color: #fff;
+    transition: box-shadow 0.2s ease;
 }
 
 .user-card:hover {
-    background-color: #f7faff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .user-header {
@@ -66,17 +147,28 @@
 }
 
 .username {
-    font-size: 1.3rem;
+    font-size: 18px;
     font-weight: 600;
-    color: #2c3e50;
+    color: #2c3e50; /* Dark blue-gray */
     margin: 0;
 }
 
+/* Admin Badge */
+.badge-admin {
+    background-color: #27ae60; /* Green for admin status */
+    color: white;
+    padding: 3px 10px;
+    font-size: 12px;
+    border-radius: 12px;
+    margin-left: 10px;
+}
+
+/* User Info */
 .user-info {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    font-size: 0.95rem;
+    font-size: 14px;
     color: #555;
 }
 
@@ -85,34 +177,29 @@
     min-width: 200px;
 }
 
-/* ====== Admin Badge ====== */
-.badge-admin {
-    background-color: #2ecc71;
-    color: white;
-    padding: 2px 8px;
-    font-size: 0.75rem;
-    border-radius: 12px;
-    margin-left: 10px;
+.user-info span strong {
+    font-weight: 600;
+    color: #333;
 }
 
-/* ====== Action Button ====== */
+/* Action Button */
 .btn-make-admin {
-    background-color: #3498db;
+    background-color: #3498db; /* Blue for actions */
     color: white;
     padding: 8px 14px;
     border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s ease;
-    margin-top: 10px;
+    transition: background-color 0.3s ease;
 }
 
 .btn-make-admin:hover {
-    background-color: #2980b9;
+    background-color: #2980b9; /* Darker blue on hover */
 }
 
-/* ====== Modal ====== */
+/* Modal */
 .modal {
     display: none;
     position: fixed;
@@ -123,26 +210,41 @@
     height: 100%;
     justify-content: center;
     align-items: center;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6); /* Darker overlay */
 }
 
 .modal-content {
     background: #fff;
-    padding: 24px;
-    border-radius: 10px;
+    padding: 25px;
+    border-radius: 4px;
     width: 90%;
-    max-width: 400px;
+    max-width: 450px;
     text-align: center;
+    border: 1px solid #bdc3c7;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h4 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 20px;
 }
 
 .modal-input {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     margin: 16px 0;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 0.95rem;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 14px;
+    background: #f9f9f9;
+    color: #333;
+    outline: none;
+}
+
+.modal-input::placeholder {
+    color: #7f8c8d;
 }
 
 .modal-actions {
@@ -153,88 +255,67 @@
 
 .modal-btn {
     flex: 1;
-    padding: 8px;
+    padding: 10px;
     border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .modal-btn.confirm {
-    background-color: #2ecc71;
+    background-color: #27ae60; /* Green for confirm */
     color: white;
+}
+
+.modal-btn.confirm:hover {
+    background-color: #219653;
 }
 
 .modal-btn.cancel {
-    background-color: #e74c3c;
+    background-color: #e74c3c; /* Red for cancel */
     color: white;
 }
 
-/* ====== Search Bar ====== */
-.search-bar {
-    margin-bottom: 20px;
-    text-align: center;
+.modal-btn.cancel:hover {
+    background-color: #c0392b;
 }
 
-.search-bar input {
-    width: 100%;
-    max-width: 500px;
-    padding: 10px 14px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 1rem;
-}
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-container-card {
+        width: 95%;
+        padding: 15px;
+    }
 
-.bottom-navbar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: white;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 10px 0;
-    border-top: 1px solid #dbdbdb;
-    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
-}
+    .admin-header h2 {
+        font-size: 18px;
+    }
 
-/* ===== NAVBAR ===== */
-.admin-navbar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #34495e;
-    color: white;
-    padding: 16px;
-    position: relative;
-    border-bottom: 3px solid #2c3e50;
-}
+    .username {
+        font-size: 16px;
+    }
 
-.nav-title {
-    font-size: 1.6rem;
-    font-weight: bold;
-    margin: 0;
-}
+    .user-info {
+        font-size: 12px;
+    }
 
-.nav-home-icon {
-    position: absolute;
-    left: 20px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    height: 100%;
-}
+    .btn-make-admin {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
 
-.home-icon-svg {
-    width: 30px;
-    height: 30px;
-    color: white;
-    transition: transform 0.2s ease, color 0.2s ease;
-}
+    .modal-content {
+        padding: 20px;
+        max-width: 350px;
+    }
 
-.nav-home-icon:hover .home-icon-svg {
-    color: #1abc9c;
-    transform: scale(1.1);
-}
+    .nav-home-icon {
+        font-size: 20px;
+    }
 
+    .nav-title {
+        font-size: 20px;
+    }
+}
