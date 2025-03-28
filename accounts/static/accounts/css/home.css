@@ -269,6 +269,7 @@ html, body {
     display: flex;
     align-items: center;
     width: 100%;
+    position: relative;
 }
 
 #searchForm select {
@@ -573,4 +574,35 @@ h2 {
     .post-content {
         padding: 10px;
     }
+}
+
+.suggestions-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+}
+.suggestions-container ul {
+    list-style:square;
+    padding: 0;
+    margin: 0;
+    border: #262626;
+}
+.suggestions-container li {
+    padding: 8px 12px;
+    color: blue;
+}
+.suggestions-container li a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+}
+.suggestions-container li a:hover {
+    background: #ff2929;
 }

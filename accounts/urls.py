@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 from accounts.views import signup
 from accounts.views import home, search_users
-from .views import home, login_view, signup,search_page , search_communities, search_events, view_profile, view_community, join_community, view_event,event_details, profile_settings, edit_profile, join_community, join_community_action, my_communites, leave_community, remove_member, promote_member, create_post
+from .views import home, login_view, signup,search_page , search_communities, search_events, search_suggestions, view_profile, view_community, join_community, view_event,event_details, profile_settings, edit_profile, join_community, join_community_action, my_communites, leave_community, remove_member, promote_member, create_post
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -10,10 +10,12 @@ urlpatterns = [
     path("home/", home, name="home"),  
     path("login/", login_view, name="login"),
     path("signup/", signup, name="signup"),
+    
     path("search/", search_page, name="search_page"),
     path('search/users/', search_users, name='search_users'),
     path('search/communities/', search_communities, name='search_communities'),
     path('search/events/', search_events, name='search_events'),
+    path('search/suggestions/', search_suggestions, name='search_suggestions'),
     
     path('profile/<int:user_id>/', view_profile, name='view_profile'),  # View user profile
     path('community/<int:community_id>/', view_community, name='view_community'),  # View community page

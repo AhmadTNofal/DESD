@@ -16,6 +16,7 @@ from .models import Post
 from .forms import PostForm 
 from django.core.files.storage import default_storage 
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 
 @login_required
 def home(request):
@@ -33,15 +34,31 @@ def search_users(request):
     if not query:
         return render(request, 'profile/search_results.html', {'results': None, 'query': query})
 
-    # Query users and join with Profiles to get the profile picture
-    results = CustomUser.objects.raw("""
-        SELECT u.userID, u.username, u.surname, u.email, 
-                p.profile_picture 
-        FROM User u
-        LEFT JOIN Profiles p ON u.userID = p.userID
-        WHERE u.username LIKE %s OR u.email LIKE %s OR u.surname LIKE %s
-    """, [f"%{query}%", f"%{query}%", f"%{query}%"])
+    # Exclude the logged-in user from the results if authenticated
+    user_id = request.user.userID if request.user.is_authenticated else None
+    if user_id:
+        # If user is authenticated, exclude their userID
+        query_sql = """
+            SELECT u.userID, u.username, u.surname, u.email, 
+                   p.profile_picture 
+            FROM User u
+            LEFT JOIN Profiles p ON u.userID = p.userID
+            WHERE (u.username LIKE %s OR u.email LIKE %s OR u.surname LIKE %s)
+            AND u.userID != %s
+        """
+        params = [f"%{query}%", f"%{query}%", f"%{query}%", user_id]
+    else:
+        # If user is not authenticated, don't exclude any user
+        query_sql = """
+            SELECT u.userID, u.username, u.surname, u.email, 
+                   p.profile_picture 
+            FROM User u
+            LEFT JOIN Profiles p ON u.userID = p.userID
+            WHERE (u.username LIKE %s OR u.email LIKE %s OR u.surname LIKE %s)
+        """
+        params = [f"%{query}%", f"%{query}%", f"%{query}%"]
 
+    results = CustomUser.objects.raw(query_sql, params)
     return render(request, 'profile/search_results.html', {'results': results, 'query': query})
 
 def search_communities(request):
@@ -49,9 +66,11 @@ def search_communities(request):
     
     query = request.GET.get('q', '').strip()  # Get search query
 
+    # Exclude communities created by the logged-in user
+    user_id = request.user.userID if request.user.is_authenticated else None
     results = Community.objects.filter(
-        Q(name__icontains=query) | 
-        Q(communityCategory__icontains=query)
+        (Q(name__icontains=query) | Q(communityCategory__icontains=query)) &
+        ~Q(createdBy_id=user_id)  # Exclude communities created by the user
     ) if query else None  # Return results only if query is not empty
 
     return render(request, 'Communities/search_communities.html', {'results': results, 'query': query})
@@ -63,17 +82,79 @@ def search_events(request):
 
     results = []
     if query:
+        user_id = request.user.userID if request.user.is_authenticated else None
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, c.name as communityName
                 FROM Events e
                 JOIN Communities c ON e.communityID = c.communityID
-                WHERE e.eventTitle LIKE %s OR e.location LIKE %s OR c.name LIKE %s
-            """, [f"%{query}%", f"%{query}%", f"%{query}%"])
+                WHERE (e.eventTitle LIKE %s OR e.location LIKE %s OR c.name LIKE %s)
+                AND e.createdBy != %s
+            """, [f"%{query}%", f"%{query}%", f"%{query}%", user_id])
             
             results = cursor.fetchall()  # Fetch raw query results
 
     return render(request, 'Events/search_events.html', {'results': results, 'query': query})
+
+def search_suggestions(request):
+    """ Provide live search suggestions for users, communities, and events """
+    query = request.GET.get('q', '').strip()
+    search_type = request.GET.get('type', 'users')  # Default to users
+    user_id = request.user.userID if request.user.is_authenticated else None
+    suggestions = []
+
+    if query:
+        if search_type == "users":
+            # Search users, excluding the logged-in user
+            if user_id:
+                users = CustomUser.objects.raw("""
+                    SELECT u.userID, u.username
+                    FROM User u
+                    WHERE u.username LIKE %s
+                    AND u.userID != %s
+                    LIMIT 5
+                """, [f"%{query}%", user_id])
+            else:
+                users = CustomUser.objects.raw("""
+                    SELECT u.userID, u.username
+                    FROM User u
+                    WHERE u.username LIKE %s
+                    LIMIT 5
+                """, [f"%{query}%"])
+            suggestions = [{"id": user.userID, "name": user.username} for user in users]
+
+        elif search_type == "communities":
+            # Search communities, excluding those created by the logged-in user
+            communities = Community.objects.filter(
+                (Q(name__icontains=query) | Q(communityCategory__icontains=query)) &
+                ~Q(createdBy_id=user_id)
+            )[:5]  # Limit to 5 results
+            suggestions = [{"id": community.communityID, "name": community.name} for community in communities]
+
+        elif search_type == "events":
+            # Search events, excluding those created by the logged-in user
+            with connection.cursor() as cursor:
+                if user_id:
+                    cursor.execute("""
+                        SELECT e.eventID, e.eventTitle
+                        FROM Events e
+                        JOIN Communities c ON e.communityID = c.communityID
+                        WHERE (e.eventTitle LIKE %s OR c.name LIKE %s)
+                        AND e.createdBy != %s
+                        LIMIT 5
+                    """, [f"%{query}%", f"%{query}%", user_id])
+                else:
+                    cursor.execute("""
+                        SELECT e.eventID, e.eventTitle
+                        FROM Events e
+                        JOIN Communities c ON e.communityID = c.communityID
+                        WHERE (e.eventTitle LIKE %s OR c.name LIKE %s)
+                        LIMIT 5
+                    """, [f"%{query}%", f"%{query}%"])
+                events = cursor.fetchall()
+            suggestions = [{"id": event[0], "name": event[1]} for event in events]
+
+    return JsonResponse({"suggestions": suggestions})
 
 def view_profile(request, user_id):
     """ Display full profile of a user. """
