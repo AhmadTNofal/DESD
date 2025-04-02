@@ -37,7 +37,8 @@
                                 <i class="fa-regular fa-comment"></i>
                             </button>
                         </div>
-                        <p><strong>{{ post.author.username }}</strong></p>
+                        <p><strong>{{ post.user.username }}</strong></p>
+                        <p class="timestamp">{{ post.createdAt|date:"F j, Y, g:i a" }}</p>
                         <p>{{ post.content }}</p>
                     </div>
                 </div>
@@ -45,7 +46,6 @@
                 <p>No posts yet.</p>
             {% endfor %}
         </div>        
-
     <!-- Bottom Navbar -->
     <nav class="bottom-navbar">
         <a href="{% url 'communities' %}" class="nav-item">
