@@ -20,8 +20,12 @@ from django.http import JsonResponse
 
 @login_required
 def home(request):
-    """Render the home page after successful login."""
-    return render(request, "profile/home.html", {"permission": request.user.Permission})
+    posts = Post.objects.all().order_by('-createdAt')  # newest first
+    return render(request, "profile/home.html", {
+        "posts": posts,
+        "permission": request.user.Permission
+    })
+
 
 def search_page(request):
     return render(request, "profile/search.html")
@@ -883,20 +887,21 @@ def join_community_action(request, community_id):
     # Redirect back to the same page the user came from
     return redirect(request.META.get('HTTP_REFERER', 'communities'))
 
+from django.utils import timezone
+
 @login_required
 def create_post(request):
-    """ Allow logged-in users to create a post """
     if request.method == "POST":
-        form = PostForm(request.POST)
+        form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
-            post.author = request.user  # Assign the logged-in user as the author
+            post.user = request.user  # Use 'user' instead of 'author'
+            # If community is required, set it here (e.g., post.community = some_community)
             post.save()
             messages.success(request, "Post created successfully!")
-            return redirect("home")  # Redirect back to homepage
+            return redirect("home")
     else:
         form = PostForm()
-
     return render(request, "profile/create_post.html", {"form": form})
 
 @login_required

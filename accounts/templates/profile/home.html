@@ -23,54 +23,28 @@
         <h1>Welcome, {{ request.user.username }}!</h1>
 
         <div class="feed">
-            <div class="post">
-                <img src="{% static 'accounts/images/sample.jpg' %}" alt="Post Image">
-                <div class="post-content">
-                    <div class="post-actions">
-                        <button class="like-btn" onclick="toggleLike(this)">
-                            <i class="fa-regular fa-heart"></i>
-                        </button>
-                        <button class="comment-btn">
-                            <i class="fa-regular fa-comment"></i>
-                        </button>
+            {% for post in posts %}
+                <div class="post">
+                    {% if post.image %}
+                        <img src="{{ post.image.url }}" alt="Post Image">
+                    {% endif %}
+                    <div class="post-content">
+                        <div class="post-actions">
+                            <button class="like-btn" onclick="toggleLike(this)">
+                                <i class="fa-regular fa-heart"></i>
+                            </button>
+                            <button class="comment-btn">
+                                <i class="fa-regular fa-comment"></i>
+                            </button>
+                        </div>
+                        <p><strong>{{ post.author.username }}</strong></p>
+                        <p>{{ post.content }}</p>
                     </div>
-                    <p><strong>Faris Sara</strong></p>
-                    <p>Wow!</p>  
                 </div>
-            </div>
-            
-            <div class="post">
-                <img src="{% static 'accounts/images/sample2.jpg' %}" alt="Post Image">
-                <div class="post-content">
-                    <div class="post-actions">
-                        <button class="like-btn" onclick="toggleLike(this)">
-                            <i class="fa-regular fa-heart"></i>
-                        </button>
-                        <button class="comment-btn">
-                            <i class="fa-regular fa-comment"></i>
-                        </button>
-                    </div>
-                    <p><strong>Qais Alhendi</strong></p>
-                    <p>Graduation Day!</p>
-                </div>
-            </div>
-            <div class="post">
-                <img src="{% static 'accounts/images/sample3.jpg' %}" alt="Post Image">
-                <div class="post-content">
-                    <div class="post-actions">
-                        <button class="like-btn" onclick="toggleLike(this)">
-                            <i class="fa-regular fa-heart"></i>
-                        </button>
-                        <button class="comment-btn">
-                            <i class="fa-regular fa-comment"></i>
-                        </button>
-                    </div>
-                    <p><strong>Omar Halasa</strong></p>
-                    <p>Done Uni!!.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+            {% empty %}
+                <p>No posts yet.</p>
+            {% endfor %}
+        </div>        
 
     <!-- Bottom Navbar -->
     <nav class="bottom-navbar">

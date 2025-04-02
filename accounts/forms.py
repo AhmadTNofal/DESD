@@ -48,7 +48,7 @@ class EventForm(forms.Form):
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'content']  # ✅ Ensure the fields match your model
+        fields = ['image', 'content']  # ✅ Ensure the fields match your model
 
 class ProfileForm(forms.ModelForm):
     class Meta:
