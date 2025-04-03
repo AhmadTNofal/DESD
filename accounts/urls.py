@@ -41,5 +41,7 @@ urlpatterns = [
     path('promote-user/', views.promote_user, name='promote_user'),
     path('remove-community/', views.remove_community, name='remove_community'),
     path('remove-event/', views.remove_event, name='remove_event'),
+
+    path('admin/review-community/', views.review_community, name='review_community'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

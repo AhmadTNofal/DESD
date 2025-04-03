@@ -17,6 +17,7 @@ from .forms import PostForm
 from django.core.files.storage import default_storage 
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+from django.utils import timezone
 
 @login_required
 def home(request):
@@ -25,7 +26,6 @@ def home(request):
         "posts": posts,
         "permission": request.user.Permission
     })
-
 
 def search_page(request):
     return render(request, "profile/search.html")
@@ -345,27 +345,28 @@ def communities(request):
 
 @login_required
 def create_community(request):
-    """ Handles the creation of a new community. """
     if request.method == "POST":
         form = CommunityForm(request.POST)
         if form.is_valid():
-            community = form.save(commit=False)
-            community.createdBy = request.user  # Assign the logged-in user as creator
-            community.save()
+            name = form.cleaned_data["name"]
+            description = form.cleaned_data["communityDescription"]
+            category = form.cleaned_data["communityCategory"]
+            now = timezone.now()
 
-            # Assign creator as "Admin" in CommunityMemberships
-            CommunityMembership.objects.create(
-                communityID=community,
-                userID=request.user,
-                role="Admin"
-            )
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO CommunityRequests (
+                        name, communityDescription, communityCategory,
+                        requestedBy, requestedAt, status
+                    )
+                    VALUES (%s, %s, %s, %s, %s, 'pending')
+                """, [name, description, category, request.user.userID, now])
 
-            messages.success(request, "Community created successfully!")
-            return redirect("communities")  # Redirect to communities page
+            messages.success(request, "Community request submitted for approval.")
+            return redirect("communities")
         else:
-            print("Form Errors:", form.errors)  # Debugging: Print errors to console
-            messages.error(request, "Error creating community. Please check the form.")
-
+            print("Form Errors:", form.errors)
+            messages.error(request, "Error submitting community request. Please check the form.")
     else:
         form = CommunityForm()
 
@@ -887,8 +888,6 @@ def join_community_action(request, community_id):
     # Redirect back to the same page the user came from
     return redirect(request.META.get('HTTP_REFERER', 'communities'))
 
-from django.utils import timezone
-
 @login_required
 def create_post(request):
     if request.method == "POST":
@@ -905,10 +904,12 @@ def create_post(request):
     return render(request, "profile/create_post.html", {"form": form})
 
 @login_required
+@login_required
 def admin_view(request):
     users = CustomUser.objects.all()
     communities = Community.objects.all()
-    # Fetch all events
+
+    # Fetch events
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location, c.name AS communityName
@@ -916,10 +917,23 @@ def admin_view(request):
             JOIN Communities c ON e.communityID = c.communityID
         """)
         events = cursor.fetchall()
+
+    # Fetch pending community requests
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT cr.requestID, cr.name, cr.communityDescription, cr.communityCategory,
+                   u.username, cr.requestedAt
+            FROM CommunityRequests cr
+            JOIN User u ON cr.requestedBy = u.userID
+            WHERE cr.status = 'pending'
+        """)
+        pending_requests = cursor.fetchall()
+
     return render(request, "profile/admin.html", {
         "users": users,
         "communities": communities,
-        "events": events,  # Pass events to the template
+        "events": events,
+        "pending_requests": pending_requests,
         "permission": request.user.Permission
     })
 
@@ -1017,3 +1031,61 @@ def remove_event(request):
 
     return redirect("admin_view")
 
+@require_POST
+@login_required
+def review_community(request):
+    request_id = request.POST.get("request_id")
+    action = request.POST.get("action")
+    note = request.POST.get("admin_note")
+    password = request.POST.get("password")
+
+    # Confirm password
+    if not request.user.check_password(password):
+        messages.error(request, "Incorrect password. Action cancelled.")
+        return redirect("admin_view")
+
+    with connection.cursor() as cursor:
+        # Validate request exists and is still pending
+        cursor.execute("SELECT name, communityDescription, communityCategory, requestedBy FROM CommunityRequests WHERE requestID = %s AND status = 'pending'", [request_id])
+        data = cursor.fetchone()
+
+        if not data:
+            messages.error(request, "This request was already processed or not found.")
+            return redirect("admin_view")
+
+        name, description, category, requested_by = data
+
+        if action == "approve":
+            # Create community
+            cursor.execute("""
+                INSERT INTO Communities (name, communityDescription, communityCategory, createdBy, createdAt)
+                VALUES (%s, %s, %s, %s, NOW())
+            """, [name, description, category, requested_by])
+            cursor.execute("SELECT LAST_INSERT_ID()")
+            community_id = cursor.fetchone()[0]
+
+            # Assign as admin
+            cursor.execute("""
+                INSERT INTO CommunityMemberships (communityID, userID, role, joinedAt)
+                VALUES (%s, %s, 'Admin', NOW())
+            """, [community_id, requested_by])
+
+            status = 'approved'
+            messages.success(request, f"Community '{name}' has been approved and created.")
+
+        elif action == "reject":
+            status = 'rejected'
+            messages.info(request, f"Community '{name}' has been rejected.")
+
+        else:
+            messages.error(request, "Invalid action.")
+            return redirect("admin_view")
+
+        # Update request status and add note
+        cursor.execute("""
+            UPDATE CommunityRequests
+            SET status = %s, reviewedBy = %s, reviewedAt = NOW(), adminNote = %s
+            WHERE requestID = %s
+        """, [status, request.user.userID, note, request_id])
+
+    return redirect("admin_view")

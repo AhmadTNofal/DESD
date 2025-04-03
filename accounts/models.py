@@ -134,4 +134,29 @@ def user_directory_path(instance, filename):
     """Upload images to 'media/profile_pics/user_<id>/<filename>'"""
     return f'profile_pics/user_{instance.user.id}/{filename}'
 
+from django.db import models
+from django.conf import settings
+
+class CommunityRequest(models.Model):
+    requestID = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100)
+    communityDescription = models.TextField(null=True, blank=True)
+    communityCategory = models.CharField(max_length=100, null=True, blank=True)
+    requestedBy = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='requestedBy', related_name='community_requests'
+    )
+    requestedAt = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=10, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')],
+        default='pending'
+    )
+    reviewedBy = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, db_column='reviewedBy', related_name='reviewed_requests'
+    )
+    reviewedAt = models.DateTimeField(null=True, blank=True)
+    adminNote = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = "CommunityRequests"
 
