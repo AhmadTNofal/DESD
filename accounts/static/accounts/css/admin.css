@@ -7,7 +7,7 @@
 /* General Styles */
 html, body {
     font-family: 'Poppins', sans-serif;
-    background: #ecf0f1; /* Light gray background typical of admin panels */
+    background: #ecf0f1; /* Light gray background */
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -19,12 +19,12 @@ html, body {
     top: 0;
     left: 0;
     width: 100%;
-    background: #2c3e50; /* Dark blue-gray for admin header */
+    background: #2c3e50; /* Dark blue-gray */
     color: white;
     padding: 15px 20px;
     display: flex;
     align-items: center;
-    justify-content: center; /* Center the title */
+    justify-content: center;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 1000;
 }
@@ -34,7 +34,7 @@ html, body {
     font-weight: 600;
     margin: 0;
     text-align: center;
-    flex-grow: 1; /* Allow title to take available space */
+    flex-grow: 1;
 }
 
 .nav-home-icon {
@@ -47,53 +47,108 @@ html, body {
 }
 
 .nav-home-icon:hover {
-    color: #1abc9c; /* Teal accent on hover */
+    color: #1abc9c; /* Teal accent */
 }
 
 /* Main Admin Panel Layout */
 .admin-panel-wrapper {
-    display: flex;
-    justify-content: center;
-    margin: 80px auto 20px; /* Space for top navbar */
+    margin: 100px auto 20px; /* Space for navbar and tabs */
     padding: 20px;
+    max-width: 1200px;
 }
 
-.admin-container-card {
-    max-width: 1200px; /* Wider for admin panel */
-    width: 100%;
+/* Tabs */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #bdc3c7;
+    margin-bottom: 20px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 12px 20px;
+    background: #ecf0f1;
+    border: 1px solid #bdc3c7;
+    border-bottom: none;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.tab-button.active {
+    background: #fff;
+    color: #3498db; /* Blue for active tab */
+    border-top: 3px solid #3498db;
+}
+
+.tab-button:hover:not(.active) {
+    background: #dfe6e9;
+}
+
+/* Tab Content */
+.tab-content {
+    background: #fff;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
     padding: 20px;
-    border: 1px solid #bdc3c7; /* Subtle gray border */
-    border-radius: 4px; /* Sharper corners */
-    background-color: #fff;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Collapsible Header */
-.admin-header {
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Messages (Pop-up Style) */
+.messages {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 300px;
+    z-index: 2000;
+}
+
+.message {
+    padding: 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.message.success {
+    background-color: #dff0d8;
+    border: 1px solid #d6e9c6;
+    color: #3c763d;
+}
+
+.message.error {
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    color: #a94442;
+}
+
+.close-message {
     cursor: pointer;
-    margin-bottom: 20px;
-    padding: 10px;
-    background: #34495e; /* Darker header */
-    color: white;
-    border-radius: 4px;
-}
-
-.admin-header h2 {
-    font-size: 22px;
-    font-weight: 600;
-    margin: 0;
-}
-
-.arrow {
     font-size: 18px;
-    transition: transform 0.2s ease;
+    font-weight: 600;
+    color: #555;
+    transition: color 0.3s ease;
 }
 
-.arrow.collapsed {
-    transform: rotate(180deg);
+.close-message:hover {
+    color: #333;
 }
 
 /* Search Bar */
@@ -119,14 +174,14 @@ html, body {
     color: #7f8c8d;
 }
 
-/* User List Wrapper */
-.user-list {
+/* Item List (replacing user-list) */
+.item-list {
     transition: all 0.3s ease;
     overflow: hidden;
 }
 
 /* User Card */
-.user-card {
+.user-card, .community-card, .event-card {
     border: 1px solid #bdc3c7;
     border-radius: 4px;
     padding: 15px;
@@ -135,27 +190,27 @@ html, body {
     transition: box-shadow 0.2s ease;
 }
 
-.user-card:hover {
+.user-card:hover, .community-card:hover, .event-card:hover {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.user-header {
+.item-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
 }
 
-.username {
+.username, .community-name, .event-title {
     font-size: 18px;
     font-weight: 600;
-    color: #2c3e50; /* Dark blue-gray */
+    color: #2c3e50;
     margin: 0;
 }
 
 /* Admin Badge */
 .badge-admin {
-    background-color: #27ae60; /* Green for admin status */
+    background-color: #27ae60;
     color: white;
     padding: 3px 10px;
     font-size: 12px;
@@ -163,8 +218,8 @@ html, body {
     margin-left: 10px;
 }
 
-/* User Info */
-.user-info {
+/* Item Info (replacing user-info) */
+.item-info {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
@@ -172,19 +227,19 @@ html, body {
     color: #555;
 }
 
-.user-info span {
+.item-info span {
     flex: 1 1 45%;
     min-width: 200px;
 }
 
-.user-info span strong {
+.item-info span strong {
     font-weight: 600;
     color: #333;
 }
 
-/* Action Button */
+/* Action Buttons */
 .btn-make-admin {
-    background-color: #3498db; /* Blue for actions */
+    background-color: #3498db;
     color: white;
     padding: 8px 14px;
     border: none;
@@ -196,7 +251,23 @@ html, body {
 }
 
 .btn-make-admin:hover {
-    background-color: #2980b9; /* Darker blue on hover */
+    background-color: #2980b9;
+}
+
+.btn-remove-community, .btn-remove-event {
+    background-color: #e74c3c;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-remove-community:hover, .btn-remove-event:hover {
+    background-color: #c0392b;
 }
 
 /* Modal */
@@ -210,7 +281,7 @@ html, body {
     height: 100%;
     justify-content: center;
     align-items: center;
-    background: rgba(0, 0, 0, 0.6); /* Darker overlay */
+    background: rgba(0, 0, 0, 0.6);
 }
 
 .modal-content {
@@ -265,7 +336,7 @@ html, body {
 }
 
 .modal-btn.confirm {
-    background-color: #27ae60; /* Green for confirm */
+    background-color: #27ae60;
     color: white;
 }
 
@@ -274,7 +345,7 @@ html, body {
 }
 
 .modal-btn.cancel {
-    background-color: #e74c3c; /* Red for cancel */
+    background-color: #e74c3c;
     color: white;
 }
 
@@ -284,24 +355,32 @@ html, body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .admin-container-card {
-        width: 95%;
+    .admin-panel-wrapper {
         padding: 15px;
     }
 
-    .admin-header h2 {
-        font-size: 18px;
+    .tabs {
+        flex-direction: column;
     }
 
-    .username {
+    .tab-button {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .tab-content {
+        padding: 15px;
+    }
+
+    .username, .community-name, .event-title {
         font-size: 16px;
     }
 
-    .user-info {
+    .item-info {
         font-size: 12px;
     }
 
-    .btn-make-admin {
+    .btn-make-admin, .btn-remove-community, .btn-remove-event {
         font-size: 12px;
         padding: 6px 12px;
     }
@@ -317,5 +396,16 @@ html, body {
 
     .nav-title {
         font-size: 20px;
+    }
+
+    .messages {
+        width: 90%;
+        right: 5%;
+        top: 70px;
+    }
+
+    .message {
+        font-size: 12px;
+        padding: 10px;
     }
 }

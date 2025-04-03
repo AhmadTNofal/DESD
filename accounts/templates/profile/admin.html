@@ -14,49 +14,109 @@
         <h1 class="nav-title">Admin Panel</h1>
     </nav>
 
+    <!-- Messages Display as Pop-ups -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% endif %}">
+            {{ message }}
+            <span class="close-message" onclick="this.parentElement.style.display='none'">×</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="admin-panel-wrapper">
-        <div class="card admin-container-card">
-            <!-- Collapsible Header -->
-            <div class="admin-header" onclick="toggleUsers()">
-                <h2 class="text-center">Users</h2>
-                <span id="toggleArrow" class="arrow">▲</span>
-            </div>
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('users')">Users</button>
+            <button class="tab-button" onclick="showTab('communities')">Communities</button>
+            <button class="tab-button" onclick="showTab('events')">Events</button>
+        </div>
 
-            <!-- Search Input -->
-            <div id="searchBar" class="search-bar">
-                <input type="text" id="userSearch" onkeyup="filterUsers()" placeholder="Search users by name, email, or username...">
-            </div>
-
-            <!-- User List -->
-            <div id="userList" class="user-list">
-                {% for user in users %}
-                <div class="user-card">
-                    <div class="user-header">
-                        <h4 class="username">
-                            {{ user.username|title }}
-                            {% if user.Permission == "Admin" %}
-                            <span class="badge-admin">Admin</span>
-                            {% endif %}
-                        </h4>
-                        {% if user.Permission != "Admin" %}
-                        <button class="btn-make-admin" onclick="openModal('{{ user.userID }}', '{{ user.username }}')">Make Admin</button>
-                        {% endif %}
-                    </div>
-                    <div class="user-info">
-                        <span><strong>Name:</strong> {{ user.surname }}</span>
-                        <span><strong>Email:</strong> {{ user.email }}</span>
-                        <span><strong>Phone:</strong> {{ user.phoneNumber }}</span>
-                        <span><strong>Role:</strong> {{ user.Permission }}</span>
-                        <span><strong>Last Login:</strong>
-                            {% if user.last_login %}
-                                {{ user.last_login|date:"M d, Y" }} at {{ user.last_login|time:"H:i:s" }}
-                            {% else %}
-                                Never
-                            {% endif %}
-                        </span>
-                    </div>
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Users Tab -->
+            <div id="users" class="tab-pane active">
+                <div class="search-bar">
+                    <input type="text" id="userSearch" onkeyup="filterUsers()" placeholder="Search users by name, email, or username...">
                 </div>
-                {% endfor %}
+                <div id="userList" class="item-list">
+                    {% for user in users %}
+                    <div class="user-card">
+                        <div class="item-header">
+                            <h4 class="username">
+                                {{ user.username|title }}
+                                {% if user.Permission == "Admin" %}
+                                <span class="badge-admin">Admin</span>
+                                {% endif %}
+                            </h4>
+                            {% if user.Permission != "Admin" %}
+                            <button class="btn-make-admin" onclick="openModal('{{ user.userID }}', '{{ user.username }}')">Make Admin</button>
+                            {% endif %}
+                        </div>
+                        <div class="item-info">
+                            <span><strong>Name:</strong> {{ user.surname }}</span>
+                            <span><strong>Email:</strong> {{ user.email }}</span>
+                            <span><strong>Phone:</strong> {{ user.phoneNumber }}</span>
+                            <span><strong>Role:</strong> {{ user.Permission }}</span>
+                            <span><strong>Last Login:</strong>
+                                {% if user.last_login %}
+                                    {{ user.last_login|date:"M d, Y" }} at {{ user.last_login|time:"H:i:s" }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Communities Tab -->
+            <div id="communities" class="tab-pane">
+                <div class="search-bar">
+                    <input type="text" id="commSearch" onkeyup="filterCommunities()" placeholder="Search communities by name or category...">
+                </div>
+                <div id="commList" class="item-list">
+                    {% for community in communities %}
+                    <div class="community-card">
+                        <div class="item-header">
+                            <h4 class="community-name">{{ community.name }}</h4>
+                            <button class="btn-remove-community" onclick="openRemoveModal('{{ community.communityID }}', '{{ community.name }}')">Remove</button>
+                        </div>
+                        <div class="item-info">
+                            <span><strong>Description:</strong> {{ community.communityDescription }}</span>
+                            <span><strong>Category:</strong> {{ community.communityCategory }}</span>
+                            <span><strong>Created By:</strong> {{ community.createdBy.username }}</span>
+                            <span><strong>Created At:</strong> {{ community.createdAt|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Events Tab -->
+            <div id="events" class="tab-pane">
+                <div class="search-bar">
+                    <input type="text" id="eventSearch" onkeyup="filterEvents()" placeholder="Search events by title or community...">
+                </div>
+                <div id="eventList" class="item-list">
+                    {% for event in events %}
+                    <div class="event-card">
+                        <div class="item-header">
+                            <h4 class="event-title">{{ event.1 }}</h4>
+                            <button class="btn-remove-event" onclick="openRemoveEventModal('{{ event.0 }}', '{{ event.1 }}')">Remove</button>
+                        </div>
+                        <div class="item-info">
+                            <span><strong>Date:</strong> {{ event.2|date:"M d, Y" }}</span>
+                            <span><strong>Time:</strong> {{ event.3|time:"H:i" }}</span>
+                            <span><strong>Location:</strong> {{ event.4|default:"Virtual" }}</span>
+                            <span><strong>Community:</strong> {{ event.5 }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
@@ -77,47 +137,118 @@
         </div>
     </div>
 
+    <!-- Remove Community Modal -->
+    <div id="removeCommModal" class="modal">
+        <div class="modal-content">
+            <h4>Remove Community: <span id="targetCommName"></span></h4>
+            <form method="POST" action="{% url 'remove_community' %}">
+                {% csrf_token %}
+                <input type="hidden" name="community_id" id="targetCommID">
+                <input type="password" name="password" class="modal-input" placeholder="Enter your password" required>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-btn confirm">Confirm</button>
+                    <button type="button" class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Remove Event Modal -->
+    <div id="removeEventModal" class="modal">
+        <div class="modal-content">
+            <h4>Remove Event: <span id="targetEventName"></span></h4>
+            <form method="POST" action="{% url 'remove_event' %}">
+                {% csrf_token %}
+                <input type="hidden" name="event_id" id="targetEventID">
+                <input type="password" name="password" class="modal-input" placeholder="Enter your password" required>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-btn confirm">Confirm</button>
+                    <button type="button" class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script>
+        // Tab Switching
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-pane');
+            const buttons = document.querySelectorAll('.tab-button');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(button => button.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`button[onclick="showTab('${tabName}')"]`).classList.add('active');
+        }
+
+        // Modal Functions
         function openModal(userID, username) {
             document.getElementById('targetUserID').value = userID;
             document.getElementById('targetUsername').innerText = username;
             document.getElementById('confirmModal').style.display = 'flex';
         }
 
+        function openRemoveModal(communityID, communityName) {
+            document.getElementById('targetCommID').value = communityID;
+            document.getElementById('targetCommName').innerText = communityName;
+            document.getElementById('removeCommModal').style.display = 'flex';
+        }
+
+        function openRemoveEventModal(eventID, eventName) {
+            document.getElementById('targetEventID').value = eventID;
+            document.getElementById('targetEventName').innerText = eventName;
+            document.getElementById('removeEventModal').style.display = 'flex';
+        }
+
         function closeModal() {
             document.getElementById('confirmModal').style.display = 'none';
+            document.getElementById('removeCommModal').style.display = 'none';
+            document.getElementById('removeEventModal').style.display = 'none';
         }
 
-        let isCollapsed = false;
-        function toggleUsers() {
-            const list = document.getElementById("userList");
-            const arrow = document.getElementById("toggleArrow");
-            const searchBar = document.getElementById("searchBar");
-        
-            isCollapsed = !isCollapsed;
-        
-            if (isCollapsed) {
-                list.style.display = "none";
-                searchBar.style.display = "none";
-                arrow.classList.add("collapsed");
-            } else {
-                list.style.display = "block";
-                searchBar.style.display = "block";
-                arrow.classList.remove("collapsed");
-            }
-        }
-
+        // Filter Functions
         function filterUsers() {
             const input = document.getElementById('userSearch');
             const filter = input.value.toLowerCase();
             const userCards = document.querySelectorAll('.user-card');
-
             userCards.forEach(card => {
                 const text = card.innerText.toLowerCase();
-                card.style.display = text.includes(filter) ? "block" : "none";
+                card.style.display = text.includes(filter) ? 'block' : 'none';
             });
         }
+
+        function filterCommunities() {
+            const input = document.getElementById('commSearch');
+            const filter = input.value.toLowerCase();
+            const commCards = document.querySelectorAll('.community-card');
+            commCards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(filter) ? 'block' : 'none';
+            });
+        }
+
+        function filterEvents() {
+            const input = document.getElementById('eventSearch');
+            const filter = input.value.toLowerCase();
+            const eventCards = document.querySelectorAll('.event-card');
+            eventCards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(filter) ? 'block' : 'none';
+            });
+        }
+
+        // Auto-dismiss Messages
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(message => {
+                setTimeout(() => {
+                    message.style.opacity = '0';
+                    setTimeout(() => {
+                        message.style.display = 'none';
+                    }, 500); // Wait for fade-out transition
+                }, 3000); // Disappear after 3 seconds
+            });
+        });
     </script>
 </body>
 </html>

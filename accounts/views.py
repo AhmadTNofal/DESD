@@ -907,7 +907,21 @@ def create_post(request):
 @login_required
 def admin_view(request):
     users = CustomUser.objects.all()
-    return render(request, "profile/admin.html", {"users": users, "permission": request.user.Permission})
+    communities = Community.objects.all()
+    # Fetch all events
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location, c.name AS communityName
+            FROM Events e
+            JOIN Communities c ON e.communityID = c.communityID
+        """)
+        events = cursor.fetchall()
+    return render(request, "profile/admin.html", {
+        "users": users,
+        "communities": communities,
+        "events": events,  # Pass events to the template
+        "permission": request.user.Permission
+    })
 
 @require_POST
 @login_required
@@ -929,6 +943,77 @@ def promote_user(request):
         messages.success(request, f"{target_user.username} has been promoted to Admin.")
     except CustomUser.DoesNotExist:
         messages.error(request, "User not found.")
+
+    return redirect("admin_view")
+
+@require_POST
+@login_required
+def remove_community(request):
+    """ Remove a community and its related events after verifying the admin's password """
+    community_id = request.POST.get("community_id")
+    password = request.POST.get("password")
+
+    # Verify the admin's password
+    if not request.user.check_password(password):
+        messages.error(request, "Incorrect password. Community removal cancelled.")
+        return redirect("admin_view")
+
+    # Check if the user is an Admin
+    if request.user.Permission != "Admin":
+        messages.error(request, "You do not have permission to remove communities.")
+        return redirect("admin_view")
+
+    # Remove the community and its related events
+    try:
+        community = Community.objects.get(communityID=community_id)
+        community_name = community.name  # Store name for success message
+        
+        # Delete related events first
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM Events WHERE communityID = %s", [community_id])
+        
+        # Delete related community memberships (if any)
+        CommunityMembership.objects.filter(communityID=community).delete()
+        
+        # Now delete the community
+        community.delete()
+        
+        messages.success(request, f"Community '{community_name}' and its events have been successfully removed.")
+    except Community.DoesNotExist:
+        messages.error(request, "Community not found.")
+
+    return redirect("admin_view")
+
+@require_POST
+@login_required
+def remove_event(request):
+    """ Remove an event after verifying the admin's password """
+    event_id = request.POST.get("event_id")
+    password = request.POST.get("password")
+
+    # Verify the admin's password
+    if not request.user.check_password(password):
+        messages.error(request, "Incorrect password. Event removal cancelled.")
+        return redirect("admin_view")
+
+    # Check if the user is an Admin
+    if request.user.Permission != "Admin":
+        messages.error(request, "You do not have permission to remove events.")
+        return redirect("admin_view")
+
+    # Remove the event
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT eventTitle FROM Events WHERE eventID = %s", [event_id])
+            event_title = cursor.fetchone()
+            if not event_title:
+                raise ValueError("Event not found")
+            event_title = event_title[0]
+
+            cursor.execute("DELETE FROM Events WHERE eventID = %s", [event_id])
+        messages.success(request, f"Event '{event_title}' has been successfully removed.")
+    except Exception:
+        messages.error(request, "Event not found.")
 
     return redirect("admin_view")
 

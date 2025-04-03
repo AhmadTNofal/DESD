@@ -39,5 +39,7 @@ urlpatterns = [
     path('create_post/', create_post, name='create_post'),
     
     path('promote-user/', views.promote_user, name='promote_user'),
+    path('remove-community/', views.remove_community, name='remove_community'),
+    path('remove-event/', views.remove_event, name='remove_event'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
