@@ -28,7 +28,7 @@
         }
 
         function resetFilters() {
-            window.location.href = window.location.pathname;
+            window.location.href = window.location.pathname; // Reloads the page without query parameters
         }
 
         window.onload = function() {
@@ -36,6 +36,13 @@
             document.getElementById("datePicker").setAttribute("min", today);
             toggleLocationInput();
         };
+        document.addEventListener("DOMContentLoaded", function() {
+            let timeInput = document.getElementById("timePicker");
+            if (timeInput && timeInput.value) {
+                let formattedTime = timeInput.value.substring(0, 5); // Ensures HH:MM format
+                timeInput.value = formattedTime;
+            }
+        });
 
         function toggleMenu() {
             var menu = document.getElementById("navLinks");
@@ -50,44 +57,46 @@
 
         <!-- Search Bar -->
         <form method="GET" class="search-bar-container">
+            <!-- Search Bar -->
             <input type="text" name="q" class="search-bar" placeholder="Search event name..." value="{{ request.GET.q }}">
             <button type="submit" class="toggle-filters-btn">Search</button>
-        </form>
-
-        <!-- Advanced Filters Button -->
-        <button type="button" class="toggle-filters-btn" onclick="toggleFilters()">Additional Filters</button>
-
-        <!-- Advanced Filters (Initially Hidden) -->
-        <div id="advancedFilters" class="hidden-filters">
-            <label class="checkbox-container">
-                <input type="checkbox" name="online" id="onlineEvent" value="yes"
-                    {% if request.GET.online == "yes" %}checked{% endif %} onclick="toggleLocationInput()">
-                Online Event
-            </label>
-
-            <div id="locationField">
-                <label for="location">Select Location:</label>
-                <select name="location">
-                    <option value="">All Locations</option>
-                    {% for location in locations %}
-                        <option value="{{ location }}" {% if request.GET.location == location %}selected{% endif %}>
-                            {{ location }}
-                        </option>
-                    {% endfor %}
-                </select>
+        
+            <!-- Advanced Filters Button -->
+            <button type="button" class="toggle-filters-btn" onclick="toggleFilters()">Additional Filters</button>
+        
+            <!-- Advanced Filters -->
+            <div id="advancedFilters" class="hidden-filters">
+                <label class="checkbox-container">
+                    <input type="checkbox" name="online" id="onlineEvent" value="yes"
+                        {% if request.GET.online == "yes" %}checked{% endif %} onclick="toggleLocationInput()">
+                    Online Event
+                </label>
+        
+                <div id="locationField">
+                    <label for="location">Select Location:</label>
+                    <select name="location">
+                        <option value="">All Locations</option>
+                        {% for location in locations %}
+                            <option value="{{ location }}" {% if request.GET.location == location %}selected{% endif %}>
+                                {{ location }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+        
+                <label for="date">Date:</label>
+                <input type="date" name="date" id="datePicker" value="{{ request.GET.date }}">
+        
+                <label for="time">Time:</label>
+                <input type="time" name="time" id="timePicker" value="{{ request.GET.time }}">
             </div>
-
-            <label for="date">Date:</label>
-            <input type="date" name="date" id="datePicker" value="{{ request.GET.date }}">
-
-            <label for="time">Time:</label>
-            <input type="time" name="time" id="timePicker" value="{{ request.GET.time }}">
-        </div>
-
-        <div class="button-group">
-            <button type="submit" class="submit-btn">Apply Filters</button>
-            <button type="button" class="reset-btn" onclick="resetFilters()">Reset Filters</button>
-        </div>
+        
+            <div class="button-group">
+                <button type="submit" class="submit-btn">Apply Filters</button>
+                <button type="button" class="reset-btn" onclick="resetFilters()">Reset Filters</button>
+            </div>
+        </form>
+        
 
         <!-- Event Listing -->
         <div class="event-list">
