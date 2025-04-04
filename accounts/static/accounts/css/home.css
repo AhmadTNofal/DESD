@@ -44,14 +44,14 @@ html, body {
     justify-content: flex-end;
 }
 
+/* Search icon styling */
 .search-icon {
-    text-decoration: none;
-    color: #262626; /* Instagram’s dark gray */
-    font-size: 24px;
     position: relative;
+    display: inline-block;
+    color: #262626;
+    font-size: 24px;
     padding: 5px;
-    display: flex;
-    align-items: center;
+    text-decoration: none;
     transition: opacity 0.3s ease;
 }
 
@@ -59,23 +59,31 @@ html, body {
     opacity: 0.6;
 }
 
-.search-icon .tooltip {
+/* Search tooltip styling (new class) */
+.search-icon .search-tooltip {
     position: absolute;
-    top: -40px; /* Position above the icon */
-    right: 50%;
-    transform: translateX(50%);
-    background-color: rgba(0, 0, 0, 0.8);
-    color: #fafafa;
+    top: 50%;
+    right: calc(100% + 8px); /* Position to the left with a gap */
+    transform: translateY(-50%); /* Center vertically */
+    background-color: #000000; /* Black for contrast */
+    color: white; 
+    font-size: 14px;
+    font-family: Arial, sans-serif; /* Simple font */
     padding: 5px 10px;
     border-radius: 6px;
-    font-size: 14px;
     white-space: nowrap;
-    opacity: 0;
     visibility: hidden;
+    z-index: 1001;
+    min-width: 0; /* Let box size to text */
+    width: auto; /* Fit content */
+    text-align: center; /* Center text */
+    line-height: 1.2; /* Vertical alignment */
+    display: inline-block; /* Wrap text */
     transition: opacity 0.3s ease-in-out;
 }
 
-.search-icon:hover .tooltip {
+/* No hover effect for now */
+.search-icon:hover .search-tooltip {
     opacity: 1;
     visibility: visible;
 }
