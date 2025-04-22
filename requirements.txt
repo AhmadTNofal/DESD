@@ -2,3 +2,6 @@ Django>=3.2,<4.0
 mysqlclient
 gunicorn
 Pillow
+python-decouple==3.8
+requests==2.31.0
+python-jose==3.3.0

@@ -17,6 +17,7 @@ from .forms import PostForm
 from django.core.files.storage import default_storage 
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+from .zoom_utils import create_zoom_meeting, update_zoom_meeting, delete_zoom_meeting
 from django.utils import timezone
 
 @login_required
@@ -514,9 +515,8 @@ def event_details(request, event_id):
 
 @login_required
 def create_event(request):
-    user_id = request.user.userID  # Get logged-in user ID
+    user_id = request.user.userID
 
-    # Fetch communities where the user is an admin
     with connection.cursor() as cursor:
         cursor.execute(
             "SELECT c.communityID, c.name FROM CommunityMemberships cm "
@@ -532,22 +532,37 @@ def create_event(request):
         form = EventForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            community_id = request.POST.get("communityID")  # Get selected community ID
-            is_online = request.POST.get("onlineEvent")  # Check if online checkbox is selected
-
+            community_id = request.POST.get("communityID")
+            is_online = request.POST.get("onlineEvent")
             location = data['location'] if not is_online else None
-            virtual_link = data['virtualLink'] if is_online else None
             description = data['description']
+            virtual_link = None
+            zoom_meeting_id = None
+
+            if is_online:
+                try:
+                    virtual_link, zoom_meeting_id = create_zoom_meeting(
+                        event_title=data['eventTitle'],
+                        event_date=str(data['eventDate']),
+                        event_time=data['eventTime'].strftime("%H:%M")
+                    )
+                except Exception as e:
+                    messages.error(request, f"Failed to create Zoom meeting: {e}")
+                    return render(request, 'Events/create_event.html', {
+                        'form': form,
+                        'communities': communities
+                    })
 
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    INSERT INTO Events (communityID, eventTitle, eventDate, eventTime, location, virtualLink, description, createdBy, createdAt)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                    INSERT INTO Events (communityID, eventTitle, eventDate, eventTime, location, virtualLink, description, createdBy, createdAt, zoom_meeting_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s)
                     """,
-                    [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, description, user_id]
+                    [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, description, user_id, zoom_meeting_id]
                 )
-            return redirect('events')  # Redirect to events list after creation
+            messages.success(request, "Event created successfully!")
+            return redirect('events')
     else:
         form = EventForm()
 
@@ -555,66 +570,98 @@ def create_event(request):
 
 @login_required
 def change_event(request):
-    user_id = request.user.userID  # Get logged-in user ID
+    user_id = request.user.userID
 
-    # Fetch all events created by the user
     with connection.cursor() as cursor:
-        cursor.execute("SELECT eventID, eventTitle FROM Events WHERE createdBy = %s", [user_id])
-        events = cursor.fetchall()  # List of (eventID, eventTitle)
+        cursor.execute("SELECT eventID, eventTitle, zoom_meeting_id FROM Events WHERE createdBy = %s", [user_id])
+        events = cursor.fetchall()
 
-    selected_event = None  # Stores selected event details
+    selected_event = None
 
     if request.method == "POST":
         event_id = request.POST.get("eventID")
 
-        # If an event is selected, fetch its details
         if event_id:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT eventID, eventTitle, eventDate, eventTime, location, virtualLink, description FROM Events WHERE eventID = %s AND createdBy = %s",
+                    "SELECT eventID, eventTitle, eventDate, eventTime, location, virtualLink, description, zoom_meeting_id "
+                    "FROM Events WHERE eventID = %s AND createdBy = %s",
                     [event_id, user_id]
                 )
                 selected_event = cursor.fetchone()
 
-        # If the form is submitted with updates, save changes
         if "updateEvent" in request.POST:
-            eventTitle = request.POST.get("eventTitle")
-            eventDate = request.POST.get("eventDate")
-            eventTime = request.POST.get("eventTime")
+            event_title = request.POST.get("eventTitle")
+            event_date = request.POST.get("eventDate")
+            event_time = request.POST.get("eventTime")
             location = request.POST.get("location") if "onlineEvent" not in request.POST else None
-            virtualLink = request.POST.get("virtualLink") if "onlineEvent" in request.POST else None
-            description = request.POST.get("description")
+            virtual_link = None
+            zoom_meeting_id = selected_event[7] if selected_event else None
+
+            if "onlineEvent" in request.POST:
+                try:
+                    if zoom_meeting_id:
+                        update_zoom_meeting(
+                            meeting_id=zoom_meeting_id,
+                            event_title=event_title,
+                            event_date=event_date,
+                            event_time=event_time
+                        )
+                        virtual_link = f"https://zoom.us/j/{zoom_meeting_id}"
+                    else:
+                        virtual_link, zoom_meeting_id = create_zoom_meeting(
+                            event_title=event_title,
+                            event_date=event_date,
+                            event_time=event_time
+                        )
+                except Exception as e:
+                    messages.error(request, f"Failed to update Zoom meeting: {e}")
+                    return redirect('change_events')
 
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "UPDATE Events SET eventTitle=%s, eventDate=%s, eventTime=%s, location=%s, virtualLink=%s, description=%s WHERE eventID=%s",
-                    [eventTitle, eventDate, eventTime, location, virtualLink, description, event_id]
+                    "UPDATE Events SET eventTitle=%s, eventDate=%s, eventTime=%s, location=%s, virtualLink=%s, description=%s, zoom_meeting_id=%s "
+                    "WHERE eventID=%s",
+                    [event_title, event_date, event_time, location, virtual_link, request.POST.get("description"), zoom_meeting_id, event_id]
                 )
 
-            return redirect('change_events')  # Refresh page after update
+            messages.success(request, "Event updated successfully!")
+            return redirect('change_events')
 
     return render(request, 'Events/change_event.html', {'events': events, 'selected_event': selected_event})
 
+
 @login_required
 def cancel_event(request):
-    user_id = request.user.userID  # Get logged-in user ID
+    user_id = request.user.userID
 
-    # Fetch all events created by the user
     with connection.cursor() as cursor:
-        cursor.execute("SELECT eventID, eventTitle FROM Events WHERE createdBy = %s", [user_id])
-        events = cursor.fetchall()  # List of (eventID, eventTitle)
+        cursor.execute("SELECT eventID, eventTitle, zoom_meeting_id FROM Events WHERE createdBy = %s", [user_id])
+        events = cursor.fetchall()
 
     if request.method == "POST":
         event_id = request.POST.get("eventID")
 
-        # If an event is selected, delete it
         if event_id:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT zoom_meeting_id FROM Events WHERE eventID = %s AND createdBy = %s", [event_id, user_id])
+                zoom_meeting_id = cursor.fetchone()[0]
+
+            if zoom_meeting_id:
+                try:
+                    delete_zoom_meeting(zoom_meeting_id)
+                except Exception as e:
+                    messages.error(request, f"Error deleting Zoom meeting: {e}")
+
             with connection.cursor() as cursor:
                 cursor.execute("DELETE FROM Events WHERE eventID = %s AND createdBy = %s", [event_id, user_id])
 
-            return redirect('cancel_events')  # Refresh the page after deletion
+            messages.success(request, "Event canceled successfully!")
+            return redirect('cancel_events')
 
     return render(request, 'Events/cancel_event.html', {'events': events})
+
+
 
 @login_required
 def join_community(request):

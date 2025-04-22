@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -147,3 +148,7 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = '/'
+
+ZOOM_ACCOUNT_ID = config('ZOOM_ACCOUNT_ID')
+ZOOM_CLIENT_ID = config('ZOOM_CLIENT_ID')
+ZOOM_CLIENT_SECRET = config('ZOOM_CLIENT_SECRET')
