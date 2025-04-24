@@ -97,68 +97,158 @@ async function initChat() {
 
 async function loadUserList() {
     try {
+      console.log("🔄 Fetching users...");
       const response = await fetch('/accounts/chat/users/');
-      const users = await response.json();
+      const userData = await response.json();
+      const allUsers = userData.users;
+      console.log("✅ Users:", allUsers);
   
-      // ✅ Fetch all channels the user is part of
-      const channels = await client.queryChannels({
-        members: { $in: [currentUserId] }
+      console.log("🔄 Fetching communities...");
+      const communityResponse = await fetch('/accounts/chat/communities/');
+      const allCommunities = await communityResponse.json();
+      console.log("✅ Communities:", allCommunities);
+  
+      console.log("🔄 Querying channels...");
+      const channels = await client.queryChannels(
+        { members: { $in: [currentUserId] } },
+        { last_message_at: -1 }
+      );
+  
+      const unreadMap = {};
+      const lastMessageMap = {};
+  
+      channels.forEach(channel => {
+        const id = channel.id;
+        const isCommunity = id.startsWith("community-");
+        const lastMsg = channel.state.last_message_at;
+        const unread = channel.countUnread();
+  
+        if (isCommunity) {
+          const communityId = parseInt(id.split("community-")[1]);
+          lastMessageMap[`community-${communityId}`] = lastMsg;
+          unreadMap[`community-${communityId}`] = unread;
+        } else {
+          const other = Object.values(channel.state.members).find(m => m.user_id !== currentUserId);
+          const userId = parseInt(other?.user_id);
+          lastMessageMap[`user-${userId}`] = lastMsg;
+          unreadMap[`user-${userId}`] = unread;
+        }
       });
   
-      const unreadCounts = {};
-      channels.forEach(ch => {
-        const other = Object.values(ch.state.members).find(
-          m => m.user_id !== currentUserId
-        );
-        if (other && ch.countUnread() > 0) {
-          unreadCounts[other.user_id] = ch.countUnread();
-        }
+      const items = [];
+  
+      allCommunities.forEach(c => {
+        const key = `community-${c.communityID}`;
+        items.push({
+          type: "community",
+          id: c.communityID,
+          name: c.name,
+          unread: unreadMap[key] || 0,
+          last_message_at: lastMessageMap[key] || null
+        });
+      });
+  
+      allUsers.forEach(u => {
+        const key = `user-${u.userID}`;
+        items.push({
+          type: "user",
+          id: u.userID,
+          name: u.username,
+          unread: unreadMap[key] || 0,
+          last_message_at: lastMessageMap[key] || null
+        });
+      });
+  
+      items.sort((a, b) => {
+        if (!a.last_message_at && !b.last_message_at) return a.name.localeCompare(b.name);
+        if (!a.last_message_at) return 1;
+        if (!b.last_message_at) return -1;
+        return new Date(b.last_message_at) - new Date(a.last_message_at);
       });
   
       const searchInput = document.getElementById("user-search");
       const list = document.getElementById("user-list");
   
-      function render(usersToRender) {
+      function render(filteredItems) {
+        const list = document.getElementById("user-list");
         list.innerHTML = '';
-        if (usersToRender.length === 0) {
-          list.innerHTML = '<div>No users found.</div>';
+        if (filteredItems.length === 0) {
+          list.innerHTML = '<div>No results.</div>';
           return;
         }
-  
-        usersToRender.forEach(user => {
+      
+        filteredItems.forEach(item => {
           const div = document.createElement("div");
           div.className = "user";
-          const count = unreadCounts[user.userID] || 0;
-  
+          div.dataset.id = item.id;
+          div.dataset.community = item.type === "community" ? "true" : "false";
+      
+          const label = item.type === "community"
+            ? `<strong>🌐 ${item.name}</strong>`
+            : `${item.name}`;
+      
           div.innerHTML = `
-            <span>${user.username}</span>
-            ${count > 0 ? `<span style="float:right; background:red; color:white; padding:2px 8px; border-radius:20px;">${count}</span>` : ''}
+            <span>${label}</span>
+            ${item.unread > 0 ? `<span style="float:right; background:red; color:white; padding:2px 8px; border-radius:20px;">${item.unread}</span>` : ''}
           `;
-          div.dataset.id = user.userID.toString();
+      
           list.appendChild(div);
         });
       }
+      
   
-      render(users);
+      // Initial render
+      render(items);
   
+      // 🔍 Live search
       searchInput.addEventListener("input", () => {
         const q = searchInput.value.toLowerCase();
-        const filtered = users.filter(u => u.username.toLowerCase().includes(q));
+        const filtered = items.filter(item =>
+          item.name.toLowerCase().includes(q)
+        );
         render(filtered);
       });
   
+      // 👆 Click to start chat
       list.addEventListener("click", e => {
-        const targetId = e.target.closest(".user")?.dataset.id;
-        if (targetId) startChatWith(targetId);
+        const target = e.target.closest(".user");
+        const targetId = target?.dataset.id;
+        const isCommunity = target?.dataset.community === "true";
+  
+        if (targetId) {
+          if (isCommunity) {
+            startCommunityChat(targetId);
+          } else {
+            startChatWith(targetId);
+          }
+        }
       });
   
     } catch (err) {
-      console.error("❌ Error loading user list:", err);
+      console.error("❌ Error loading user/community list:", err);
       document.getElementById("user-list").innerHTML = "<div>Error loading users.</div>";
     }
   }
   
-
+  
+  async function startCommunityChat(communityId) {
+    const response = await fetch(`/chat/community/start/${communityId}/`);
+    const data = await response.json();
+  
+    if (data.channel_id) {
+      channel = client.channel("messaging", data.channel_id);
+      await channel.watch();
+      await channel.markRead();
+  
+      renderMessages(channel.state.messages);
+  
+      channel.on("message.new", () => {
+        renderMessages(channel.state.messages);
+        loadUserList();
+      });
+    }
+  }
+  
 async function startChatWith(targetId) {
     const response = await fetch(`/chat/start/${targetId}/`);
     const data = await response.json();
@@ -191,6 +281,8 @@ async function startChatWith(targetId) {
       }
     }
   
+    const isCommunityChat = channel.id.startsWith("community-");
+  
     messages.forEach(msg => {
       const isMine = msg.user.id === currentUserId;
       const isLastMine = lastMyMessage && msg.id === lastMyMessage.id;
@@ -216,15 +308,15 @@ async function startChatWith(targetId) {
         hour: '2-digit',
         minute: '2-digit'
       });
-      
-      
+  
       let content = `
         <div><strong>${msg.user.name}</strong></div>
         <div>${msg.text}</div>
         <div style="font-size: 11px; color: #ccc; margin-top: 4px;">${timestamp}</div>
       `;
-      // ✅ Seen status for last message I sent
-      if (isMine && isLastMine && channel?.state?.read) {
+  
+      // ✅ Only show "Seen" in 1-on-1 chats
+      if (!isCommunityChat && isMine && isLastMine && channel?.state?.read) {
         const seenBy = Object.entries(channel.state.read)
           .filter(([userId, readData]) =>
             userId !== currentUserId &&
@@ -244,22 +336,6 @@ async function startChatWith(targetId) {
   
     box.scrollTop = box.scrollHeight;
   }
-  
-  document.getElementById("message-form").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const input = document.getElementById("message-input");
-  
-    if (!input.value.trim() || !channel) return;
-  
-    try {
-      await channel.sendMessage({ text: input.value.trim() });
-      input.value = '';
-      loadUserList(); // refresh unread counts
-    } catch (err) {
-      console.error("❌ Failed to send message:", err);
-    }
-  });
-  
 
 initChat();
 </script>

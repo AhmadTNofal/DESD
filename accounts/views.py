@@ -1143,8 +1143,6 @@ def review_community(request):
 def messages_view(request):
     return render(request, "profile/messages.html")
 
-
-
 @login_required
 def stream_user_token(request):
     client = get_stream_client()
@@ -1181,11 +1179,67 @@ def start_chat(request, target_id):
     except CustomUser.DoesNotExist:
         return JsonResponse({"error": "User not found"}, status=404)
 
-
-
 @login_required
 def chat_user_list(request):
     current_id = request.user.userID
-    users = CustomUser.objects.exclude(userID=current_id).values("userID", "username")
-    print("Chat users sent to frontend:", list(users))  
-    return JsonResponse(list(users), safe=False)
+
+    # 1-on-1 users (excluding current)
+    users = list(CustomUser.objects.exclude(userID=current_id).values("userID", "username"))
+
+    # Community group chats
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT c.communityID, c.name
+            FROM Communities c
+            INNER JOIN CommunityMemberships m ON c.communityID = m.communityID
+            WHERE m.userID = %s
+        """, [current_id])
+        communities = cursor.fetchall()
+
+    # Format the community entries clearly
+    community_chats = [{"communityID": str(cid), "name": name, "is_community": True} for cid, name in communities]
+
+    # Combine and send to frontend
+    result = {
+        "users": users,
+        "communities": community_chats
+    }
+
+    return JsonResponse(result)
+
+@login_required
+def start_community_chat(request, community_id):
+    current_user = request.user
+    client = get_stream_client()
+
+    # Fetch all members of the community
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT userID FROM CommunityMemberships WHERE communityID = %s
+        """, [community_id])
+        members = [str(row[0]) for row in cursor.fetchall()]
+
+    # Register all users on Stream
+    for uid in members:
+        user = CustomUser.objects.get(userID=uid)
+        create_user_on_stream(user)
+
+    channel_id = f"community-{community_id}"
+    channel = client.channel("messaging", channel_id, {
+        "members": members
+    })
+    channel.create(user_id=str(current_user.userID))
+    return JsonResponse({"channel_id": channel.id})
+
+@login_required
+def chat_community_list(request):
+    user_id = request.user.userID
+    memberships = CommunityMembership.objects.filter(userID=user_id).select_related("communityID")
+
+    data = [
+        {"communityID": m.communityID.communityID, "name": m.communityID.name}
+        for m in memberships
+    ]
+
+    return JsonResponse(data, safe=False)
