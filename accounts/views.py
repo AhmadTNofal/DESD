@@ -1174,7 +1174,7 @@ def start_chat(request, target_id):
 
         channel.create(user_id=str(current_user.userID))
 
-        return JsonResponse({"channel_id": channel.id})
+        return JsonResponse({"channel_id": channel.id,"username": target_user.username})
 
     except CustomUser.DoesNotExist:
         return JsonResponse({"error": "User not found"}, status=404)
@@ -1230,7 +1230,8 @@ def start_community_chat(request, community_id):
         "members": members
     })
     channel.create(user_id=str(current_user.userID))
-    return JsonResponse({"channel_id": channel.id})
+    community = Community.objects.get(pk=community_id)
+    return JsonResponse({"channel_id": channel.id,"name": community.name})
 
 @login_required
 def chat_community_list(request):

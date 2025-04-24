@@ -66,17 +66,33 @@
   <div id="user-list">Loading users...</div>
 </div>
 
-<div class="chat-area">
-  <div id="chat-box">Select a user to start chatting</div>
-  <form id="message-form">
-    <input type="text" id="message-input" placeholder="Type your message..." />
-    <button type="submit">Send</button>
-  </form>
-</div>
+        <div class="chat-area">
+            <div id="chat-header"
+            style="
+            padding: 14px 20px;
+            font-weight: bold;
+            font-size: 20px;
+            background-color: #e6f4ff;
+            text-align: left;
+            border-bottom: 2px solid #ccc;
+            cursor: pointer;
+            user-select: none;
+            ">
+        Select a user to start chatting
+        </div>
+     
+    <div id="chat-box">Messages will appear here...</div>
+    <form id="message-form">
+      <input type="text" id="message-input" placeholder="Type your message..." />
+      <button type="submit">Send</button>
+    </form>
+  </div>
+  
 
 <script>
 let client, currentUserId, channel;
-
+let currentChatType = null;
+let currentChatId = null;
 async function initChat() {
   try {
     const tokenResponse = await fetch("/chat/token/");
@@ -236,6 +252,9 @@ async function loadUserList() {
     const data = await response.json();
   
     if (data.channel_id) {
+      const communityName = data.name || `Community ${communityId}`;
+      document.getElementById("chat-header").innerHTML = `🌐 <strong>${communityName}</strong>`;
+  
       channel = client.channel("messaging", data.channel_id);
       await channel.watch();
       await channel.markRead();
@@ -249,24 +268,68 @@ async function loadUserList() {
     }
   }
   
-async function startChatWith(targetId) {
+  async function startChatWith(targetId) {
     const response = await fetch(`/chat/start/${targetId}/`);
     const data = await response.json();
   
     if (data.channel_id) {
+      const userName = data.username || `User ${targetId}`;
+      const header = document.getElementById("chat-header");
+  
+      currentChatType = "user";
+      currentChatId = targetId;
+  
+      header.innerHTML = `${userName}`;
+      header.onclick = () => {
+        window.location.href = `/profile/${targetId}/`;
+      };
+      
+  
       channel = client.channel("messaging", data.channel_id);
       await channel.watch();
-  
       await channel.markRead();
   
       renderMessages(channel.state.messages);
   
       channel.on("message.new", () => {
         renderMessages(channel.state.messages);
-        loadUserList(); // 🔁 Refresh sidebar for unread counts
+        loadUserList();
       });
     }
   }
+  
+  
+  async function startCommunityChat(communityId) {
+    const response = await fetch(`/chat/community/start/${communityId}/`);
+    const data = await response.json();
+  
+    if (data.channel_id) {
+      const communityName = data.name || `Community ${communityId}`;
+      const header = document.getElementById("chat-header");
+  
+      currentChatType = "community";
+      currentChatId = communityId;
+  
+      header.innerHTML = `🌐 <strong>${communityName}</strong>`;
+      header.onclick = () => {
+        window.location.href = `/community/${communityId}/`;
+      };
+      
+      channel = client.channel("messaging", data.channel_id);
+      await channel.watch();
+      await channel.markRead();
+  
+      renderMessages(channel.state.messages);
+  
+      channel.on("message.new", () => {
+        renderMessages(channel.state.messages);
+        loadUserList();
+      });
+    }
+  }
+  
+  
+  
   
 
   function renderMessages(messages) {
@@ -337,6 +400,21 @@ async function startChatWith(targetId) {
     box.scrollTop = box.scrollHeight;
   }
 
+  document.getElementById("message-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const input = document.getElementById("message-input");
+  
+    if (!input.value.trim() || !channel) return;
+  
+    try {
+      await channel.sendMessage({ text: input.value.trim() });
+      input.value = '';
+      loadUserList(); // Refresh unread counts
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
+  });
+  
 initChat();
 </script>
 
