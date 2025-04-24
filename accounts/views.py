@@ -22,12 +22,33 @@ from django.utils import timezone
 from .chat_utils import create_chat_channel, create_user_on_stream
 from .chat_utils import get_stream_client
 from django.conf import settings
+from stream_chat import StreamChat
 
 @login_required
 def home(request):
-    posts = Post.objects.all().order_by('-createdAt')  # newest first
+    posts = Post.objects.all().order_by('-createdAt')
+    unread_count = 0
+
+    try:
+        client = get_stream_client()
+        user_id = str(request.user.userID)
+
+        channels_response = client.query_channels(
+            {"members": {"$in": [user_id]}},
+            {"last_message_at": -1}
+        )
+        channels = channels_response.get("channels", [])
+
+        for ch in channels:
+            for read in ch.get("read", []):
+                if read["user"]["id"] == user_id:
+                    unread_count += read.get("unread_messages", 0)
+    except Exception as e:
+        print("🔴 Stream error in home view:", e)
+        
     return render(request, "profile/home.html", {
         "posts": posts,
+        "unread_count": unread_count,
         "permission": request.user.Permission
     })
 

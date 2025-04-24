@@ -17,15 +17,20 @@
             <span class="search-tooltip">Search</span>
         </a>
         <a href="{% url 'messages' %}" class="search-icon">
-            <i class="fa-solid fa-message"></i>
+            <span class="icon-wrapper">
+                <i class="fa-solid fa-message"></i>
+                {% if unread_count > 0 %}
+                    <span class="badge-circle">{{ unread_count }}</span>
+                {% endif %}
+            </span>
             <span class="search-tooltip">Messages</span>
         </a>
     </div>
 
+
     <!-- Main Feed -->
     <div class="container">
         <h1>Welcome, {{ request.user.username }}!</h1>
-
         <div class="feed">
             {% for post in posts %}
                 <div class="post">

@@ -35,19 +35,24 @@ html, body {
     position: fixed;
     top: 0;
     right: 0;
-    width: 60px; /* Fixed width for the search icon area */
-    padding: 10px;
+    left: 0;
+    height: 50px;
+    padding: 10px 20px;
     background: #fafafa;
-    
-    z-index: 1000; /* Above other content */
     display: flex;
+    gap: 20px;
+    align-items: center;
     justify-content: flex-end;
+    z-index: 1000;
 }
+
 
 /* Search icon styling */
 .search-icon {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: #262626;
     font-size: 24px;
     padding: 5px;
@@ -614,3 +619,85 @@ h2 {
 .suggestions-container li a:hover {
     background: #ff2929;
 }
+
+.unread-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background-color: red;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 5px;
+    min-width: 16px;
+    height: 16px;
+    line-height: 1;
+    border-radius: 50%;
+    text-align: center;
+    z-index: 10;
+    box-shadow: 0 0 0 2px white; /* white border to separate from background */
+}
+
+
+.icon-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background-color: red;
+    color: white;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 50%;
+    line-height: 1;
+    display: inline-block;
+    min-width: 18px;
+    text-align: center;
+    z-index: 10;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: red;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px white;
+    z-index: 10;
+  }
+
+
+  
+
+
+.badge-circle {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    background-color: red;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 50%;
+    z-index: 10;
+    box-shadow: 0 0 0 2px #fafafa;
+}
+
+
+  
