@@ -19,6 +19,9 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from .zoom_utils import create_zoom_meeting, update_zoom_meeting, delete_zoom_meeting
 from django.utils import timezone
+from .chat_utils import create_chat_channel, create_user_on_stream
+from .chat_utils import get_stream_client
+from django.conf import settings
 
 @login_required
 def home(request):
@@ -1136,3 +1139,53 @@ def review_community(request):
         """, [status, request.user.userID, note, request_id])
 
     return redirect("admin_view")
+
+def messages_view(request):
+    return render(request, "profile/messages.html")
+
+
+
+@login_required
+def stream_user_token(request):
+    client = get_stream_client()
+    token = client.create_token(str(request.user.userID))
+    return JsonResponse({
+        "user_id": str(request.user.userID),
+        "username": request.user.username,
+        "token": token,
+        "api_key": settings.STREAM_API_KEY,
+    })
+
+@login_required
+def start_chat(request, target_id):
+    try:
+        current_user = request.user
+        target_user = CustomUser.objects.get(userID=target_id)
+
+        # Register both users on Stream (if not already)
+        create_user_on_stream(current_user)
+        create_user_on_stream(target_user)
+
+        client = get_stream_client()
+        members = sorted([str(current_user.userID), str(target_user.userID)])
+        channel_id = f"dm-{members[0]}-{members[1]}"
+
+        channel = client.channel("messaging", channel_id, {
+            "members": members
+        })
+
+        channel.create(user_id=str(current_user.userID))
+
+        return JsonResponse({"channel_id": channel.id})
+
+    except CustomUser.DoesNotExist:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+
+
+@login_required
+def chat_user_list(request):
+    current_id = request.user.userID
+    users = CustomUser.objects.exclude(userID=current_id).values("userID", "username")
+    print("Chat users sent to frontend:", list(users))  
+    return JsonResponse(list(users), safe=False)

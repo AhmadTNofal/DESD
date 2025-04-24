@@ -43,5 +43,9 @@ urlpatterns = [
     path('remove-event/', views.remove_event, name='remove_event'),
 
     path('admin/review-community/', views.review_community, name='review_community'),
+
+    path("chat/token/", views.stream_user_token, name="stream_user_token"),
+    path("chat/start/<int:target_id>/", views.start_chat, name="start_chat"),
+    path("chat/users/", views.chat_user_list, name="chat_user_list"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

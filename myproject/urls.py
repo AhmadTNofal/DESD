@@ -21,10 +21,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from accounts import views
-from accounts.views import signup, home, login_view, search_users, search_communities, search_events, communities, create_community, events, create_event,change_event, cancel_event, join_community, my_communites,admin_view
+from accounts.views import signup, home, login_view, search_users, search_communities, search_events, communities, create_community, events, create_event,change_event, cancel_event, join_community, my_communites,admin_view,messages_view
 
 urlpatterns = [
     path("home/", home, name="home"),
+    path('', include('accounts.urls')),
     path("login/", login_view, name="login"),
     path("signup/", signup, name="signup"),
     path('search/users/', search_users, name='search_users'),
@@ -39,6 +40,7 @@ urlpatterns = [
     path("JoinCommunity/", join_community, name="join_community"),
     path("MyCommunities/", my_communites, name="my_communities"),
     path('admin-panel/', views.admin_view, name='admin_view'),
+    path("messages/", messages_view, name="messages"),  
 ]
 
 # Serve static files in development mode
@@ -49,6 +51,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),  # built-in auth routes
     path('accounts/', include('accounts.urls')),  # your app's routes
+    path('', include('accounts.urls')),
     path('', home, name='home'),  # Redirect users after login
     path("communities/", communities, name="communities"),
     path("CreateCommunities/", create_community, name="create_communities"),
@@ -59,6 +62,7 @@ urlpatterns = [
     path("JoinCommunity/", join_community, name="join_community"),
     path("MyCommunities/", my_communites, name="my_communities"),
     path('admin-panel/', views.admin_view, name='admin_view'),
+    path("messages/", messages_view, name="messages"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
