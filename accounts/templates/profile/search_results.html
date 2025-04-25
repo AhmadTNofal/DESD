@@ -14,7 +14,11 @@
                 <ul class="search-results-list">
                     {% for user in results %}
                         <li class="search-result-item">
-                            <img src="/media/{{ user.profile_picture }}" alt="Profile Picture" class="profile-pic">
+                            {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture }}" alt="Profile Picture" class="profile-pic">
+                            {% else %}
+                                <img src="{% static 'accounts/images/default-profile.png' %}" alt="Default Profile" class="profile-pic">
+                            {% endif %}
                             <div class="search-text">
                                 <a href="{% url 'view_profile' user.userID %}" class="username">{{ user.username }}</a>
                                 <p class="full-name">{{ user.surname }}</p>
