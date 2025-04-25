@@ -23,6 +23,7 @@ from .chat_utils import create_chat_channel, create_user_on_stream
 from .chat_utils import get_stream_client
 from django.conf import settings
 from stream_chat import StreamChat
+import cloudinary.uploader
 
 @login_required
 def home(request):
@@ -429,8 +430,9 @@ def edit_profile(request):
 
         # ✅ Handle Profile Picture Upload
         if 'profile_picture' in request.FILES:
-            profile.profile_picture = request.FILES['profile_picture']
-
+            uploaded_file = request.FILES['profile_picture']
+            result = cloudinary.uploader.upload(uploaded_file, folder="profile_pictures/")
+            profile.profile_picture = result['secure_url']
         try:
             user.save()  
             profile.save()  
@@ -960,19 +962,27 @@ def join_community_action(request, community_id):
     return redirect(request.META.get('HTTP_REFERER', 'communities'))
 
 @login_required
+@login_required
 def create_post(request):
     if request.method == "POST":
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
-            post.user = request.user  # Use 'user' instead of 'author'
-            # If community is required, set it here (e.g., post.community = some_community)
+            post.user = request.user
+
+            if 'image' in request.FILES:
+                uploaded_image = request.FILES['image']
+                result = cloudinary.uploader.upload(uploaded_image, folder="post_images/")
+                post.image = result['secure_url']
+
             post.save()
             messages.success(request, "Post created successfully!")
             return redirect("home")
     else:
-        form = PostForm()
+        form = PostForm()  # <- here you define `form` for GET
+
     return render(request, "profile/create_post.html", {"form": form})
+
 
 @login_required
 @login_required

@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary',
+    'cloudinary_storage',
     'accounts',
 ]
 
@@ -155,3 +157,11 @@ LOGIN_REDIRECT_URL = '/'
 ZOOM_ACCOUNT_ID = config('ZOOM_ACCOUNT_ID')
 ZOOM_CLIENT_ID = config('ZOOM_CLIENT_ID')
 ZOOM_CLIENT_SECRET = config('ZOOM_CLIENT_SECRET')
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dcnecajzh',
+    'API_KEY': '371227629741618',
+    'API_SECRET': '08czgJRyR_PV73Pf8EofLv5mLsM'
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

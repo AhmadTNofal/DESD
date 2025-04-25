@@ -6,9 +6,13 @@ services:
     ports:
       - "8000:8000"
     environment:
+      CLOUDINARY_CLOUD_NAME: dcnecajzh
+      CLOUDINARY_API_KEY: "371227629741618"
+      CLOUDINARY_API_SECRET: "08czgJRyR_PV73Pf8EofLv5mLsM"
       DB_NAME: DESD
       DB_USER: admin
       DB_PASSWORD: AhmadandYousef
       DB_HOST: passwordlessauth.chu26k8yu6en.eu-west-2.rds.amazonaws.com
       DB_PORT: "3306"
       DEBUG: "1"
+

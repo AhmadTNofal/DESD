@@ -6,3 +6,5 @@ python-decouple==3.8
 requests==2.31.0
 python-jose==3.3.0
 stream-chat
+cloudinary
+django-cloudinary-storage
