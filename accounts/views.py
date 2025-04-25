@@ -1205,7 +1205,24 @@ def start_chat(request, target_id):
 
         channel.create(user_id=str(current_user.userID))
 
-        return JsonResponse({"channel_id": channel.id,"username": target_user.username})
+        # 🛠️ Correct profile picture handling
+        profile = Profile.objects.filter(user=target_user).first()
+        profile_url = None
+        if profile and profile.profile_picture:
+            if str(profile.profile_picture).startswith("http"):
+                # Already a Cloudinary full URL
+                profile_url = str(profile.profile_picture)
+            else:
+                # Local upload, add domain
+                profile_url = request.build_absolute_uri(profile.profile_picture.url)
+
+        print("PROFILE URL SENT:", profile_url)
+
+        return JsonResponse({
+            "channel_id": channel.id,
+            "username": target_user.username,
+            "profile_picture": profile_url
+        })
 
     except CustomUser.DoesNotExist:
         return JsonResponse({"error": "User not found"}, status=404)
@@ -1214,11 +1231,38 @@ def start_chat(request, target_id):
 def chat_user_list(request):
     current_id = request.user.userID
 
-    # 1-on-1 users (excluding current)
-    users = list(CustomUser.objects.exclude(userID=current_id).values("userID", "username"))
-
-    # Community group chats
     from django.db import connection
+
+    domain = request.scheme + "://" + request.get_host()
+
+    users = []
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT u.userID, u.username, p.profile_picture
+            FROM User u
+            LEFT JOIN Profiles p ON u.userID = p.userID
+            WHERE u.userID != %s
+        """, [current_id])
+        rows = cursor.fetchall()
+
+        for row in rows:
+            user_id, username, profile_picture = row
+            if profile_picture:
+                if profile_picture.startswith("http"):
+                    profile_url = profile_picture
+                else:
+                    profile_url = f"{domain}{settings.MEDIA_URL}{profile_picture}"
+            else:
+                profile_url = None
+
+            users.append({
+                "userID": user_id,
+                "username": username,
+                "profile_picture": profile_url
+            })
+
+    # Fetch communities
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT c.communityID, c.name
@@ -1228,16 +1272,13 @@ def chat_user_list(request):
         """, [current_id])
         communities = cursor.fetchall()
 
-    # Format the community entries clearly
     community_chats = [{"communityID": str(cid), "name": name, "is_community": True} for cid, name in communities]
 
-    # Combine and send to frontend
-    result = {
+    return JsonResponse({
         "users": users,
         "communities": community_chats
-    }
+    })
 
-    return JsonResponse(result)
 
 @login_required
 def start_community_chat(request, community_id):
