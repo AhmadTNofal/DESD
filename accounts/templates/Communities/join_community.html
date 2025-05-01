@@ -2,33 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/community.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <title>Join Communities</title>
-    
 </head>
 <body>
-    
-
-    <div class="community-container">
+    <div class="content-block">
         <h2>Join a Community</h2>
-
         {% for community in non_joined_communities %}
-        <div class="community-box">
-            <h3>{{ community.1 }}</h3>  <!-- Community Name -->
-            <p class="community-info"><strong>Description:</strong> {{ community.2 }}</p>  <!-- Community Description -->
-            <p class="community-info"><strong>Category:</strong> {{ community.3 }}</p>  <!-- Community Category -->
-            <p class="community-info"><strong>Created By:</strong> {{ community.4 }}</p>  <!-- Created By (Admin) -->
-            <p class="community-info"><strong>Created At:</strong> {{ community.5 }}</p>  <!-- Created At -->
-
-            <form method="POST" action="{% url 'join_community_action' community.0 %}">
-                {% csrf_token %}
-                <button type="submit" class="join-btn">Join</button>
-            </form>
-        </div>
+            {% if forloop.counter0|divisibleby:2 %}
+                <div class="box-pair">
+            {% endif %}
+            <div class="community-box">
+                <div>
+                    <h3>{{ community.1 }}</h3>  <!-- Community Name -->
+                    <p class="community-info"><strong>Description:</strong> {{ community.2 }}</p>  <!-- Community Description -->
+                    <p class="community-info"><strong>Category:</strong> {{ community.3 }}</p>  <!-- Community Category -->
+                    <p class="community-info"><strong>Created By:</strong> {{ community.4 }}</p>  <!-- Created By (Admin) -->
+                    <p class="community-info"><strong>Created At:</strong> {{ community.5 }}</p>  <!-- Created At -->
+                </div>
+                <form method="POST" action="{% url 'join_community_action' community.0 %}">
+                    {% csrf_token %}
+                    <button type="submit" class="join-btn">Join</button>
+                </form>
+            </div>
+            {% if not forloop.counter0|divisibleby:2 or forloop.last %}
+                </div>
+            {% endif %}
         {% empty %}
-        <p>No communities available to join.</p>
+            <p>No communities available to join.</p>
         {% endfor %}
     </div>
     <nav class="bottom-navbar">
@@ -36,12 +40,10 @@
             <i class="fa fa-arrow-left"></i>
             <span class="tooltip">Communities</span>
         </a>
-        
         <a href="{% url 'my_communities' %}" class="nav-item">
             <i class="fa fa-users"></i>  <!-- Events Icon -->
             <span class="tooltip">My Communities</span>
         </a>
-        
         <a href="{% url 'create_communities' %}" class="nav-item">
             <i class="fa fa-plus"></i>  <!-- Profile Icon -->
             <span class="tooltip">Create Communities</span>

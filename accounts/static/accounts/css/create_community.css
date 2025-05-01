@@ -14,41 +14,43 @@ html, body {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
+    min-height: 100vh;
 }
 
-/* Container (Enhanced Instagram-like) */
-.container {
-    max-width: 600px; /* Slightly narrower for a more focused form layout */
-    width: 90%;
-    background: white;
-    margin: 40px auto 90px; /* Increased margin for better spacing */
-    padding: 30px 40px; /* More padding for a spacious feel */
-    border: 1px solid #dbdbdb; /* Instagram’s subtle border */
-    border-radius: 12px; /* Slightly more rounded corners */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Softer, more pronounced shadow */
+/* Form Content Styling */
+.form-content {
+    width: 100%;
+    padding: 40px 20px;
+    box-sizing: border-box;
     text-align: center;
+}
+
+/* Constrain content width for readability on large screens */
+.form-content > * {
+    max-width: 1400px; /* Increased to take up more space on laptops */
+    margin: 0 auto;
 }
 
 /* Heading */
 h2 {
-    font-size: 26px; /* Slightly larger for emphasis */
+    font-size: 30px; /* Slightly larger for emphasis on desktop */
     font-weight: 600;
     color: #262626; /* Instagram’s dark gray */
-    margin-bottom: 25px; /* More spacing below */
+    margin-bottom: 35px; /* More spacing below */
 }
 
 /* Form Styling */
 form {
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Increased gap for better separation */
+    gap: 30px; /* Increased gap for better separation */
     align-items: center;
 }
 
 /* Form Fields */
 form div {
     width: 100%;
-    max-width: 450px; /* Slightly wider fields for better usability */
+    max-width: 1200px; /* Wider fields to take up more space on desktop */
     text-align: left;
 }
 
@@ -56,16 +58,16 @@ form div {
 label {
     font-weight: 400;
     display: block;
-    margin-bottom: 6px; /* Slightly more spacing */
+    margin-bottom: 10px; /* More spacing for better readability */
     color: #8e8e8e; /* Instagram’s muted gray for labels */
-    font-size: 14px;
+    font-size: 18px; /* Larger for better readability */
 }
 
 /* Input Fields */
 input, textarea, select {
     width: 100%;
-    padding: 12px; /* Slightly more padding for comfort */
-    font-size: 14px;
+    padding: 16px; /* More padding for comfort */
+    font-size: 18px; /* Larger font for better readability */
     border: 1px solid #dbdbdb; /* Instagram’s border color */
     border-radius: 4px;
     background: #fafafa; /* Light gray background */
@@ -88,14 +90,14 @@ button {
     background: #ff758c; /* Pink, matching events.css */
     color: white;
     border: none;
-    padding: 12px 24px; /* Slightly more padding */
-    font-size: 14px;
+    padding: 16px 32px; /* More padding for a larger button */
+    font-size: 18px; /* Larger font for better readability */
     font-weight: 600;
     border-radius: 8px;
     cursor: pointer;
     width: 100%;
-    max-width: 250px; /* Slightly wider button */
-    margin-top: 20px; /* More spacing above */
+    max-width: 800px; /* Wider button to match form fields */
+    margin-top: 30px; /* More spacing above */
     transition: background 0.3s ease-in-out, transform 0.2s ease;
 }
 
@@ -110,10 +112,10 @@ button:hover {
     padding: 0;
     margin: 15px 0 0;
     color: #ed4956; /* Instagram’s red for errors */
-    font-size: 14px;
+    font-size: 16px;
     text-align: left;
     width: 100%;
-    max-width: 450px; /* Match form field width */
+    max-width: 1200px; /* Match form field width */
 }
 
 .error-list li {
@@ -178,11 +180,33 @@ button:hover {
 }
 
 /* Responsive Design */
+@media (min-width: 769px) {
+    .form-content {
+        padding: 60px 50px; /* More padding on desktop for spaciousness */
+    }
+
+    form div {
+        max-width: 1200px; /* Wider fields on desktop */
+    }
+
+    button {
+        width: 100%;
+        max-width: 800px; /* Wider button on desktop */
+    }
+
+    h2 {
+        font-size: 30px; /* Larger heading on desktop */
+    }
+
+    .error-list {
+        font-size: 16px; /* Larger error messages on desktop */
+    }
+}
+
 @media (max-width: 768px) {
-    .container {
-        width: 95%;
-        padding: 20px 30px; /* Slightly less padding on mobile */
-        margin: 20px auto 70px;
+    .form-content {
+        width: 100%; /* Take up the full screen on mobile */
+        padding: 30px 20px;
     }
 
     h2 {
@@ -190,16 +214,31 @@ button:hover {
     }
 
     form div {
-        max-width: 100%;
+        max-width: 100%; /* Full width for fields on mobile */
     }
 
     button {
         width: 100%;
-        max-width: none;
+        max-width: 100%; /* Full width for button on mobile */
+    }
+
+    label {
+        font-size: 14px; /* Smaller labels on mobile */
+    }
+
+    input, textarea, select {
+        font-size: 14px; /* Smaller input text on mobile */
+        padding: 12px; /* Slightly less padding on mobile */
+    }
+
+    button {
+        font-size: 14px; /* Smaller button text on mobile */
+        padding: 12px 24px; /* Slightly less padding on mobile */
     }
 
     .error-list {
         font-size: 12px;
+        max-width: 100%; /* Full width for error messages on mobile */
     }
 
     .nav-item {

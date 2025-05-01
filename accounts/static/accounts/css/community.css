@@ -11,18 +11,29 @@ html, body {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
+    min-height: 100vh;
 }
 
-/* Enlarged & Improved Container */
-.container {
-    max-width: 800px; /* Increased width */
-    width: 90%;
-    background: white;
-    margin: 30px auto;
-    padding: 40px 30px;
-    border-radius: 15px;
-    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
+/* Content Block Styling */
+.content-block {
+    width: 100%;
+    padding: 40px 20px;
+    box-sizing: border-box;
     text-align: center;
+}
+
+/* Constrain content width for readability on large screens */
+.content-block > * {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Box Pair Styling */
+.box-pair {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
 }
 
 /* Section Titles */
@@ -40,8 +51,13 @@ h2 {
     padding: 20px;
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
     border: 1px solid #dbdbdb;
-    margin-bottom: 20px;
     text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    flex: 1;
+    min-width: 0; /* Prevent flex items from overflowing */
 }
 
 /* Event Details */
@@ -70,7 +86,6 @@ h2 {
 
 /* View Details Button */
 .view-btn {
-    display: block;
     background: linear-gradient(135deg, #ff758c, #ff7eb3);
     color: white;
     font-size: 14px;
@@ -80,15 +95,14 @@ h2 {
     border: none;
     cursor: pointer;
     transition: all 0.3s ease-in-out;
-    width: 100%;
-    max-width: 250px;
-    margin: 15px auto;
+    width: 200px;
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
     text-decoration: none;
+    margin-top: 10px;
 }
 
 .event-box .view-btn {
-    color: white /* Ensure the color is white, overriding the .event-box a rule */
+    color: white; /* Ensure the color is white */
 }
 
 .view-btn:hover {
@@ -103,13 +117,17 @@ h2 {
     padding: 20px;
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
     border: 1px solid #dbdbdb;
-    margin-bottom: 20px;
     text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    flex: 1;
+    min-width: 0; /* Prevent flex items from overflowing */
 }
 
 /* Join Button */
 .join-btn {
-    display: block;
     background: linear-gradient(135deg, #57cc99, #38a3a5);
     color: white;
     font-size: 14px;
@@ -119,10 +137,9 @@ h2 {
     border: none;
     cursor: pointer;
     transition: all 0.3s ease-in-out;
-    width: 100%;
-    max-width: 250px;
-    margin: 15px auto;
+    width: 200px;
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
 }
 
 .join-btn:hover {
@@ -130,23 +147,7 @@ h2 {
     transform: translateY(-2px);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .container {
-        width: 95%;
-        padding: 25px;
-    }
-
-    .event-box, .community-box {
-        padding: 15px;
-    }
-
-    .view-btn, .join-btn {
-        width: 100%;
-    }
-}
-
-
+/* Bottom Navbar */
 .bottom-navbar {
     position: fixed;
     bottom: 0;
@@ -160,7 +161,6 @@ h2 {
     border-top: 1px solid #dbdbdb;
     box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
 }
-
 
 /* Hamburger Menu Icon */
 .nav-item {
@@ -204,4 +204,60 @@ h2 {
     font-weight: bold;
     color: white;
     text-decoration: none;
+}
+
+/* Responsive Design */
+@media (min-width: 769px) {
+    .content-block {
+        padding: 40px 30px;
+    }
+
+    .box-pair {
+        gap: 20px; /* Space between the two boxes */
+    }
+
+    .event-box, .community-box {
+        width: calc(50% - 10px); /* Two boxes per row with gap */
+        padding: 25px;
+        flex-wrap: nowrap; /* Prevent wrapping on larger screens */
+        margin-bottom: 0; /* Margin handled by box-pair */
+    }
+
+    .event-box > div, .community-box > div {
+        flex: 1; /* Allow content to take available space */
+    }
+
+    .view-btn, .join-btn {
+        width: 250px; /* Slightly larger buttons on desktop */
+        margin-left: 20px; /* Space between content and button */
+    }
+}
+
+@media (max-width: 768px) {
+    .content-block {
+        width: 95%;
+        margin: 0 auto;
+        padding: 25px 15px;
+    }
+
+    .box-pair {
+        flex-direction: column;
+    }
+
+    .event-box, .community-box {
+        width: 100%; /* Full width on mobile */
+        padding: 15px;
+        flex-direction: column; /* Stack content and button vertically */
+        align-items: stretch;
+        margin-bottom: 20px; /* Re-add margin for mobile */
+    }
+
+    .view-btn, .join-btn {
+        width: 100%;
+        margin: 10px 0 0 0;
+    }
+
+    h2 {
+        font-size: 22px;
+    }
 }

@@ -2,52 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/community.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <title>My Communities</title>
-    
 </head>
 <body>
-
-    <!-- Communities List -->
-    <div class="community-container">
+    <div class="content-block">
         <h2>My Communities</h2>
-
         {% for community in joined_communities %}
-<div class="community-box">
-    <h3>{{ community.1 }}</h3>  <!-- Community Name -->
-    <p class="community-info"><strong>Description:</strong> {{ community.2 }}</p>  <!-- Community Description -->
-    <p class="community-info"><strong>Category:</strong> {{ community.3 }}</p>  <!-- Community Category -->
-    <p class="community-info"><strong>Admins:</strong> {{ community.4 }}</p>  <!-- Admin(s) -->
-    <p class="community-info"><strong>Role:</strong> {{ community.5 }}</p>  <!-- User Role -->
-    <p class="community-info"><strong>Created At:</strong> {{ community.6 }}</p>  <!-- Created Date -->
-
-    <!-- View Community Details Button -->
-    <a href="{% url 'view_community' community.0 %}" class="view-btn">View Community</a>
-
-</div>
-{% empty %}
-<p>You are not a member of any communities.</p>
-{% endfor %}
-
-<nav class="bottom-navbar">
-    <a href="{% url 'communities' %}" class="nav-item">
-        <i class="fa fa-arrow-left"></i>
-        <span class="tooltip">Communities</span>
-    </a>
-    <a href="{% url 'join_community' %}" class="nav-item">
-        <i class="fa fa-sign-in"></i>  <!-- Search Icon -->
-        <span class="tooltip">Join Communities</span>
-    </a>
-    <a href="{% url 'create_communities' %}" class="nav-item">
-        <i class="fa fa-plus"></i>  <!-- Profile Icon -->
-        <span class="tooltip">Create Communities</span>
-    </a>
-    <a href="{% url 'home' %}" class="nav-item">
-        <i class="fa fa-home"></i>  <!-- Communities Icon -->
-        <span class="tooltip">Home</span>
-    </a>
-</nav>
+            {% if forloop.counter0|divisibleby:2 %}
+                <div class="box-pair">
+            {% endif %}
+            <div class="community-box">
+                <div>
+                    <h3>{{ community.1 }}</h3>  <!-- Community Name -->
+                    <p class="community-info"><strong>Description:</strong> {{ community.2 }}</p>  <!-- Community Description -->
+                    <p class="community-info"><strong>Category:</strong> {{ community.3 }}</p>  <!-- Community Category -->
+                    <p class="community-info"><strong>Admins:</strong> {{ community.4 }}</p>  <!-- Admin(s) -->
+                    <p class="community-info"><strong>Role:</strong> {{ community.5 }}</p>  <!-- User Role -->
+                    <p class="community-info"><strong>Created At:</strong> {{ community.6 }}</p>  <!-- Created Date -->
+                </div>
+                <a href="{% url 'view_community' community.0 %}" class="view-btn">View Community</a>
+            </div>
+            {% if not forloop.counter0|divisibleby:2 or forloop.last %}
+                </div>
+            {% endif %}
+        {% empty %}
+            <p>You are not a member of any communities.</p>
+        {% endfor %}
+    </div>
+    <nav class="bottom-navbar">
+        <a href="{% url 'communities' %}" class="nav-item">
+            <i class="fa fa-arrow-left"></i>
+            <span class="tooltip">Communities</span>
+        </a>
+        <a href="{% url 'join_community' %}" class="nav-item">
+            <i class="fa fa-sign-in"></i>  <!-- Search Icon -->
+            <span class="tooltip">Join Communities</span>
+        </a>
+        <a href="{% url 'create_communities' %}" class="nav-item">
+            <i class="fa fa-plus"></i>  <!-- Profile Icon -->
+            <span class="tooltip">Create Communities</span>
+        </a>
+        <a href="{% url 'home' %}" class="nav-item">
+            <i class="fa fa-home"></i>  <!-- Communities Icon -->
+            <span class="tooltip">Home</span>
+        </a>
+    </nav>
 </body>
 </html>

@@ -2,17 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/create_community.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <title>Create Community</title>
-   
 </head>
 <body>
-
-    
-
-    <div class="container">
+    <div class="form-content">
         <h2>Create a New Community</h2>
         <form method="post">
             {% csrf_token %}
@@ -38,7 +35,6 @@
             {% endfor %}
         </ul>
         {% endif %}
-    
     </div>
 
     <nav class="bottom-navbar">
@@ -46,7 +42,6 @@
             <i class="fa fa-arrow-left"></i>
             <span class="tooltip">Communities</span>
         </a>
-        
         <a href="{% url 'my_communities' %}" class="nav-item">
             <i class="fa fa-users"></i>  <!-- Events Icon -->
             <span class="tooltip">My Communities</span>
