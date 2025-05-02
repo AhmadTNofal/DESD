@@ -33,5 +33,43 @@
             <p><strong>Campus Involvement:</strong> {{ profile.campusInvolvement|default:"Not provided" }}</p>
         </div>
     </div>
+<!-- User's Uploaded Pictures -->
+<div class="user-uploads">
+    <h3>Uploaded Pictures</h3>
+    <div class="uploaded-pictures">
+        {% for post in posts %}
+            {% if post.image %}
+                <div class="uploaded-image">
+                    <img src="{{ post.image }}" alt="User Uploaded Image"
+                         onclick="openModal('{{ post.image }}', '{{ post.content|escapejs }}')">
+                </div>
+            {% endif %}
+        {% empty %}
+            <p>No uploads yet.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="modal" onclick="closeModal()">
+    <span class="modal-close" onclick="closeModal()">&times;</span>
+    <div class="modal-content" onclick="event.stopPropagation();">
+        <img id="modalImage" src="" alt="Full Image">
+        <p class="modal-caption" id="modalCaption"></p>
+    </div>
+</div>
+
+<!-- Modal JavaScript -->
+<script>
+    function openModal(imageUrl, caption) {
+        document.getElementById("modalImage").src = imageUrl;
+        document.getElementById("modalCaption").textContent = caption;
+        document.getElementById("imageModal").style.display = "flex";
+    }
+
+    function closeModal() {
+        document.getElementById("imageModal").style.display = "none";
+    }
+</script>
 </body>
 </html>

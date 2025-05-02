@@ -699,5 +699,80 @@ h2 {
     box-shadow: 0 0 0 2px #fafafa;
 }
 
+.user-uploads {
+    margin-top: 40px;
+}
+
+.uploaded-pictures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.uploaded-image img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+.uploaded-pictures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.uploaded-image img {
+    max-width: 200px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+}
+
+/* Modal styling */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.modal-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+}
+
+.modal-caption {
+    margin-top: 10px;
+    font-size: 16px;
+    color: #333;
+}
+
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+}
+
 
   

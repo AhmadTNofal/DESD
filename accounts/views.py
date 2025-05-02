@@ -187,10 +187,32 @@ def search_suggestions(request):
     return JsonResponse({"suggestions": suggestions})
 
 def view_profile(request, user_id):
-    """ Display full profile of a user. """
     user = CustomUser.objects.get(userID=user_id)  # Fetch user by ID
-    profile = Profile.objects.filter(user=user).first() # Fetch profile
-    return render(request, 'profile/view_profile.html', {'user': user,'profile': profile})
+    profile = Profile.objects.filter(user=user).first()  # Fetch profile
+
+    # Fetch posts by this user
+    posts = Post.objects.filter(user=user).exclude(image='').order_by('-createdAt')
+
+    return render(request, 'profile/view_profile.html', {
+        'user': user,
+        'profile': profile,
+        'posts': posts,  # Pass posts to template
+    })
+
+from django.shortcuts import get_object_or_404
+
+@login_required
+def user_profile(request, username):
+    user = get_object_or_404(CustomUser, username=username)
+    profile = Profile.objects.filter(user=user).first()
+    posts = Post.objects.filter(userID=user).order_by('-createdAt')
+
+    return render(request, 'accounts/user_profile.html', {
+        'profile_user': user,
+        'profile': profile,
+        'posts': posts,
+    })
+
 
 def view_community(request, community_id):
     """ Display community details and allow users to join. """
