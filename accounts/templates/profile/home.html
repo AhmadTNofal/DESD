@@ -39,13 +39,11 @@
                     {% endif %}
                     <div class="post-content">
                         <div class="post-actions">
-                            <button class="like-btn" onclick="toggleLike(this)">
-                                <i class="fa-regular fa-heart"></i>
+                            <button class="like-btn" onclick="toggleLike('{{ post.postID }}', this)">
+                                <i class="fa-heart {% if post.is_liked_by_user %}fa-solid{% else %}fa-regular{% endif %}"></i>
+                                <span class="like-count">{{ post.likes.count }}</span>
                             </button>
-                            <button class="comment-btn">
-                                <i class="fa-regular fa-comment"></i>
-                            </button>
-                        </div>
+                        </div>                        
                         <p><strong>{{ post.user.username }}</strong></p>
                         <p class="timestamp">{{ post.createdAt|date:"F j, Y, g:i a" }}</p>
                         <p>{{ post.content }}</p>
@@ -83,11 +81,26 @@
         {% endif %}    
     </nav>
 
-    <!-- JavaScript for Like Button Toggle -->
     <script>
-        function toggleLike(button) {
-            button.classList.toggle('liked');
+        function toggleLike(postId, btn) {
+            fetch("{% url 'toggle_like' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `post_id=${postId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                const icon = btn.querySelector("i");
+                const count = btn.querySelector(".like-count");
+                icon.classList.toggle("fa-solid", data.liked);
+                icon.classList.toggle("fa-regular", !data.liked);
+                count.textContent = data.like_count;
+            });
         }
-    </script>
+        </script>
+        
 </body>
 </html>

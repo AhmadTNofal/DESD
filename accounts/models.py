@@ -129,6 +129,8 @@ class Post(models.Model):
 
     def __str__(self):
         return f"Post {self.postID} by {self.user.username}"
+    def is_liked_by(self, user):
+        return self.likes.filter(user=user).exists()
 
 def user_directory_path(instance, filename):
     """Upload images to 'media/profile_pics/user_<id>/<filename>'"""
@@ -159,4 +161,15 @@ class CommunityRequest(models.Model):
 
     class Meta:
         db_table = "CommunityRequests"
+
+class Like(models.Model):
+    likeID = models.AutoField(primary_key=True)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, db_column='postID', related_name='likes')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_column='userID')
+
+    class Meta:
+        db_table = "Likes"
+        managed = False  # Because you're managing the table manually
+
+
 

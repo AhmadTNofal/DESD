@@ -24,12 +24,18 @@ from .chat_utils import get_stream_client
 from django.conf import settings
 from stream_chat import StreamChat
 import cloudinary.uploader
+from django.http import JsonResponse
+from .models import Like
 
 @login_required
 def home(request):
     posts = Post.objects.all().order_by('-createdAt')
-    unread_count = 0
 
+    # Precompute if the post is liked by the current user
+    for post in posts:
+        post.is_liked_by_user = post.likes.filter(user=request.user).exists()
+
+    unread_count = 0
     try:
         client = get_stream_client()
         user_id = str(request.user.userID)
@@ -46,7 +52,7 @@ def home(request):
                     unread_count += read.get("unread_messages", 0)
     except Exception as e:
         print("🔴 Stream error in home view:", e)
-        
+
     return render(request, "profile/home.html", {
         "posts": posts,
         "unread_count": unread_count,
@@ -984,7 +990,6 @@ def join_community_action(request, community_id):
     return redirect(request.META.get('HTTP_REFERER', 'communities'))
 
 @login_required
-@login_required
 def create_post(request):
     if request.method == "POST":
         form = PostForm(request.POST, request.FILES)
@@ -1338,3 +1343,21 @@ def chat_community_list(request):
     ]
 
     return JsonResponse(data, safe=False)
+
+@login_required
+@require_POST
+def toggle_like(request):
+    post_id = request.POST.get("post_id")
+    post = get_object_or_404(Post, postID=post_id)
+    user = request.user
+
+    like, created = Like.objects.get_or_create(post=post, user=user)
+
+    if not created:
+        like.delete()
+        liked = False
+    else:
+        liked = True
+
+    like_count = post.likes.count()
+    return JsonResponse({"liked": liked, "like_count": like_count})

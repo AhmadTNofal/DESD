@@ -51,5 +51,6 @@ urlpatterns = [
     path("chat/community/start/<int:community_id>/", views.start_community_chat, name="start_community_chat"),
     path("chat/communities/", views.chat_community_list, name="chat_community_list"),
     path('profile/<str:username>/', views.user_profile, name='user_profile'),
+    path("toggle_like/", views.toggle_like, name="toggle_like"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
