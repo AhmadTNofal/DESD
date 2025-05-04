@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 from accounts.views import signup
 from accounts.views import home, search_users
-from .views import home, login_view, signup,search_page , search_communities, search_events, search_suggestions, view_profile, view_community, join_community, view_event,event_details, profile_settings, edit_profile, join_community, join_community_action, my_communites, leave_community, remove_member, promote_member, create_post
+from .views import home, login_view, signup, search_page, search_communities, search_events, search_suggestions, view_profile, view_community, join_community, view_event, event_details, profile_settings, edit_profile, join_community, join_community_action, my_communites, leave_community, remove_member, promote_member, create_post, notifications_view, mark_notification_read
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -52,8 +52,10 @@ urlpatterns = [
     path("chat/communities/", views.chat_community_list, name="chat_community_list"),
     path('profile/<str:username>/', views.user_profile, name='user_profile'),
     path("toggle_like/", views.toggle_like, name="toggle_like"),
-    # urls.py
-path('follow/', views.toggle_follow, name='toggle_follow'),
-path('unfollow/', views.toggle_unfollow, name='toggle_unfollow'),
+    path('follow/', views.toggle_follow, name='toggle_follow'),
+    path('unfollow/', views.toggle_unfollow, name='toggle_unfollow'),
 
+    # Notifications URLs
+    path('notifications/', notifications_view, name='notifications'),
+    path('notifications/mark-read/', mark_notification_read, name='mark_notification_read'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

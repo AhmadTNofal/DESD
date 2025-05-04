@@ -8,7 +8,7 @@ from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
-from .models import CustomUser, Community, CommunityMembership, Profile
+from .models import CustomUser, Community, CommunityMembership, Profile, Notifications, NotificationPreferences
 from .forms import CommunityForm, EventForm
 from django.urls import reverse
 from datetime import date
@@ -28,7 +28,50 @@ from django.http import JsonResponse
 from .models import Like
 from .models import Follow
 from django.views.decorators.http import require_POST
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from django.core.mail import send_mail
 
+def send_notification(user, message, notification_type):
+    """Helper function to create and send a notification."""
+    # Create notification in the database
+    notification = Notifications.objects.create(
+        userID=user,
+        message=message,
+        type=notification_type,
+        status="unread"
+    )
+
+    # Get user preferences
+    try:
+        preferences = NotificationPreferences.objects.get(userID=user)
+    except NotificationPreferences.DoesNotExist:
+        # Create default preferences if none exist
+        preferences = NotificationPreferences.objects.create(userID=user)
+
+    # Send email notification if enabled
+    email_preference = getattr(preferences, f'email_{notification_type}', False)
+    if email_preference:
+        send_mail(
+            subject=f'New {notification_type.capitalize()} Notification',
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+
+    # Send in-app notification via WebSocket if enabled
+    in_app_preference = getattr(preferences, f'in_app_{notification_type}', False)
+    if in_app_preference:
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'notifications_{user.userID}',
+            {
+                'type': 'send_notification',
+                'message': message,
+                'notification_type': notification_type,
+            }
+        )
 
 @login_required
 def home(request):
@@ -56,9 +99,13 @@ def home(request):
     except Exception as e:
         print("🔴 Stream error in home view:", e)
 
+    # Add count of unread notifications
+    unread_notifications = Notifications.objects.filter(userID=request.user, status='unread').count()
+
     return render(request, "profile/home.html", {
         "posts": posts,
         "unread_count": unread_count,
+        "unread_notifications": unread_notifications,  # Add this
         "permission": request.user.Permission
     })
 
@@ -224,9 +271,6 @@ def view_profile(request, user_id):
         'is_following': is_following,
     })
 
-
-from django.shortcuts import get_object_or_404
-
 @login_required
 def user_profile(request, username):
     user = get_object_or_404(CustomUser, username=username)
@@ -238,7 +282,6 @@ def user_profile(request, username):
         'profile': profile,
         'posts': posts,
     })
-
 
 def view_community(request, community_id):
     """ Display community details and allow users to join. """
@@ -359,6 +402,9 @@ def signup(request):
             user = CustomUser.objects.get(userID=user_id)  # Get the newly created user
             user.backend = 'django.contrib.auth.backends.ModelBackend'  # Required to log in manually
             login(request, user)  # Log the user in
+
+            # Create default notification preferences for the new user
+            NotificationPreferences.objects.create(userID=user)
 
             messages.success(request, "Signup successful! Redirecting to homepage...")
             return redirect("home")  # Redirect to homepage
@@ -635,6 +681,24 @@ def create_event(request):
                     """,
                     [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, description, user_id, zoom_meeting_id]
                 )
+
+            # Notify community members about the new event
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
+                    [community_id, user_id]
+                )
+                members = cursor.fetchall()
+
+            for member in members:
+                member_id = member[0]
+                member_user = CustomUser.objects.get(userID=member_id)
+                send_notification(
+                    user=member_user,
+                    message=f"New event '{data['eventTitle']}' created in {communities[0][1]}",
+                    notification_type="event"
+                )
+
             messages.success(request, "Event created successfully!")
             return redirect('events')
     else:
@@ -694,16 +758,38 @@ def change_event(request):
 
             with connection.cursor() as cursor:
                 cursor.execute(
+                    "SELECT communityID FROM Events WHERE eventID = %s",
+                    [event_id]
+                )
+                community_id = cursor.fetchone()[0]
+
+                cursor.execute(
                     "UPDATE Events SET eventTitle=%s, eventDate=%s, eventTime=%s, location=%s, virtualLink=%s, description=%s, zoom_meeting_id=%s "
                     "WHERE eventID=%s",
                     [event_title, event_date, event_time, location, virtual_link, request.POST.get("description"), zoom_meeting_id, event_id]
+                )
+
+            # Notify community members about the event update
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
+                    [community_id, user_id]
+                )
+                members = cursor.fetchall()
+
+            for member in members:
+                member_id = member[0]
+                member_user = CustomUser.objects.get(userID=member_id)
+                send_notification(
+                    user=member_user,
+                    message=f"Event '{event_title}' has been updated",
+                    notification_type="event"
                 )
 
             messages.success(request, "Event updated successfully!")
             return redirect('change_events')
 
     return render(request, 'Events/change_event.html', {'events': events, 'selected_event': selected_event})
-
 
 @login_required
 def cancel_event(request):
@@ -718,8 +804,28 @@ def cancel_event(request):
 
         if event_id:
             with connection.cursor() as cursor:
-                cursor.execute("SELECT zoom_meeting_id FROM Events WHERE eventID = %s AND createdBy = %s", [event_id, user_id])
-                zoom_meeting_id = cursor.fetchone()[0]
+                cursor.execute("SELECT zoom_meeting_id, communityID, eventTitle FROM Events WHERE eventID = %s AND createdBy = %s", [event_id, user_id])
+                result = cursor.fetchone()
+                zoom_meeting_id = result[0]
+                community_id = result[1]
+                event_title = result[2]
+
+            # Notify community members about the event cancellation
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
+                    [community_id, user_id]
+                )
+                members = cursor.fetchall()
+
+            for member in members:
+                member_id = member[0]
+                member_user = CustomUser.objects.get(userID=member_id)
+                send_notification(
+                    user=member_user,
+                    message=f"Event '{event_title}' has been canceled",
+                    notification_type="event"
+                )
 
             if zoom_meeting_id:
                 try:
@@ -734,8 +840,6 @@ def cancel_event(request):
             return redirect('cancel_events')
 
     return render(request, 'Events/cancel_event.html', {'events': events})
-
-
 
 @login_required
 def join_community(request):
@@ -781,6 +885,24 @@ def join_community_action(request, community_id):
                 INSERT INTO CommunityMemberships (communityID, userID, role, joinedAt)
                 VALUES (%s, %s, 'Member', NOW())
             """, [community_id, user_id])
+
+        # Notify community admins about the new member
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND role = 'Admin'",
+                [community_id]
+            )
+            admins = cursor.fetchall()
+
+        community = Community.objects.get(communityID=community_id)
+        for admin in admins:
+            admin_id = admin[0]
+            admin_user = CustomUser.objects.get(userID=admin_id)
+            send_notification(
+                user=admin_user,
+                message=f"{user.username} has joined your community '{community.name}'",
+                notification_type="community"
+            )
 
         messages.success(request, "You have successfully joined the community!")
 
@@ -1004,6 +1126,24 @@ def join_community_action(request, community_id):
                 VALUES (%s, %s, 'Member', NOW())
             """, [community_id, user_id])
 
+        # Notify community admins about the new member
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND role = 'Admin'",
+                [community_id]
+            )
+            admins = cursor.fetchall()
+
+        community = Community.objects.get(communityID=community_id)
+        for admin in admins:
+            admin_id = admin[0]
+            admin_user = CustomUser.objects.get(userID=admin_id)
+            send_notification(
+                user=admin_user,
+                message=f"{user.username} has joined your community '{community.name}'",
+                notification_type="community"
+            )
+
         messages.success(request, "You have successfully joined the community!")
 
     # Redirect back to the same page the user came from
@@ -1023,6 +1163,16 @@ def create_post(request):
                 post.image = result['secure_url']
 
             post.save()
+
+            # Notify followers about the new post
+            followers = CustomUser.objects.filter(following__following=request.user)
+            for follower in followers:
+                send_notification(
+                    user=follower,
+                    message=f"{request.user.username} created a new post",
+                    notification_type="post"
+                )
+
             messages.success(request, "Post created successfully!")
             return redirect("home")
     else:
@@ -1030,8 +1180,6 @@ def create_post(request):
 
     return render(request, "profile/create_post.html", {"form": form})
 
-
-@login_required
 @login_required
 def admin_view(request):
     users = CustomUser.objects.all()
@@ -1252,6 +1400,13 @@ def start_chat(request, target_id):
 
         channel.create(user_id=str(current_user.userID))
 
+        # Send notification to the target user
+        send_notification(
+            user=target_user,
+            message=f"{current_user.username} sent you a message",
+            notification_type="message"
+        )
+
         # 🛠️ Correct profile picture handling
         profile = Profile.objects.filter(user=target_user).first()
         profile_url = None
@@ -1326,7 +1481,6 @@ def chat_user_list(request):
         "communities": community_chats
     })
 
-
 @login_required
 def start_community_chat(request, community_id):
     current_user = request.user
@@ -1378,10 +1532,16 @@ def toggle_like(request):
         liked = False
     else:
         liked = True
+        # Notify the post owner about the like
+        if post.user != user:  # Don't notify if the user likes their own post
+            send_notification(
+                user=post.user,
+                message=f"{user.username} liked your post",
+                notification_type="like"
+            )
 
     like_count = post.likes.count()
     return JsonResponse({"liked": liked, "like_count": like_count})
-
 
 @require_POST
 @login_required
@@ -1397,8 +1557,14 @@ def toggle_follow(request):
     if not created:
         return JsonResponse({"message": "Already following."}, status=200)
 
-    return JsonResponse({"message": "Followed successfully!"}, status=201)
+    # Notify the target user about the new follower
+    send_notification(
+        user=target_user,
+        message=f"{request.user.username} started following you",
+        notification_type="follow"
+    )
 
+    return JsonResponse({"message": "Followed successfully!"}, status=201)
 
 @require_POST
 @login_required
@@ -1412,3 +1578,25 @@ def toggle_unfollow(request):
         return JsonResponse({"message": "Unfollowed successfully."}, status=200)
     except Follow.DoesNotExist:
         return JsonResponse({"error": "You are not following this user."}, status=400)
+
+@login_required
+def notifications_view(request):
+    """Display all notifications for the logged-in user."""
+    notifications = Notifications.objects.filter(userID=request.user).order_by('-createdAt')
+    return render(request, 'notifications.html', {
+        'notifications': notifications,
+        'user_id': request.user.userID,
+    })
+
+@login_required
+@require_POST
+def mark_notification_read(request):
+    """Mark a notification as read."""
+    notification_id = request.POST.get('notification_id')
+    try:
+        notification = Notifications.objects.get(notificationID=notification_id, userID=request.user)
+        notification.status = 'read'
+        notification.save()
+        return JsonResponse({'success': True})
+    except Notifications.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Notification not found'}, status=404)

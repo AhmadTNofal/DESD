@@ -171,8 +171,6 @@ class Like(models.Model):
         db_table = "Likes"
         managed = False  # Because you're managing the table manually
 
-
-# models.py
 class Follow(models.Model):
     follower = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='following')
     following = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='followers')
@@ -180,4 +178,43 @@ class Follow(models.Model):
 
     class Meta:
         unique_together = ('follower', 'following')
+        db_table = "accounts_follow"
+        managed = False
 
+class Notifications(models.Model):
+    notificationID = models.AutoField(primary_key=True)
+    userID = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_column="userID")
+    message = models.TextField()
+    type = models.CharField(max_length=50)  # e.g., "post", "follow", "message", "event", "community", "like"
+    status = models.CharField(max_length=20, default="unread")  # "unread" or "read"
+    createdAt = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "Notifications"
+        managed = False
+
+    def __str__(self):
+        return f"Notification for {self.userID.username}: {self.message}"
+
+class NotificationPreferences(models.Model):
+    preferenceID = models.AutoField(primary_key=True)
+    userID = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_column="userID")
+    email_post = models.BooleanField(default=True)
+    email_follow = models.BooleanField(default=True)
+    email_message = models.BooleanField(default=True)
+    email_event = models.BooleanField(default=True)
+    email_community = models.BooleanField(default=True)
+    email_like = models.BooleanField(default=True)
+    in_app_post = models.BooleanField(default=True)
+    in_app_follow = models.BooleanField(default=True)
+    in_app_message = models.BooleanField(default=True)
+    in_app_event = models.BooleanField(default=True)
+    in_app_community = models.BooleanField(default=True)
+    in_app_like = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "NotificationPreferences"
+        managed = False
+
+    def __str__(self):
+        return f"Preferences for {self.userID.username}"

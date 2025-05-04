@@ -8,3 +8,5 @@ python-jose==3.3.0
 stream-chat
 cloudinary
 django-cloudinary-storage
+channels>=4.0.0,<5.0.0
+channels-redis>=4.0.0,<5.0.0

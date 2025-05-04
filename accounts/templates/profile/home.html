@@ -25,6 +25,15 @@
             </span>
             <span class="search-tooltip">Messages</span>
         </a>
+        <a href="{% url 'notifications' %}" class="search-icon">
+            <span class="icon-wrapper">
+                <i class="fa-solid fa-bell"></i>
+                {% if unread_notifications > 0 %}
+                    <span class="badge-circle">{{ unread_notifications }}</span>
+                {% endif %}
+            </span>
+            <span class="search-tooltip">Notifications</span>
+        </a>
     </div>
 
 

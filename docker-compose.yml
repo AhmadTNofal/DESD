@@ -15,4 +15,15 @@ services:
       DB_HOST: passwordlessauth.chu26k8yu6en.eu-west-2.rds.amazonaws.com
       DB_PORT: "3306"
       DEBUG: "1"
+    depends_on:
+      - redis  # Ensure the web service depends on Redis
 
+  redis:
+    image: redis:6.2-alpine  # Use a lightweight Redis image
+    ports:
+      - "6379:6379"  # Expose Redis port
+    volumes:
+      - redis-data:/data  # Persist Redis data
+
+volumes:
+  redis-data:  # Define a volume for Redis data persistence
