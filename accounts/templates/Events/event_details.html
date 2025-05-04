@@ -20,7 +20,11 @@
         {% else %}
             <p><strong>Location:</strong> {{ event.location }}</p>
         {% endif %}
-
+        <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text={{ event.eventTitle|urlencode }}&dates={{ event.eventDate|date:'Ymd' }}T{{ event.eventTime|time:'Hi' }}00Z/{{ event.eventDate|date:'Ymd' }}T{{ event.eventTime|time:'Hi' }}00Z&details={{ event.description|urlencode }}&location={{ event.location|urlencode }}" target="_blank">
+            Add to Google Calendar
+        </a>
+        
+        
         <a href="{% url 'events' %}" class="back-link">Back to Events</a>
     </div>
 </body>

@@ -633,10 +633,13 @@ def event_details(request, event_id):
 
     return render(request, "Events/event_details.html", {"event": event_data})
 
+from uuid import uuid4  # for generating unique Jitsi room names
+
 @login_required
 def create_event(request):
     user_id = request.user.userID
 
+    # Fetch communities where user is Admin
     with connection.cursor() as cursor:
         cursor.execute(
             "SELECT c.communityID, c.name FROM CommunityMemberships cm "
@@ -657,32 +660,23 @@ def create_event(request):
             location = data['location'] if not is_online else None
             description = data['description']
             virtual_link = None
-            zoom_meeting_id = None
 
+            # ✅ If online, generate Jitsi link
             if is_online:
-                try:
-                    virtual_link, zoom_meeting_id = create_zoom_meeting(
-                        event_title=data['eventTitle'],
-                        event_date=str(data['eventDate']),
-                        event_time=data['eventTime'].strftime("%H:%M")
-                    )
-                except Exception as e:
-                    messages.error(request, f"Failed to create Zoom meeting: {e}")
-                    return render(request, 'Events/create_event.html', {
-                        'form': form,
-                        'communities': communities
-                    })
+                room_name = f"Jitsi_{uuid4().hex[:10]}"
+                virtual_link = f"https://meet.jit.si/{room_name}"
 
+            # ✅ Insert event into DB
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
                     INSERT INTO Events (communityID, eventTitle, eventDate, eventTime, location, virtualLink, description, createdBy, createdAt, zoom_meeting_id)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW(), NULL)
                     """,
-                    [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, description, user_id, zoom_meeting_id]
+                    [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, description, user_id]
                 )
 
-            # Notify community members about the new event
+            # ✅ Notify members of the new event
             with connection.cursor() as cursor:
                 cursor.execute(
                     "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
@@ -840,6 +834,34 @@ def cancel_event(request):
             return redirect('cancel_events')
 
     return render(request, 'Events/cancel_event.html', {'events': events})
+
+@login_required
+def embedded_meeting(request, room_slug):
+    user_id = request.user.userID
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT eventID, createdBy, virtualLink
+            FROM Events
+            WHERE virtualLink LIKE %s
+        """, [f"https://meet.jit.si/{room_slug}"])
+        event = cursor.fetchone()
+
+    if not event:
+        messages.error(request, "Event not found.")
+        return redirect("home")  # Redirect to home if not found
+
+    event_id, created_by_id, virtual_link = event
+
+    if user_id != created_by_id:
+        messages.warning(request, "Only the event creator can start the meeting.")
+        return redirect("home")  # ✅ Redirect to home instead of the Jitsi link
+
+    return render(request, 'Events/embedded_meeting.html', {
+        'room_name': room_slug
+    })
+
+
 
 @login_required
 def join_community(request):

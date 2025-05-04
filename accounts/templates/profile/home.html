@@ -10,6 +10,7 @@
 </head>
 
 <body>
+    
     <!-- Top Search Bar -->
     <div class="top-bar">
         <a href="{% url 'search_page' %}" class="search-icon">
@@ -39,6 +40,14 @@
     <!-- Main Feed -->
     <div class="container">
         <h1>Welcome, {{ request.user.username }}!</h1>
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <div class="feed">
             {% for post in posts %}
                 <div class="post">

@@ -214,6 +214,12 @@ class Notifications(models.Model):
     def __str__(self):
         return f"Notification for {self.userID.username}: {self.message}"
 
+class EventRegistration(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    event = models.ForeignKey('Events', on_delete=models.CASCADE)
+    registered_at = models.DateTimeField(auto_now_add=True)
+
+
 class NotificationPreferences(models.Model):
     preferenceID = models.AutoField(primary_key=True)
     userID = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_column="userID")

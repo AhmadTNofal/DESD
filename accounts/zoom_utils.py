@@ -67,7 +67,7 @@ def create_zoom_meeting(event_title, event_date, event_time, duration=60):
     
     if response.status_code == 201:
         meeting_data = response.json()
-        return meeting_data["join_url"], meeting_data["id"]  # Return join_url and meeting ID
+        return meeting_data["join_url"] + "?browser=1", meeting_data["id"]  # Return join_url and meeting ID
     else:
         raise Exception(f"Failed to create Zoom meeting: {response.text}")
 

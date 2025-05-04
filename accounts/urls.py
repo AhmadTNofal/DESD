@@ -47,6 +47,7 @@ urlpatterns = [
     path("chat/token/", views.stream_user_token, name="stream_user_token"),
     path("chat/start/<int:target_id>/", views.start_chat, name="start_chat"),
     path("chat/users/", views.chat_user_list, name="chat_user_list"),
+    path("event/meeting/<str:room_slug>/", views.embedded_meeting, name="embedded_meeting"),
 
     path("chat/community/start/<int:community_id>/", views.start_community_chat, name="start_community_chat"),
     path("chat/communities/", views.chat_community_list, name="chat_community_list"),
