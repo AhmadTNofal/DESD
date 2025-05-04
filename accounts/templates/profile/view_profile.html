@@ -1,75 +1,271 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Search</title>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for Instagram-like design with enhancements */
+        .profile-picture {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border: 3px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .profile-picture:hover {
+            transform: scale(1.05);
+        }
+        .follow-button, .unfollow-button {
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .follow-button {
+            background-color: #0095f6;
+            color: white;
+            border: none;
+        }
+        .follow-button:hover {
+            background-color: #007bb5;
+        }
+        .unfollow-button {
+            background-color: #ffffff;
+            color: #262626;
+            border: 1px solid #dbdbdb;
+        }
+        .unfollow-button:hover {
+            background-color: #fafafa;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 80%;
+            text-align: center;
+        }
+        .modal-content img {
+            max-width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+        }
+        .modal-caption {
+            color: white;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .uploaded-image {
+            position: relative;
+            overflow: hidden;
+        }
+        .uploaded-image img {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .uploaded-image img:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        .image-subtitle {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 8px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .uploaded-image:hover .image-subtitle {
+            opacity: 1;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .profile-picture {
+                width: 80px;
+                height: 80px;
+            }
+            .profile-header {
+                flex-direction: column;
+                align-items: flex-start;
+               
+            }
+            .uploaded-pictures {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+    </style>
 </head>
-<body>
-    <div class="profile-container">
-        <!-- Username -->
-        <h2 class="username">{{ user.username }}</h2>
-
-        <!-- Profile Picture and Name -->
-        <div class="profile-header">
-            {% if profile and profile.profile_picture %}
-            <img src="{{ profile.profile_picture }}" alt="Profile Picture" class="profile-picture">
-            {% elif user.profile_picture %}
-                <img src="{{ user.profile_picture }}" alt="Profile Picture" class="profile-picture">
-            {% else %}
-                <img src="{% static 'accounts/images/default-profile.png' %}" alt="Default Profile Picture" class="profile-picture">
-            {% endif %}
-            <span class="full-name">{{ user.surname }}</span>
+<body class="bg-gray-50 font-sans">
+    <div class="max-w-4xl mx-auto p-4 sm:p-6">
+        <!-- Profile Header -->
+        <div class="profile-header flex flex-col sm:flex-row sm:items-center sm:space-x-6 mb-6">
+            <div class="mb-4 sm:mb-0">
+                {% if profile and profile.profile_picture %}
+                    <img src="{{ profile.profile_picture }}" alt="Profile Picture" class="profile-picture rounded-full">
+                {% elif user.profile_picture %}
+                    <img src="{{ user.profile_picture }}" alt="Profile Picture" class="profile-picture rounded-full">
+                {% else %}
+                    <img src="{% static 'accounts/images/default-profile.png' %}" alt="Default Profile Picture" class="profile-picture rounded-full">
+                {% endif %}
+            </div>
+            <div class="flex-1">
+                <div class="flex items-center space-x-4 mb-2">
+                    <h2 class="username text-xl sm:text-2xl font-semibold text-gray-800">{{ user.username }}</h2>
+                    {% if request.user.userID != user.userID %}
+                        <form method="POST" action="{% url 'toggle_follow' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" value="{{ user.userID }}">
+                            <button type="submit" class="{% if is_following %}unfollow-button{% else %}follow-button{% endif %} px-4 py-1 text-sm">
+                                {% if is_following %}Unfollow{% else %}Follow{% endif %}
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+                <div class="flex space-x-6 text-sm text-gray-600 mb-2">
+                    <p><strong>{{ posts|length }}</strong> posts</p>
+                    <p><strong>{{ followers_count }}</strong> followers</p>
+                    <p><strong>{{ following_count }}</strong> following</p>
+                </div>
+                <div>
+                    <span class="full-name font-medium text-gray-800">{{ user.surname }}</span>
+                    <p class="bio text-gray-600 text-sm mt-1">{{ profile.bio|default:"" }}</p>
+                </div>
+            </div>
         </div>
 
-        <!-- Bio -->
-        <p class="bio">{{ profile.bio|default:"Not provided" }}</p>
-
         <!-- Additional Info -->
-        <div class="profile-details">
+        <div class="profile-details bg-white border border-gray-200 rounded-lg p-4 mb-6 text-sm text-gray-700">
             <p><strong>Email:</strong> {{ user.email }}</p>
             <p><strong>Major:</strong> {{ profile.major|default:"Not provided" }}</p>
             <p><strong>Academic Year:</strong> {{ profile.academicYear|default:"Not provided" }}</p>
             <p><strong>Campus Involvement:</strong> {{ profile.campusInvolvement|default:"Not provided" }}</p>
         </div>
-    </div>
-<!-- User's Uploaded Pictures -->
-<div class="user-uploads">
-    <h3>Uploaded Pictures</h3>
-    <div class="uploaded-pictures">
-        {% for post in posts %}
-            {% if post.image %}
-                <div class="uploaded-image">
-                    <img src="{{ post.image }}" alt="User Uploaded Image"
-                         onclick="openModal('{{ post.image }}', '{{ post.content|escapejs }}')">
+
+        <!-- Followers and Following Lists -->
+        <div class="flex flex-col sm:flex-row sm:space-x-4 mb-6">
+            <!-- Followers List -->
+            {% if followers %}
+                <div class="flex-1 bg-white border border-gray-200 rounded-lg p-4 mb-4 sm:mb-0">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Followers</h4>
+                    <ul class="space-y-2 text-sm">
+                        {% for follower in followers %}
+                            <li>
+                                <a href="{% url 'view_profile' follower.userID %}" class="text-blue-500 hover:underline">
+                                    {{ follower.username }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
                 </div>
             {% endif %}
-        {% empty %}
-            <p>No uploads yet.</p>
-        {% endfor %}
+
+            <!-- Following List -->
+            {% if following %}
+                <div class="flex-1 bg-white border border-gray-200 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Following</h4>
+                    <ul class="space-y-2 text-sm">
+                        {% for followee in following %}
+                            <li>
+                                <a href="{% url 'view_profile' followee.userID %}" class="text-blue-500 hover:underline">
+                                    {{ followee.username }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- User's Uploaded Pictures -->
+        <div class="user-uploads">
+            <div class="border-t border-gray-200 pt-4">
+                <div class="uploaded-pictures grid grid-cols-3 gap-1 sm:gap-2">
+                    {% for post in posts %}
+                        {% if post.image %}
+                            <div class="uploaded-image">
+                                <img src="{{ post.image }}" alt="User Uploaded Image" class="w-full h-32 sm:h-48 object-cover cursor-pointer"
+                                     onclick="openModal('{{ post.image }}', '{{ post.content|escapejs }}')">
+                                <div class="image-subtitle">{{ post.content|truncatechars:50 }}</div>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <p class="col-span-3 text-gray-600 text-center">No posts yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
-<!-- Image Modal -->
-<div id="imageModal" class="modal" onclick="closeModal()">
-    <span class="modal-close" onclick="closeModal()">&times;</span>
-    <div class="modal-content" onclick="event.stopPropagation();">
-        <img id="modalImage" src="" alt="Full Image">
-        <p class="modal-caption" id="modalCaption"></p>
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="modal-close" onclick="closeModal()">×</span>
+        <div class="modal-content" onclick="event.stopPropagation();">
+            <img id="modalImage" src="" alt="Full Image">
+            <p class="modal-caption" id="modalCaption"></p>
+        </div>
     </div>
-</div>
 
-<!-- Modal JavaScript -->
-<script>
-    function openModal(imageUrl, caption) {
-        document.getElementById("modalImage").src = imageUrl;
-        document.getElementById("modalCaption").textContent = caption;
-        document.getElementById("imageModal").style.display = "flex";
-    }
+    <!-- Modal JavaScript -->
+    <script>
+        function openModal(imageUrl, caption) {
+            document.getElementById("modalImage").src = imageUrl;
+            document.getElementById("modalCaption").textContent = caption;
+            document.getElementById("imageModal").style.display = "flex";
+        }
 
-    function closeModal() {
-        document.getElementById("imageModal").style.display = "none";
-    }
-</script>
+        function closeModal() {
+            document.getElementById("imageModal").style.display = "none";
+        }
+
+        document.querySelector("button[type='submit']")?.addEventListener("click", async function (e) {
+            e.preventDefault();
+            const form = this.closest("form");
+            const formData = new FormData(form);
+            const isFollowing = this.innerText.trim() === "Unfollow";
+            const url = isFollowing ? "/unfollow/" : "/follow/";
+
+            const response = await fetch(url, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": formData.get("csrfmiddlewaretoken")
+                }
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                this.innerText = isFollowing ? "Follow" : "Unfollow";
+                this.classList.toggle("follow-button");
+                this.classList.toggle("unfollow-button");
+                location.reload();
+            } else {
+                alert(data.error || "Something went wrong");
+            }
+        });
+    </script>
 </body>
 </html>

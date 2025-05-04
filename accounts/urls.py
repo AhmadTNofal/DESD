@@ -52,5 +52,8 @@ urlpatterns = [
     path("chat/communities/", views.chat_community_list, name="chat_community_list"),
     path('profile/<str:username>/', views.user_profile, name='user_profile'),
     path("toggle_like/", views.toggle_like, name="toggle_like"),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # urls.py
+path('follow/', views.toggle_follow, name='toggle_follow'),
+path('unfollow/', views.toggle_unfollow, name='toggle_unfollow'),
 
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

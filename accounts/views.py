@@ -26,6 +26,9 @@ from stream_chat import StreamChat
 import cloudinary.uploader
 from django.http import JsonResponse
 from .models import Like
+from .models import Follow
+from django.views.decorators.http import require_POST
+
 
 @login_required
 def home(request):
@@ -192,18 +195,35 @@ def search_suggestions(request):
 
     return JsonResponse({"suggestions": suggestions})
 
-def view_profile(request, user_id):
-    user = CustomUser.objects.get(userID=user_id)  # Fetch user by ID
-    profile = Profile.objects.filter(user=user).first()  # Fetch profile
+from django.shortcuts import render, get_object_or_404
+from .models import CustomUser, Profile, Post, Follow
 
-    # Fetch posts by this user
+def view_profile(request, user_id):
+    user = CustomUser.objects.get(userID=user_id)
+    profile = Profile.objects.filter(user=user).first()
     posts = Post.objects.filter(user=user).exclude(image='').order_by('-createdAt')
+
+    # People who follow this user
+    followers = CustomUser.objects.filter(following__following=user)
+
+    # People this user follows
+    following = CustomUser.objects.filter(followers__follower=user)
+
+    is_following = False
+    if request.user.is_authenticated:
+        is_following = Follow.objects.filter(follower=request.user, following=user).exists()
 
     return render(request, 'profile/view_profile.html', {
         'user': user,
         'profile': profile,
-        'posts': posts,  # Pass posts to template
+        'posts': posts,
+        'followers': followers,
+        'following': following,
+        'followers_count': followers.count(),
+        'following_count': following.count(),
+        'is_following': is_following,
     })
+
 
 from django.shortcuts import get_object_or_404
 
@@ -1361,3 +1381,34 @@ def toggle_like(request):
 
     like_count = post.likes.count()
     return JsonResponse({"liked": liked, "like_count": like_count})
+
+
+@require_POST
+@login_required
+def toggle_follow(request):
+    target_id = request.POST.get("user_id")
+    target_user = get_object_or_404(CustomUser, userID=target_id)
+
+    if request.user == target_user:
+        return JsonResponse({"error": "You cannot follow yourself."}, status=400)
+
+    follow, created = Follow.objects.get_or_create(follower=request.user, following=target_user)
+
+    if not created:
+        return JsonResponse({"message": "Already following."}, status=200)
+
+    return JsonResponse({"message": "Followed successfully!"}, status=201)
+
+
+@require_POST
+@login_required
+def toggle_unfollow(request):
+    target_id = request.POST.get("user_id")
+    target_user = get_object_or_404(CustomUser, userID=target_id)
+
+    try:
+        follow = Follow.objects.get(follower=request.user, following=target_user)
+        follow.delete()
+        return JsonResponse({"message": "Unfollowed successfully."}, status=200)
+    except Follow.DoesNotExist:
+        return JsonResponse({"error": "You are not following this user."}, status=400)
