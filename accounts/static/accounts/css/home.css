@@ -773,6 +773,55 @@ h2 {
     font-size: 30px;
     cursor: pointer;
 }
+.comment-btn {
+    background: none;
+    border: none;
+    font-size: 20px; 
+    cursor: pointer;
+    color: #262626;  
+    transition: color 0.3s ease;
+    margin-left: 0; 
+}
+
+.comment-btn:hover {
+    color: #007bff;
+}
+
+.comments-section {
+    margin-top: 10px;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+.comments-section form {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+}
+
+.comments-section input[type="text"] {
+    flex-grow: 1;
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+}
+.comment-toggle-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 1rem; 
+    display: flex;
+    align-items: center;
+    gap: 4px; /* space between icon and number */
+}
+
+.comment-toggle-btn i {
+    color: #333;
+}
+
+
+
 
 
   

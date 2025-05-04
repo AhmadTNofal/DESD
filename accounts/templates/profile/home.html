@@ -36,7 +36,6 @@
         </a>
     </div>
 
-
     <!-- Main Feed -->
     <div class="container">
         <h1>Welcome, {{ request.user.username }}!</h1>
@@ -47,49 +46,86 @@
                         <img src="{{ post.image }}" alt="Post Image">
                     {% endif %}
                     <div class="post-content">
+                        <!-- Like & Comment Buttons -->
                         <div class="post-actions">
+                            <!-- Like -->
                             <button class="like-btn" onclick="toggleLike('{{ post.postID }}', this)">
                                 <i class="fa-heart {% if post.is_liked_by_user %}fa-solid{% else %}fa-regular{% endif %}"></i>
                                 <span class="like-count">{{ post.likes.count }}</span>
                             </button>
-                        </div>                        
+
+                            <!-- Comment -->
+                            <button class="comment-toggle-btn" onclick="toggleComments('{{ post.postID }}')">
+                                <i class="fa-regular fa-comment"></i>
+                                <span class="comment-count">{{ post.comments.count }}</span>
+                            </button>
+                        </div>
+
+                        <!-- Post Info -->
                         <p><strong>{{ post.user.username }}</strong></p>
                         <p class="timestamp">{{ post.createdAt|date:"F j, Y, g:i a" }}</p>
                         <p>{{ post.content }}</p>
+
+                        <!-- Comments Section (Initially Hidden) -->
+                        <div id="comments-{{ post.postID }}" class="comments-section" style="display: none;">
+                            <h4>Comments</h4>
+                            {% for comment in post.comments.all %}
+                                <div class="comment">
+                                    <strong>{{ comment.user.username }}:</strong> {{ comment.content }}
+                                    <small class="timestamp">{{ comment.createdAt|date:"F j, Y, g:i a" }}</small>
+                                </div>
+                            {% empty %}
+                                <p>No comments yet.</p>
+                            {% endfor %}
+
+                            <!-- Add Comment Form -->
+                            <form method="post" action="{% url 'add_comment' post.postID %}">
+                                {% csrf_token %}
+                                <div class="comment-form">
+                                    <input type="text" name="content" placeholder="Write a comment..." required>
+                                    <button type="submit" class="comment-btn">
+                                        <i class="fa-regular fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             {% empty %}
                 <p>No posts yet.</p>
             {% endfor %}
         </div>        
-    <!-- Bottom Navbar -->
-    <nav class="bottom-navbar">
-        <a href="{% url 'communities' %}" class="nav-item">
-            <i class="fa-solid fa-users"></i>  <!-- Communities Icon -->
-            <span class="tooltip">Communities</span>
-        </a>
-        <a href="{% url 'events' %}" class="nav-item">
-            <i class="fa-solid fa-calendar"></i>  <!-- Events Icon -->
-            <span class="tooltip">Events</span>
-        </a>
-        <div class="nav-item create-post-btn">
-            <a href="{% url 'create_post' %}" class="create-icon">
-                <i class="fa-solid fa-plus"></i>
-            </a>
-            <span class="tooltip">Create</span>
-        </div>
-        <a href="{% url 'profile_settings' %}" class="nav-item">
-            <i class="fa-solid fa-user"></i>  <!-- Profile Icon -->
-            <span class="tooltip">Profile</span>
-        </a>
-        {% if request.user.Permission == "Admin" %}
-        <a href="{% url 'admin_view' %}" class="nav-item">
-            <i class="fa-solid fa-user-shield"></i>  <!-- Admin Icon -->
-            <span class="tooltip">Admin</span>
-        </a>
-        {% endif %}    
-    </nav>
 
+        <!-- Bottom Navbar -->
+        <nav class="bottom-navbar">
+            <a href="{% url 'communities' %}" class="nav-item">
+                <i class="fa-solid fa-users"></i>
+                <span class="tooltip">Communities</span>
+            </a>
+            <a href="{% url 'events' %}" class="nav-item">
+                <i class="fa-solid fa-calendar"></i>
+                <span class="tooltip">Events</span>
+            </a>
+            <div class="nav-item create-post-btn">
+                <a href="{% url 'create_post' %}" class="create-icon">
+                    <i class="fa-solid fa-plus"></i>
+                </a>
+                <span class="tooltip">Create</span>
+            </div>
+            <a href="{% url 'profile_settings' %}" class="nav-item">
+                <i class="fa-solid fa-user"></i>
+                <span class="tooltip">Profile</span>
+            </a>
+            {% if request.user.Permission == "Admin" %}
+            <a href="{% url 'admin_view' %}" class="nav-item">
+                <i class="fa-solid fa-user-shield"></i>
+                <span class="tooltip">Admin</span>
+            </a>
+            {% endif %}    
+        </nav>
+    </div>
+
+    <!-- JS Scripts -->
     <script>
         function toggleLike(postId, btn) {
             fetch("{% url 'toggle_like' %}", {
@@ -109,7 +145,11 @@
                 count.textContent = data.like_count;
             });
         }
-        </script>
-        
+
+        function toggleComments(postId) {
+            const section = document.getElementById(`comments-${postId}`);
+            section.style.display = (section.style.display === "none") ? "block" : "none";
+        }
+    </script>
 </body>
 </html>

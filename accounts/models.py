@@ -171,6 +171,24 @@ class Like(models.Model):
         db_table = "Likes"
         managed = False  # Because you're managing the table manually
 
+from django.db import models
+from django.contrib.auth.models import User
+
+class Comment(models.Model):
+    content = models.TextField()
+    createdAt = models.DateTimeField(db_column='createdAt', auto_now_add=True)  # Adjusted to match typical usage
+    updatedAt = models.DateTimeField(db_column='updatedAt', auto_now=True)  # Adjusted to match typical usage
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Use CustomUser via AUTH_USER_MODEL
+    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='comments')
+
+    def __str__(self):
+        return f"{self.user.username} on {self.post.postID}"
+
+    class Meta:
+        db_table = "accounts_comment"  # Ensure this matches your database table name
+        managed = False  # Since MySQL manages this table
+
+
 class Follow(models.Model):
     follower = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='following')
     following = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='followers')

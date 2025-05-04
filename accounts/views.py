@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
@@ -12,8 +12,8 @@ from .models import CustomUser, Community, CommunityMembership, Profile, Notific
 from .forms import CommunityForm, EventForm
 from django.urls import reverse
 from datetime import date
-from .models import Post 
-from .forms import PostForm 
+from .models import Post, Comment 
+from .forms import PostForm, CommentForm 
 from django.core.files.storage import default_storage 
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
@@ -31,6 +31,7 @@ from django.views.decorators.http import require_POST
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.core.mail import send_mail
+
 
 def send_notification(user, message, notification_type):
     """Helper function to create and send a notification."""
@@ -72,7 +73,6 @@ def send_notification(user, message, notification_type):
                 'notification_type': notification_type,
             }
         )
-
 @login_required
 def home(request):
     posts = Post.objects.all().order_by('-createdAt')
@@ -1600,3 +1600,50 @@ def mark_notification_read(request):
         return JsonResponse({'success': True})
     except Notifications.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Notification not found'}, status=404)
+
+@login_required
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, postID=post_id)
+    comments = post.comments.all().order_by('-created_at')
+    form = CommentForm()
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = request.user
+            comment.post = post
+            comment.save()
+            return redirect('post_detail', post_id=post_id)
+
+    return render(request, 'posts/post_detail.html', {
+        'post': post,
+        'comments': comments,
+        'form': form
+    })
+
+@login_required
+def add_comment(request, post_id):
+    if request.method == "POST":
+        content = request.POST.get("content")
+        post = get_object_or_404(Post, pk=post_id)
+
+        if content:
+            # Ensure request.user is resolved to a CustomUser instance
+            user = request.user  # This should resolve the SimpleLazyObject
+            if not isinstance(user, CustomUser):
+                raise ValueError(f"Expected CustomUser instance, got {type(user)}")
+
+            # Create the comment with the resolved user
+            comment = Comment.objects.create(content=content, user=user, post=post)
+            
+            # Notify the post owner about the new comment
+            if post.user != request.user:  # Avoid self-notification
+                send_notification(
+                    user=post.user,
+                    message=f"{request.user.username} commented on your post",
+                    notification_type="comment"
+                )
+
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+    return redirect('post_detail', post_id=post_id)  # Handle GET requests gracefully
