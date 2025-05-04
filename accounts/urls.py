@@ -42,7 +42,7 @@ urlpatterns = [
     path('remove-community/', views.remove_community, name='remove_community'),
     path('remove-event/', views.remove_event, name='remove_event'),
 
-    path('admin/review-community/', views.review_community, name='review_community'),
+    path('review-community/', views.review_community, name='review_community'),
 
     path("chat/token/", views.stream_user_token, name="stream_user_token"),
     path("chat/start/<int:target_id>/", views.start_chat, name="start_chat"),
