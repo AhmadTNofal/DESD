@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifications</title>
-    <link rel="stylesheet" href="{% static 'accounts/css/notifications.css' %}"> <!-- Adjust based on your CSS file -->
+    <link rel="stylesheet" href="{% static 'accounts/css/notifications.css' %}">
 </head>
 <body>
     <!-- Include CSRF token -->
@@ -31,7 +31,13 @@
         {% endif %}
     </div>
 
-    <script src="{% static 'accounts/js/notifications.js' %}"></script>
+    <!-- Pass variables to JavaScript -->
+    <script>
+        window.userId = "{{ user_id }}";
+        window.markNotificationReadUrl = "{% url 'mark_notification_read' %}";
+        window.csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    </script>
 
+    <script src="{% static 'accounts/js/notifications.js' %}"></script>
 </body>
 </html>
