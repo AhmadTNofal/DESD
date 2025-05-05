@@ -9,35 +9,54 @@
     
     <script>
         function validateForm(event) {
-            event.preventDefault(); // Prevent form submission until validation
+    event.preventDefault(); // Prevent form submission until validation
 
-            let password = document.getElementById("password").value;
-            let confirmPassword = document.getElementById("confirm_password").value;
-            let phoneNumber = document.getElementById("phoneNumber").value;
-            let academicYear = document.getElementById("academicYear").value.trim();
-            let errorMsg = "";
+    let errorMsg = "";  // Move this up here to capture *all* validation errors
 
-            // Check if passwords match
-            if (password !== confirmPassword) {
-                errorMsg += "Passwords do not match.\n";
-            }
-
-            // Check if academic year is only numbers
-            if (!/^\d+$/.test(academicYear)) {
-                errorMsg += "Academic year must contain only numbers.\n";
-            }
-
-            // Check if phone number is only numbers
-            if (!/^\d+$/.test(phoneNumber)) {
-                errorMsg += "Phone number must contain only numbers.\n";
-            }
-
-            if (errorMsg) {
-                alert(errorMsg); // Show error message
-            } else {
-                document.getElementById("signup-form").submit(); // Submit the form
-            }
+    let dob = document.getElementById("date_of_birth").value;
+    if (dob) {
+        let birthDate = new Date(dob);
+        let today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        let m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
         }
+
+        if (age < 16) {
+            errorMsg += "You must be at least 16 years old to sign up.\n";
+        }
+        if (birthDate > today) {
+            errorMsg += "Date of Birth cannot be in the future.\n";
+        }
+    }
+
+    let password = document.getElementById("password").value;
+    let confirmPassword = document.getElementById("confirm_password").value;
+    let phoneNumber = document.getElementById("phoneNumber").value;
+    let academicYear = document.getElementById("academicYear").value.trim();
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+        errorMsg += "Passwords do not match.\n";
+    }
+
+    // Check if academic year is only numbers
+    if (!/^\d+$/.test(academicYear)) {
+        errorMsg += "Academic year must contain only numbers.\n";
+    }
+
+    // Check if phone number is only numbers
+    if (!/^\d+$/.test(phoneNumber)) {
+        errorMsg += "Phone number must contain only numbers.\n";
+    }
+
+    if (errorMsg) {
+        alert(errorMsg); // Show all error messages
+    } else {
+        document.getElementById("signup-form").submit(); // Submit the form
+    }
+}
     </script>
 </head>
 <body>
@@ -76,11 +95,23 @@
 
                     <label for="confirm_password">Confirm Password *</label>
                     <input type="password" id="confirm_password" name="confirm_password" required placeholder="Re-enter your password">
-                </div>
 
+                    <label for="date_of_birth">Date of Birth *</label>
+                    <input type="date" id="date_of_birth" name="date_of_birth" required>
+                </div>
+                
                 <!-- Right Column: More Information -->
                 <div class="form-section more-info">
                     <h3>More Information</h3>
+
+                    <label for="city">City *</label>
+                    <input type="text" id="city" name="city" required placeholder="Enter your city">
+
+                    <label for="street_name">Street Name *</label>
+                    <input type="text" id="street_name" name="street_name" required placeholder="Enter your street">
+
+                    <label for="post_code">Post Code *</label>
+                    <input type="text" id="post_code" name="post_code" required placeholder="Enter your postal code">
 
                     <label for="bio">Bio *</label>
                     <textarea id="bio" name="bio" required placeholder="Tell us about yourself"></textarea>

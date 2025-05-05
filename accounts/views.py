@@ -360,6 +360,10 @@ def signup(request):
         major = request.POST.get("major", "")
         academicYear = request.POST.get("academicYear", "")
         campusInvolvement = request.POST.get("campusInvolvement", "")
+        date_of_birth = request.POST.get("date_of_birth")
+        city = request.POST.get("city")
+        street_name = request.POST.get("street_name")
+        post_code = request.POST.get("post_code")
 
         try:
             with connection.cursor() as cursor:
@@ -394,11 +398,11 @@ def signup(request):
 
                 # Insert into Profiles table
                 cursor.execute("""
-                    INSERT INTO `Profiles` (userID, bio, major, academicYear, campusInvolvement)
-                    VALUES (%s, %s, %s, %s, %s)
-                """, [user_id, bio, major, academicYear, campusInvolvement])
+                    INSERT INTO `Profiles` (userID, bio, major, academicYear, campusInvolvement, date_of_birth, city, street_name, post_code)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, [user_id, bio, major, academicYear, campusInvolvement, date_of_birth, city, street_name, post_code])
 
-            # ✅ Authenticate and Log in the user
+            # Authenticate and Log in the user
             user = CustomUser.objects.get(userID=user_id)  # Get the newly created user
             user.backend = 'django.contrib.auth.backends.ModelBackend'  # Required to log in manually
             login(request, user)  # Log the user in
