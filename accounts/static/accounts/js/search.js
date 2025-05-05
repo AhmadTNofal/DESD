@@ -5,7 +5,55 @@ document.addEventListener("DOMContentLoaded", function () {
     const suggestionsContainer = document.createElement("div");
     suggestionsContainer.className = "suggestions-container";
     searchInput.parentElement.appendChild(suggestionsContainer);
+    const input = document.getElementById("liveSearchInput");
+    const resultsBox = document.getElementById("liveSearchResults");
 
+    async function fetchResults(query) {
+        try {
+            const response = await fetch(`/search/suggestions?q=${encodeURIComponent(query)}&type=users`);
+            const data = await response.json();
+
+            resultsBox.innerHTML = "";
+
+            if (data.suggestions.length === 0) {
+                resultsBox.innerHTML = "<div class='result-item'>No results found.</div>";
+                return;
+            }
+
+            data.suggestions.forEach(user => {
+                const item = document.createElement("div");
+                item.classList.add("result-item");
+
+                item.innerHTML = `
+                    <img src="${user.profile_picture || '/static/accounts/images/default-profile.png'}" alt="User">
+                    <div class="text">
+                        <div class="name">${user.name}</div>
+                        <div class="interests">${user.interests || "No interests listed"}</div>
+                    </div>
+                `;
+
+                item.addEventListener("click", () => {
+                    window.location.href = `/accounts/profile/${user.id}/`;
+                });
+
+                resultsBox.appendChild(item);
+            });
+
+        } catch (err) {
+            console.error("Live search error:", err);
+        }
+    }
+
+    let debounceTimer;
+    input.addEventListener("input", function () {
+        const query = this.value.trim();
+        clearTimeout(debounceTimer);
+        if (query.length > 0) {
+            debounceTimer = setTimeout(() => fetchResults(query), 300);
+        } else {
+            resultsBox.innerHTML = "";
+        }
+    });
     // Update form action when search type changes
     function updateFormAction() {
         let searchType = searchTypeSelect.value;

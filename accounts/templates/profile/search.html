@@ -2,33 +2,156 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search</title>
+    <title>Live User Search</title>
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
-    
-    <!-- Correct Font Awesome Link -->
+    <!-- <link rel="stylesheet" href="{% static 'accounts/css/home.css' %}"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        .live-search-wrapper {
+            position: relative;
+            max-width: 500px;
+            margin: 60px auto 20px;
+        }
+
+        #searchType {
+            padding: 12px 14px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-right: none;
+            border-radius: 10px 10px 10px 10px;
+            background-color: #f9f9f9;
+            height: 48px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        #liveSearchInput {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            outline: none;
+        }
+
+        .live-search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-top: none;
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .live-search-results .result-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .live-search-results .result-item:hover {
+            background: #f9f9f9;
+        }
+
+        .result-item img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+
+        .result-item .text {
+            flex: 1;
+        }
+
+        .result-item .text .name {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .result-item .text .interests {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .bottom-navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            border-top: 1px solid #dbdbdb;
+            box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: #333;
+            font-size: 24px;
+            position: relative;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-item:hover {
+            opacity: 0.6;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 50px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .nav-item:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Search</h1>
+    <h1 style="text-align:center;">Search for Students</h1>
+
+    <div class="live-search-wrapper">
+        <select id="searchType" style="margin-bottom: 10px;">
+            <option value="users" selected>Users</option>
+            <option value="communities">Communities</option>
+            <option value="events">Events</option>
+        </select>
     
-        <form id="searchForm" method="GET" action="{% url 'search_users' %}">
-            <div class="search-container">
-                <select id="searchType" name="type">
-                    <option value="users" selected>Users</option>
-                    <option value="communities">Communities</option>
-                    <option value="events">Events</option>
-                </select>
-                <input type="text" name="q" placeholder="Search..." required autocomplete="off">
-                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-            </div>
-        </form>
+        <input id="liveSearchInput" type="text" placeholder="Search..." autocomplete="off">
+        <div id="liveSearchResults" class="live-search-results"></div>
     </div>
     
-    <!-- Bottom Navbar (Without Create Post Button) -->
+    <!-- Bottom Navbar -->
     <nav class="bottom-navbar">
         <a href="{% url 'home' %}" class="nav-item">
             <i class="fa-solid fa-house"></i>
@@ -48,22 +171,86 @@
         </a>
     </nav>
 
-    <!-- Pass URLs to JavaScript -->
     <script>
-        // Define URLs as JavaScript variables
-        const searchUrls = {
-            users: "{% url 'search_users' %}",
-            communities: "{% url 'search_communities' %}",
-            events: "{% url 'search_events' %}",
-            suggestions: "{% url 'search_suggestions' %}",
-            profile: "/accounts/profile/",  // Base URL for profiles
-            community: "/accounts/community/",  // Base URL for communities
-            event: "/accounts/event/"  // Base URL for events
-        };
+        document.addEventListener("DOMContentLoaded", function () {
+            const input = document.getElementById("liveSearchInput");
+            const resultsBox = document.getElementById("liveSearchResults");
+            const searchType = document.getElementById("searchType");
+    
+            async function fetchResults(query, type) {
+                try {
+                    const response = await fetch(`/search/suggestions?q=${encodeURIComponent(query)}&type=${type}`);
+                    const data = await response.json();
+    
+                    resultsBox.innerHTML = "";
+    
+                    if (!data.suggestions || data.suggestions.length === 0) {
+                        resultsBox.innerHTML = "<div class='result-item'>No results found.</div>";
+                        return;
+                    }
+    
+                    data.suggestions.forEach(item => {
+                        const div = document.createElement("div");
+                        div.classList.add("result-item");
+    
+                        if (type === "users") {
+                            div.innerHTML = `
+                                <img src="${item.profile_picture || '/static/accounts/images/default-profile.png'}" alt="User">
+                                <div class="text">
+                                    <div class="name">${item.name}</div>
+                                    <div class="interests">${item.interests || "No interests listed"}</div>
+                                </div>
+                            `;
+                            div.addEventListener("click", () => {
+                                window.location.href = `/accounts/profile/${item.id}/`;
+                            });
+                        }
+    
+                        if (type === "communities") {
+                            div.innerHTML = `
+                                <div class="text">
+                                    <div class="name">${item.name}</div>
+                                    <div class="interests">Members: ${item.members}</div>
+                                </div>
+                            `;
+                            div.addEventListener("click", () => {
+                                window.location.href = `/accounts/community/${item.id}/`;
+                            });
+                        }
+    
+                        if (type === "events") {
+                            div.innerHTML = `
+                                <div class="text">
+                                    <div class="name">${item.name}</div>
+                                    <div class="interests">${item.date} at ${item.time}</div>
+                                </div>
+                            `;
+                            div.addEventListener("click", () => {
+                                window.location.href = `/accounts/event/${item.id}/`;
+                            });
+                        }
+    
+                        resultsBox.appendChild(div);
+                    });
+    
+                } catch (err) {
+                    console.error("Live search error:", err);
+                }
+            }
+    
+            let debounceTimer;
+            input.addEventListener("input", function () {
+                const query = this.value.trim();
+                const type = searchType.value;
+                clearTimeout(debounceTimer);
+                if (query.length > 0) {
+                    debounceTimer = setTimeout(() => fetchResults(query, type), 300);
+                } else {
+                    resultsBox.innerHTML = "";
+                }
+            });
+        });
     </script>
-
-    <!-- Load the JavaScript file -->
-    <script src="{% static 'accounts/js/search.js' %}"></script>
-
+    
 </body>
 </html>

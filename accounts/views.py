@@ -30,7 +30,9 @@ from django.views.decorators.http import require_POST
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.core.mail import send_mail
-
+from datetime import datetime, timedelta
+from uuid import uuid4  # for generating unique Jitsi room names
+from django.views.decorators.http import require_GET
 
 def send_notification(user, message, notification_type):
     """Helper function to create and send a notification."""
@@ -112,39 +114,47 @@ def search_page(request):
     return render(request, "profile/search.html")
 
 def search_users(request):
-    """ Allow users to search for others by username, email, or surname """
-
+    """ Allow users to search for others by username, email, surname, or interests """
     query = request.GET.get('q', '').strip()  # Get the search query
 
     if not query:
         return render(request, 'profile/search_results.html', {'results': None, 'query': query})
 
-    # Exclude the logged-in user from the results if authenticated
     user_id = request.user.userID if request.user.is_authenticated else None
     if user_id:
-        # If user is authenticated, exclude their userID
+        # Exclude current user if authenticated
         query_sql = """
             SELECT u.userID, u.username, u.surname, u.email, 
                    p.profile_picture 
             FROM User u
             LEFT JOIN Profiles p ON u.userID = p.userID
-            WHERE (u.username LIKE %s OR u.email LIKE %s OR u.surname LIKE %s)
+            WHERE (
+                u.username LIKE %s OR 
+                u.email LIKE %s OR 
+                u.surname LIKE %s OR 
+                p.interests LIKE %s
+            )
             AND u.userID != %s
         """
-        params = [f"%{query}%", f"%{query}%", f"%{query}%", user_id]
+        params = [f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%", user_id]
     else:
-        # If user is not authenticated, don't exclude any user
         query_sql = """
             SELECT u.userID, u.username, u.surname, u.email, 
                    p.profile_picture 
             FROM User u
             LEFT JOIN Profiles p ON u.userID = p.userID
-            WHERE (u.username LIKE %s OR u.email LIKE %s OR u.surname LIKE %s)
+            WHERE (
+                u.username LIKE %s OR 
+                u.email LIKE %s OR 
+                u.surname LIKE %s OR 
+                p.interests LIKE %s
+            )
         """
-        params = [f"%{query}%", f"%{query}%", f"%{query}%"]
+        params = [f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%"]
 
     results = CustomUser.objects.raw(query_sql, params)
     return render(request, 'profile/search_results.html', {'results': results, 'query': query})
+
 
 def search_communities(request):
     """ Allow users to search for communities by name or category """
@@ -181,63 +191,73 @@ def search_events(request):
 
     return render(request, 'Events/search_events.html', {'results': results, 'query': query})
 
+@require_GET
 def search_suggestions(request):
-    """ Provide live search suggestions for users, communities, and events """
-    query = request.GET.get('q', '').strip()
-    search_type = request.GET.get('type', 'users')  # Default to users
-    user_id = request.user.userID if request.user.is_authenticated else None
+    query = request.GET.get("q", "").strip()
+    search_type = request.GET.get("type", "users").lower()
     suggestions = []
 
-    if query:
+    if not query:
+        return JsonResponse({"suggestions": []})
+
+    with connection.cursor() as cursor:
         if search_type == "users":
-            # Search users, excluding the logged-in user
-            if user_id:
-                users = CustomUser.objects.raw("""
-                    SELECT u.userID, u.username
-                    FROM User u
-                    WHERE u.username LIKE %s
-                    AND u.userID != %s
-                    LIMIT 5
-                """, [f"%{query}%", user_id])
-            else:
-                users = CustomUser.objects.raw("""
-                    SELECT u.userID, u.username
-                    FROM User u
-                    WHERE u.username LIKE %s
-                    LIMIT 5
-                """, [f"%{query}%"])
-            suggestions = [{"id": user.userID, "name": user.username} for user in users]
+            cursor.execute("""
+                SELECT u.userID, u.username, p.interests, p.profile_picture
+                FROM User u
+                LEFT JOIN Profiles p ON u.userID = p.userID
+                WHERE u.username LIKE %s OR u.email LIKE %s OR p.interests LIKE %s
+                LIMIT 10
+            """, [f"%{query}%", f"%{query}%", f"%{query}%"])
+            rows = cursor.fetchall()
+            suggestions = [
+                {
+                    "id": row[0],
+                    "name": row[1],
+                    "interests": row[2] or "",
+                    "profile_picture": row[3] or ""
+                }
+                for row in rows
+            ]
 
         elif search_type == "communities":
-            # Search communities, excluding those created by the logged-in user
-            communities = Community.objects.filter(
-                (Q(name__icontains=query) | Q(communityCategory__icontains=query)) &
-                ~Q(createdBy_id=user_id)
-            )[:5]  # Limit to 5 results
-            suggestions = [{"id": community.communityID, "name": community.name} for community in communities]
+            cursor.execute("""
+                SELECT c.communityID, c.name, COUNT(cm.userID) as member_count
+                FROM Communities c
+                LEFT JOIN CommunityMemberships cm ON c.communityID = cm.communityID
+                WHERE c.name LIKE %s
+                GROUP BY c.communityID, c.name
+                ORDER BY member_count DESC
+                LIMIT 10
+            """, [f"%{query}%"])
+            rows = cursor.fetchall()
+            suggestions = [
+                {
+                    "id": row[0],
+                    "name": row[1],
+                    "members": row[2]
+                }
+                for row in rows
+            ]
 
         elif search_type == "events":
-            # Search events, excluding those created by the logged-in user
-            with connection.cursor() as cursor:
-                if user_id:
-                    cursor.execute("""
-                        SELECT e.eventID, e.eventTitle
-                        FROM Events e
-                        JOIN Communities c ON e.communityID = c.communityID
-                        WHERE (e.eventTitle LIKE %s OR c.name LIKE %s)
-                        AND e.createdBy != %s
-                        LIMIT 5
-                    """, [f"%{query}%", f"%{query}%", user_id])
-                else:
-                    cursor.execute("""
-                        SELECT e.eventID, e.eventTitle
-                        FROM Events e
-                        JOIN Communities c ON e.communityID = c.communityID
-                        WHERE (e.eventTitle LIKE %s OR c.name LIKE %s)
-                        LIMIT 5
-                    """, [f"%{query}%", f"%{query}%"])
-                events = cursor.fetchall()
-            suggestions = [{"id": event[0], "name": event[1]} for event in events]
+            cursor.execute("""
+                SELECT eventID, eventTitle, eventDate, eventTime
+                FROM Events
+                WHERE eventTitle LIKE %s
+                ORDER BY eventDate, eventTime
+                LIMIT 10
+            """, [f"%{query}%"])
+            rows = cursor.fetchall()
+            suggestions = [
+                {
+                    "id": row[0],
+                    "name": row[1],
+                    "date": row[2].strftime("%Y-%m-%d"),
+                    "time": row[3].strftime("%H:%M")
+                }
+                for row in rows
+            ]
 
     return JsonResponse({"suggestions": suggestions})
 
@@ -524,6 +544,8 @@ def edit_profile(request):
         profile.major = request.POST.get("major", profile.major)
         profile.academicYear = request.POST.get("academicYear", profile.academicYear)
         profile.campusInvolvement = request.POST.get("campusInvolvement", profile.campusInvolvement)
+        profile.interests = request.POST.get("interests", profile.interests)
+
 
         # ✅ Handle Profile Picture Upload
         if 'profile_picture' in request.FILES:
@@ -610,10 +632,9 @@ def events(request):
 
 @login_required
 def event_details(request, event_id):
-    """ Fetch and display event details """
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, e.description, c.name as communityName
+            SELECT e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, e.description, c.name as communityName, e.createdBy, e.meetingLaunched
             FROM Events e
             JOIN Communities c ON e.communityID = c.communityID
             WHERE e.eventID = %s
@@ -631,12 +652,21 @@ def event_details(request, event_id):
         "location": event[3],
         "virtualLink": event[4],
         "description": event[5],
-        "communityName": event[6]
+        "communityName": event[6],
+        "createdBy": event[7],
+        "meetingLaunched": event[8],
     }
+
+    from datetime import datetime, timedelta
+    now = datetime.now()
+    event_datetime = datetime.combine(event[1], event[2])
+    accessible_now = now >= (event_datetime - timedelta(minutes=5))
+
+    event_data["is_creator"] = (request.user.userID == event[7])
+    event_data["accessible_now"] = accessible_now
 
     return render(request, "Events/event_details.html", {"event": event_data})
 
-from uuid import uuid4  # for generating unique Jitsi room names
 
 @login_required
 def create_event(request):
@@ -817,13 +847,15 @@ def cancel_event(request):
 
     return render(request, 'Events/cancel_event.html', {'events': events})
 
+
+
 @login_required
 def embedded_meeting(request, room_slug):
     user_id = request.user.userID
 
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT eventID, createdBy, virtualLink
+            SELECT eventID, createdBy, virtualLink, meetingLaunched, eventDate, eventTime
             FROM Events
             WHERE virtualLink LIKE %s
         """, [f"https://meet.jit.si/{room_slug}"])
@@ -831,17 +863,44 @@ def embedded_meeting(request, room_slug):
 
     if not event:
         messages.error(request, "Event not found.")
-        return redirect("home")  # Redirect to home if not found
+        return redirect("home")
 
-    event_id, created_by_id, virtual_link = event
+    event_id, created_by_id, virtual_link, meeting_launched, event_date, event_time = event
 
-    if user_id != created_by_id:
-        messages.warning(request, "Only the event creator can start the meeting.")
-        return redirect("home")  # ✅ Redirect to home instead of the Jitsi link
+    # Combine date and time into a single datetime object
+    event_datetime = datetime.combine(event_date, event_time)
+    now = datetime.now()
 
-    return render(request, 'Events/embedded_meeting.html', {
-        'room_name': room_slug
-    })
+    # Calculate if we're within 5 minutes before the event
+    is_within_five_minutes = now >= (event_datetime - timedelta(minutes=5))
+
+    if (user_id == created_by_id or request.user.Permission == "Admin") and not meeting_launched:
+        # ✅ Creator starts the meeting, set the flag
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE Events SET meetingLaunched = TRUE WHERE eventID = %s
+            """, [event_id])
+        return render(request, 'Events/embedded_meeting.html', {
+            'room_name': room_slug
+        })
+
+    elif meeting_launched and is_within_five_minutes:
+        # ✅ Any user can join if meeting launched AND within 5 minutes
+        return render(request, 'Events/embedded_meeting.html', {
+            'room_name': room_slug
+        })
+
+    elif not is_within_five_minutes:
+        # ⏰ Too early for non-creators
+        minutes_left = int((event_datetime - now).total_seconds() // 60)
+        messages.warning(request, f"The meeting will be available {minutes_left} minutes before it starts.")
+        return redirect("events")
+
+    else:
+        # 🛑 Creator hasn't launched it yet
+        messages.warning(request, "The meeting hasn't started yet. Please wait for the event creator.")
+        return redirect("events")
+
 
 
 
@@ -1209,11 +1268,21 @@ def admin_view(request):
         """)
         pending_requests = cursor.fetchall()
 
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.virtualLink, e.meetingLaunched
+            FROM Events e
+            WHERE e.virtualLink IS NOT NULL
+            ORDER BY e.eventDate DESC, e.eventTime DESC
+        """)
+        virtual_sessions = cursor.fetchall()
+
     return render(request, "profile/admin.html", {
         "users": users,
         "communities": communities,
         "events": events,
         "pending_requests": pending_requests,
+        "virtual_sessions": virtual_sessions,
         "permission": request.user.Permission
     })
 

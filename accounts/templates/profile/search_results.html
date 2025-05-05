@@ -22,7 +22,8 @@
                             <div class="search-text">
                                 <a href="{% url 'view_profile' user.userID %}" class="username">{{ user.username }}</a>
                                 <p class="full-name">{{ user.surname }}</p>
-                            </div>
+                                <p class="interests"><strong>Interests:</strong> {{ user.profile.interests|default:"Not provided" }}</p>
+                            </div>                            
                         </li>
                     {% endfor %}
                 </ul>

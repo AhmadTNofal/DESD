@@ -92,6 +92,7 @@ class Profile(models.Model):
     major = models.CharField(max_length=100, blank=True, null=True)
     academicYear = models.IntegerField(blank=True, null=True)
     campusInvolvement = models.TextField(blank=True, null=True)
+    interests = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to="profile_pics/", default="profile_pics/default.jpg")
 
     class Meta:
