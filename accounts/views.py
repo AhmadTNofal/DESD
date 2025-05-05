@@ -1245,6 +1245,10 @@ def create_post(request):
 
 @login_required
 def admin_view(request):
+    if request.user.Permission != "Admin":
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("You are not authorized to access this page.")
+    
     users = CustomUser.objects.all()
     communities = Community.objects.all()
 
