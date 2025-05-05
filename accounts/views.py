@@ -17,7 +17,6 @@ from .forms import PostForm, CommentForm
 from django.core.files.storage import default_storage 
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from .zoom_utils import create_zoom_meeting, update_zoom_meeting, delete_zoom_meeting
 from django.utils import timezone
 from .chat_utils import create_chat_channel, create_user_on_stream
 from .chat_utils import get_stream_client
@@ -674,8 +673,8 @@ def create_event(request):
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    INSERT INTO Events (communityID, eventTitle, eventDate, eventTime, location, virtualLink, description, createdBy, createdAt, zoom_meeting_id)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW(), NULL)
+                    INSERT INTO Events (communityID, eventTitle, eventDate, eventTime, location, virtualLink, description, createdBy, createdAt)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
                     """,
                     [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, description, user_id]
                 )
@@ -709,7 +708,7 @@ def change_event(request):
     user_id = request.user.userID
 
     with connection.cursor() as cursor:
-        cursor.execute("SELECT eventID, eventTitle, zoom_meeting_id FROM Events WHERE createdBy = %s", [user_id])
+        cursor.execute("SELECT eventID, eventTitle FROM Events WHERE createdBy = %s", [user_id])
         events = cursor.fetchall()
 
     selected_event = None
@@ -720,7 +719,7 @@ def change_event(request):
         if event_id:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT eventID, eventTitle, eventDate, eventTime, location, virtualLink, description, zoom_meeting_id "
+                    "SELECT eventID, eventTitle, eventDate, eventTime, location, virtualLink, description "
                     "FROM Events WHERE eventID = %s AND createdBy = %s",
                     [event_id, user_id]
                 )
@@ -731,28 +730,14 @@ def change_event(request):
             event_date = request.POST.get("eventDate")
             event_time = request.POST.get("eventTime")
             location = request.POST.get("location") if "onlineEvent" not in request.POST else None
-            virtual_link = None
-            zoom_meeting_id = selected_event[7] if selected_event else None
+            virtual_link = selected_event[5]  # existing link by default
 
-            if "onlineEvent" in request.POST:
-                try:
-                    if zoom_meeting_id:
-                        update_zoom_meeting(
-                            meeting_id=zoom_meeting_id,
-                            event_title=event_title,
-                            event_date=event_date,
-                            event_time=event_time
-                        )
-                        virtual_link = f"https://zoom.us/j/{zoom_meeting_id}"
-                    else:
-                        virtual_link, zoom_meeting_id = create_zoom_meeting(
-                            event_title=event_title,
-                            event_date=event_date,
-                            event_time=event_time
-                        )
-                except Exception as e:
-                    messages.error(request, f"Failed to update Zoom meeting: {e}")
-                    return redirect('change_events')
+            # ✅ If switching to online and no existing Jitsi, generate new one
+            if "onlineEvent" in request.POST and not virtual_link:
+                room_name = f"Jitsi_{uuid4().hex[:10]}"
+                virtual_link = f"https://meet.jit.si/{room_name}"
+            elif "onlineEvent" not in request.POST:
+                virtual_link = None
 
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -762,12 +747,12 @@ def change_event(request):
                 community_id = cursor.fetchone()[0]
 
                 cursor.execute(
-                    "UPDATE Events SET eventTitle=%s, eventDate=%s, eventTime=%s, location=%s, virtualLink=%s, description=%s, zoom_meeting_id=%s "
+                    "UPDATE Events SET eventTitle=%s, eventDate=%s, eventTime=%s, location=%s, virtualLink=%s, description=%s "
                     "WHERE eventID=%s",
-                    [event_title, event_date, event_time, location, virtual_link, request.POST.get("description"), zoom_meeting_id, event_id]
+                    [event_title, event_date, event_time, location, virtual_link, request.POST.get("description"), event_id]
                 )
 
-            # Notify community members about the event update
+            # ✅ Notify members
             with connection.cursor() as cursor:
                 cursor.execute(
                     "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
@@ -794,7 +779,7 @@ def cancel_event(request):
     user_id = request.user.userID
 
     with connection.cursor() as cursor:
-        cursor.execute("SELECT eventID, eventTitle, zoom_meeting_id FROM Events WHERE createdBy = %s", [user_id])
+        cursor.execute("SELECT eventID, eventTitle FROM Events WHERE createdBy = %s", [user_id])
         events = cursor.fetchall()
 
     if request.method == "POST":
@@ -802,13 +787,11 @@ def cancel_event(request):
 
         if event_id:
             with connection.cursor() as cursor:
-                cursor.execute("SELECT zoom_meeting_id, communityID, eventTitle FROM Events WHERE eventID = %s AND createdBy = %s", [event_id, user_id])
+                cursor.execute("SELECT communityID, eventTitle FROM Events WHERE eventID = %s AND createdBy = %s", [event_id, user_id])
                 result = cursor.fetchone()
-                zoom_meeting_id = result[0]
-                community_id = result[1]
-                event_title = result[2]
+                community_id, event_title = result
 
-            # Notify community members about the event cancellation
+            # ✅ Notify members
             with connection.cursor() as cursor:
                 cursor.execute(
                     "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
@@ -825,12 +808,7 @@ def cancel_event(request):
                     notification_type="event"
                 )
 
-            if zoom_meeting_id:
-                try:
-                    delete_zoom_meeting(zoom_meeting_id)
-                except Exception as e:
-                    messages.error(request, f"Error deleting Zoom meeting: {e}")
-
+            # ✅ Delete event
             with connection.cursor() as cursor:
                 cursor.execute("DELETE FROM Events WHERE eventID = %s AND createdBy = %s", [event_id, user_id])
 
