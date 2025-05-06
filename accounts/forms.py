@@ -1,8 +1,6 @@
 from django import forms
 from django.contrib.auth.hashers import make_password
-from .models import Community, Post, Profile
-from django import forms
-from .models import Community, Comment
+from .models import Community, Post, Profile, Comment, CustomUser
 
 class SignupForm(forms.Form):
     username = forms.CharField(max_length=50)
@@ -45,9 +43,28 @@ class EventForm(forms.Form):
     description = forms.CharField(widget=forms.Textarea, required=True)
 
 class PostForm(forms.ModelForm):
+    # tagging users field
+    tagged_users = forms.ModelMultipleChoiceField(
+        queryset=CustomUser.objects.none(),  # We'll set this dynamically in the view
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
+        required=False,
+        label="Tag Users"
+    )
+
     class Meta:
         model = Post
-        fields = ['image', 'content']  # Ensure the fields match your model
+        fields = ['image', 'content', 'tagged_users']  # Include tagged_users in the form
+        widgets = {
+            'content': forms.Textarea(attrs={'placeholder': 'Write something...', 'rows': 4}),
+            'image': forms.FileInput(attrs={'accept': 'image/*'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # Get the current user from the view
+        super().__init__(*args, **kwargs)
+        if user:
+            # Only show users that the current user follows
+            self.fields['tagged_users'].queryset = CustomUser.objects.filter(followers__follower=user).exclude(userID=user.userID)
 
 class ProfileForm(forms.ModelForm):
     class Meta:

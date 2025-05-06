@@ -10,7 +10,7 @@
     <div class="post-container">
         <h2>Create a New Post</h2>
 
-        <!-- ✅ Display Messages -->
+        <!-- Display Messages -->
         {% if messages %}
             <div class="messages">
                 {% for message in messages %}
@@ -21,20 +21,28 @@
             </div>
         {% endif %}
 
-        <!-- ✅ Post Form with Image Upload -->
+        <!-- Post Form with Image Upload and Tagging -->
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <label for="post_image">Upload Image</label>
-            <input type="file" id="post_image" name="image" accept="image/*" required>
+            <!-- Image Field -->
+            <label for="id_image">Upload Image</label>
+            {{ form.image }}
 
-            <label for="post_content">Content</label>
-            <textarea id="post_content" name="content" required placeholder="Write something..."></textarea>
+            <!-- Content Field -->
+            <label for="id_content">Content</label>
+            {{ form.content }}
+
+            <!-- Tagging Users Field -->
+            <div class="tag-users-container">
+                <label for="id_tagged_users">Tag Users</label>
+                {{ form.tagged_users }}
+            </div>
 
             <button type="submit">Post</button>
         </form>
 
-        <!-- ✅ Back to Homepage -->
+        <!-- Back to Homepage -->
         <a href="{% url 'home' %}" class="back-button">← Back</a>
     </div>
 </body>

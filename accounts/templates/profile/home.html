@@ -10,7 +10,6 @@
 </head>
 
 <body>
-    
     <!-- Top Search Bar -->
     <div class="top-bar">
         <a href="{% url 'search_page' %}" class="search-icon">
@@ -74,6 +73,16 @@
                         <p><strong>{{ post.user.username }}</strong></p>
                         <p class="timestamp">{{ post.createdAt|date:"F j, Y, g:i a" }}</p>
                         <p>{{ post.content }}</p>
+
+                        <!-- Display Tagged Users -->
+                        {% if post.tagged.exists %}
+                            <p class="tagged-users">
+                                Tagged: 
+                                {% for tagged_user in post.tagged %}
+                                    <a href="{% url 'view_profile' tagged_user.userID %}">@{{ tagged_user.username }}</a>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                        {% endif %}
 
                         <!-- Comments Section (Initially Hidden) -->
                         <div id="comments-{{ post.postID }}" class="comments-section" style="display: none;">

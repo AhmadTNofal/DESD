@@ -1,34 +1,182 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+/* General Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #fafafa;
+    margin: 0;
+    padding: 0;
+    color: #262626;
+    line-height: 1.6;
+}
+
+/* Notification Container */
 .notification-list {
     max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+    margin: 30px auto 60px;
+    padding: 25px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #dbdbdb;
 }
+
+/* Page Title */
+.notification-list h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #262626;
+    text-align: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Notification Item */
 .notification {
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 12px;
+    border-radius: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
+
+/* Unread Notification */
 .notification.unread {
-    background-color: #f0f8ff;
+    background-color: #f0f7ff;
+    border-left: 4px solid #ff758c;
 }
+
+/* Read Notification */
 .notification.read {
-    background-color: #f5f5f5;
+    background-color: #f9f9f9;
+    border-left: 4px solid #ddd;
+    opacity: 0.85;
 }
+
+/* Notification Message */
 .notification-message {
     flex-grow: 1;
+    font-size: 14px;
+    padding-right: 15px;
 }
+
+/* Timestamp styling */
+.notification-message span.timestamp {
+    color: #888;
+    font-size: 12px;
+    display: block;
+    margin-top: 4px;
+}
+
+/* Action Buttons */
+.notification-actions {
+    flex-shrink: 0;
+}
+
 .notification-actions button {
-    padding: 5px 10px;
-    background-color: #007bff;
+    padding: 8px 14px;
+    background-color: #ff758c;
     color: white;
     border: none;
-    border-radius: 3px;
+    border-radius: 6px;
     cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
 .notification-actions button:hover {
-    background-color: #0056b3;
+    background-color: #ff5a7a;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.notification-actions button:active {
+    transform: translateY(0);
+}
+
+/* Empty state */
+.notification-list p {
+    text-align: center;
+    color: #888;
+    font-size: 15px;
+    padding: 20px;
+}
+
+/* Add icons to notifications */
+.notification-message::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-right: 10px;
+    opacity: 0.7;
+}
+
+.notification-message.like::before {
+    content: "\f004"; /* heart icon */
+    color: #ff758c;
+}
+
+.notification-message.comment::before {
+    content: "\f075"; /* comment icon */
+    color: #4a90e2;
+}
+
+.notification-message.follow::before {
+    content: "\f234"; /* user-plus icon */
+    color: #50b154;
+}
+
+/* Animation for new notifications */
+@keyframes highlight {
+    0% {
+        background-color: rgba(255, 117, 140, 0.2);
+    }
+    100% {
+        background-color: #f0f7ff;
+    }
+}
+
+.notification.new {
+    animation: highlight 2s ease;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .notification-list {
+        width: 90%;
+        padding: 15px;
+        margin: 20px auto 60px;
+    }
+    
+    .notification {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .notification-actions {
+        margin-top: 10px;
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
+    .notification-list {
+        width: 100%;
+        border-radius: 0;
+        margin: 0 auto 60px;
+    }
+    
+    .notification-list h1 {
+        font-size: 20px;
+    }
+    
+    .notification {
+        padding: 12px;
+    }
 }

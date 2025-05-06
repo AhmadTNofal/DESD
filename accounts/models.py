@@ -73,7 +73,6 @@ class Community(models.Model):
     def __str__(self):
         return self.name
 
-
 class CommunityMembership(models.Model):
     """ Model for managing user memberships in communities. """
     membershipID = models.AutoField(primary_key=True)
@@ -107,9 +106,6 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
-    
-from django.db import models
-from .models import CustomUser, Community
 
 class Post(models.Model):
     postID = models.AutoField(primary_key=True)
@@ -136,8 +132,13 @@ class Post(models.Model):
 
     def __str__(self):
         return f"Post {self.postID} by {self.user.username}"
+
     def is_liked_by(self, user):
         return self.likes.filter(user=user).exists()
+
+    def tagged_users(self):
+        # Corrected query: Filter CustomUser using the related_name 'tagged_in_posts'
+        return CustomUser.objects.filter(tagged_in_posts__post=self)
 
 def user_directory_path(instance, filename):
     """Upload images to 'media/profile_pics/user_<id>/<filename>'"""
@@ -175,23 +176,19 @@ class Like(models.Model):
         db_table = "Likes"
         managed = False  # Because you're managing the table manually
 
-from django.db import models
-from django.contrib.auth.models import User
-
 class Comment(models.Model):
     content = models.TextField()
-    createdAt = models.DateTimeField(db_column='createdAt', auto_now_add=True)  # Adjusted to match typical usage
-    updatedAt = models.DateTimeField(db_column='updatedAt', auto_now=True)  # Adjusted to match typical usage
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Use CustomUser via AUTH_USER_MODEL
+    createdAt = models.DateTimeField(db_column='createdAt', auto_now_add=True)
+    updatedAt = models.DateTimeField(db_column='updatedAt', auto_now=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='comments')
 
     def __str__(self):
         return f"{self.user.username} on {self.post.postID}"
 
     class Meta:
-        db_table = "accounts_comment"  # Ensure this matches your database table name
-        managed = False  # Since MySQL manages this table
-
+        db_table = "accounts_comment"
+        managed = False
 
 class Follow(models.Model):
     follower = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='following')
@@ -223,6 +220,9 @@ class EventRegistration(models.Model):
     event = models.ForeignKey('Events', on_delete=models.CASCADE)
     registered_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "EventRegistrations"
+        managed = False
 
 class NotificationPreferences(models.Model):
     preferenceID = models.AutoField(primary_key=True)
@@ -246,3 +246,15 @@ class NotificationPreferences(models.Model):
 
     def __str__(self):
         return f"Preferences for {self.userID.username}"
+
+class PostTags(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='posttags', db_column='postID')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tagged_in_posts', db_column='userID')
+
+    class Meta:
+        db_table = "PostTags"
+        managed = False
+        unique_together = ('post', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} tagged in Post {self.post.postID}"

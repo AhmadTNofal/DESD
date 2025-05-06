@@ -70,6 +70,95 @@
         
                         <label for="post_code">Post Code:</label>
                         <input type="text" name="post_code" value="{{ profile.post_code }}">
+
+                        <!-- Notification Preferences -->
+                        <h3>Notification Preferences</h3>
+                        {% with preferences=user.notificationpreferences_set.first %}
+                        <div class="toggle-container">
+                            <label class="toggle-label" for="email_post">Email - New Post</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="email_post" id="email_post" {% if preferences.email_post %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle-label" for="in_app_post">In-App - New Post</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="in_app_post" id="in_app_post" {% if preferences.in_app_post %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle-label" for="email_follow">Email - New Follower</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="email_follow" id="email_follow" {% if preferences.email_follow %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle-label" for="in_app_follow">In-App - New Follower</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="in_app_follow" id="in_app_follow" {% if preferences.in_app_follow %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle-label" for="email_message">Email - New Message</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="email_message" id="email_message" {% if preferences.email_message %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle-label" for="in_app_message">In-App - New Message</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="in_app_message" id="in_app_message" {% if preferences.in_app_message %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle-label" for="email_event">Email - Event Updates</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="email_event" id="email_event" {% if preferences.email_event %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle-label" for="in_app_event">In-App - Event Updates</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="in_app_event" id="in_app_event" {% if preferences.in_app_event %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle-label" for="email_community">Email - Community Updates</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="email_community" id="email_community" {% if preferences.email_community %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle-label" for="in_app_community">In-App - Community Updates</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="in_app_community" id="in_app_community" {% if preferences.in_app_community %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle-label" for="email_like">Email - Post Likes</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="email_like" id="email_like" {% if preferences.email_like %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="toggle-label" for="in_app_like">In-App - Post Likes</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="in_app_like" id="in_app_like" {% if preferences.in_app_like %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        {% endwith %}
                     </div>
                 </div>
         

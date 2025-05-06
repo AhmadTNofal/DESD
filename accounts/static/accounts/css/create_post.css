@@ -80,3 +80,24 @@ button:hover {
     color: #ff758c;
     font-weight: 600;
 }
+
+/* Styling for the tagged users multi-select */
+.tag-users-container {
+    margin-top: 10px;
+}
+.tag-users-container label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+select[multiple] {
+    width: 100%;
+    height: 150px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+}
+select[multiple] option {
+    padding: 5px;
+}

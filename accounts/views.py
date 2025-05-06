@@ -8,8 +8,8 @@ from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
-from .models import CustomUser, Community, CommunityMembership, Profile, Notifications, NotificationPreferences
-from .forms import CommunityForm, EventForm
+from .models import CustomUser, Community, CommunityMembership, Profile, Notifications, NotificationPreferences, PostTags
+from .forms import CommunityForm, EventForm, PostForm
 from django.urls import reverse
 from datetime import date
 from .models import Post, Comment 
@@ -26,13 +26,12 @@ import cloudinary.uploader
 from django.http import JsonResponse
 from .models import Like
 from .models import Follow
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.core.mail import send_mail
 from datetime import datetime, timedelta
 from uuid import uuid4  # for generating unique Jitsi room names
-from django.views.decorators.http import require_GET
 
 def send_notification(user, message, notification_type):
     """Helper function to create and send a notification."""
@@ -74,13 +73,15 @@ def send_notification(user, message, notification_type):
                 'notification_type': notification_type,
             }
         )
+
 @login_required
 def home(request):
     posts = Post.objects.all().order_by('-createdAt')
 
-    # Precompute if the post is liked by the current user
+    # Precompute if the post is liked by the current user and fetch tagged users
     for post in posts:
         post.is_liked_by_user = post.likes.filter(user=request.user).exists()
+        post.tagged = post.tagged_users()  # Fetch tagged users using the method from the Post model
 
     unread_count = 0
     try:
@@ -106,7 +107,7 @@ def home(request):
     return render(request, "profile/home.html", {
         "posts": posts,
         "unread_count": unread_count,
-        "unread_notifications": unread_notifications,  # Add this
+        "unread_notifications": unread_notifications,
         "permission": request.user.Permission
     })
 
@@ -154,7 +155,6 @@ def search_users(request):
 
     results = CustomUser.objects.raw(query_sql, params)
     return render(request, 'profile/search_results.html', {'results': results, 'query': query})
-
 
 def search_communities(request):
     """ Allow users to search for communities by name or category """
@@ -517,7 +517,7 @@ def create_community(request):
 
 @login_required
 def profile_settings(request):
-    user = request.user  # Get logged-in user
+    user = request.user  # Get PEGGIESlogged-in user
     profile = Profile.objects.filter(user=user).first()  # Use `.first()` to avoid errors if profile doesn't exist
 
     if not profile:
@@ -531,8 +531,10 @@ def profile_settings(request):
 
 @login_required
 def edit_profile(request):
-    user = request.user  
-    profile, created = Profile.objects.get_or_create(user=user)  
+    user = request.user
+    profile, created = Profile.objects.get_or_create(user=user)
+    # Get or create notification preferences
+    preferences, created = NotificationPreferences.objects.get_or_create(userID=user)
 
     if request.method == "POST":
         user.username = request.POST["username"]
@@ -545,19 +547,30 @@ def edit_profile(request):
         profile.academicYear = request.POST.get("academicYear", profile.academicYear)
         profile.campusInvolvement = request.POST.get("campusInvolvement", profile.campusInvolvement)
         profile.interests = request.POST.get("interests", profile.interests)
-
         profile.date_of_birth = request.POST.get("date_of_birth", profile.date_of_birth)
         profile.city = request.POST.get("city", profile.city)
         profile.street_name = request.POST.get("street_name", profile.street_name)
         profile.post_code = request.POST.get("post_code", profile.post_code)
-
-
 
         # Handle Profile Picture Upload
         if 'profile_picture' in request.FILES:
             uploaded_file = request.FILES['profile_picture']
             result = cloudinary.uploader.upload(uploaded_file, folder="profile_pictures/")
             profile.profile_picture = result['secure_url']
+            
+        preferences.email_post = 'email_post' in request.POST
+        preferences.in_app_post = 'in_app_post' in request.POST
+        preferences.email_follow = 'email_follow' in request.POST
+        preferences.in_app_follow = 'in_app_follow' in request.POST
+        preferences.email_message = 'email_message' in request.POST
+        preferences.in_app_message = 'in_app_message' in request.POST
+        preferences.email_event = 'email_event' in request.POST
+        preferences.in_app_event = 'in_app_event' in request.POST
+        preferences.email_community = 'email_community' in request.POST
+        preferences.in_app_community = 'in_app_community' in request.POST
+        preferences.email_like = 'email_like' in request.POST
+        preferences.in_app_like = 'in_app_like' in request.POST
+        
         try:
             user.save()  
             profile.save()  
@@ -672,7 +685,6 @@ def event_details(request, event_id):
     event_data["accessible_now"] = accessible_now
 
     return render(request, "Events/event_details.html", {"event": event_data})
-
 
 @login_required
 def create_event(request):
@@ -853,8 +865,6 @@ def cancel_event(request):
 
     return render(request, 'Events/cancel_event.html', {'events': events})
 
-
-
 @login_required
 def embedded_meeting(request, room_slug):
     user_id = request.user.userID
@@ -897,7 +907,7 @@ def embedded_meeting(request, room_slug):
         })
 
     elif not is_within_five_minutes:
-        # ⏰ Too early for non-creators
+        # Too early for non-creators
         minutes_left = int((event_datetime - now).total_seconds() // 60)
         messages.warning(request, f"The meeting will be available {minutes_left} minutes before it starts.")
         return redirect("events")
@@ -906,9 +916,6 @@ def embedded_meeting(request, room_slug):
         # Creator hasn't launched it yet
         messages.warning(request, "The meeting hasn't started yet. Please wait for the event creator.")
         return redirect("events")
-
-
-
 
 @login_required
 def join_community(request):
@@ -1221,7 +1228,8 @@ def join_community_action(request, community_id):
 @login_required
 def create_post(request):
     if request.method == "POST":
-        form = PostForm(request.POST, request.FILES)
+        # Pass the current user to the form to set the tagged_users queryset
+        form = PostForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             post = form.save(commit=False)
             post.user = request.user
@@ -1233,19 +1241,32 @@ def create_post(request):
 
             post.save()
 
+            # Save tagged users
+            tagged_users = form.cleaned_data.get('tagged_users', [])
+            for tagged_user in tagged_users:
+                PostTags.objects.create(post=post, user=tagged_user)
+                # Notify the tagged user
+                send_notification(
+                    user=tagged_user,
+                    message=f"{request.user.username} tagged you in a post",
+                    notification_type="post"
+                )
+
             # Notify followers about the new post
             followers = CustomUser.objects.filter(following__following=request.user)
             for follower in followers:
-                send_notification(
-                    user=follower,
-                    message=f"{request.user.username} created a new post",
-                    notification_type="post"
-                )
+                if follower not in tagged_users:  # Avoid duplicate notifications for tagged users
+                    send_notification(
+                        user=follower,
+                        message=f"{request.user.username} created a new post",
+                        notification_type="post"
+                    )
 
             messages.success(request, "Post created successfully!")
             return redirect("home")
     else:
-        form = PostForm()  # <- here you define `form` for GET
+        # Pass the current user to the form for GET request
+        form = PostForm(user=request.user)
 
     return render(request, "profile/create_post.html", {"form": form})
 
