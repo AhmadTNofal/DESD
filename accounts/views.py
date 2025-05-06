@@ -546,8 +546,14 @@ def edit_profile(request):
         profile.campusInvolvement = request.POST.get("campusInvolvement", profile.campusInvolvement)
         profile.interests = request.POST.get("interests", profile.interests)
 
+        profile.date_of_birth = request.POST.get("date_of_birth", profile.date_of_birth)
+        profile.city = request.POST.get("city", profile.city)
+        profile.street_name = request.POST.get("street_name", profile.street_name)
+        profile.post_code = request.POST.get("post_code", profile.post_code)
 
-        # ✅ Handle Profile Picture Upload
+
+
+        # Handle Profile Picture Upload
         if 'profile_picture' in request.FILES:
             uploaded_file = request.FILES['profile_picture']
             result = cloudinary.uploader.upload(uploaded_file, folder="profile_pictures/")

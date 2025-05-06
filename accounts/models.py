@@ -1,7 +1,8 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
 from django.db import models
 from django.conf import settings
-
+from django.db import models
+from django.conf import settings
 
 class CustomUserManager(BaseUserManager):
     """ Manager for CustomUser to handle user creation properly. """
@@ -94,6 +95,11 @@ class Profile(models.Model):
     campusInvolvement = models.TextField(blank=True, null=True)
     interests = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to="profile_pics/", default="profile_pics/default.jpg")
+    # Add to Profile model
+    date_of_birth = models.DateField(blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    street_name = models.CharField(max_length=100, blank=True, null=True)
+    post_code = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         db_table = "Profiles"  # Match the exact MySQL table name
@@ -136,9 +142,6 @@ class Post(models.Model):
 def user_directory_path(instance, filename):
     """Upload images to 'media/profile_pics/user_<id>/<filename>'"""
     return f'profile_pics/user_{instance.user.id}/{filename}'
-
-from django.db import models
-from django.conf import settings
 
 class CommunityRequest(models.Model):
     requestID = models.AutoField(primary_key=True)
