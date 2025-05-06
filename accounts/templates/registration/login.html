@@ -8,9 +8,15 @@
 <body>
     <div class="container">
         <h2>Login</h2>
-        {% if form.errors %}
-            <p style="color: red;">Your username and password didn't match. Please try again.</p>
+
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>        
         {% endif %}
+
         <form method="post" action="{% url 'login' %}">
             {% csrf_token %}
             <label for="id_username">Username:</label>

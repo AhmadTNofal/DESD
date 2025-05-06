@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.db import connection
 from django.contrib.auth.hashers import make_password
@@ -353,20 +353,20 @@ def view_event(request, event_id):
 def login_view(request):
     """Custom login view to authenticate users and redirect them to home."""
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        
-        user = authenticate(request, username=username, password=password)  
+        form = AuthenticationForm(request, data=request.POST)
 
-        if user is not None:
-            login(request, user)  # Log in the user
-            messages.success(request, "Login successful!")
-            return redirect("home")  
-
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            # messages.success(request, "Login successful!")
+            return redirect("home")
         else:
             messages.error(request, "Invalid username or password.")
-
-    return render(request, "registration/login.html")  
+            return render(request, "registration/login.html", {"form": form})
+    
+    else:
+        form = AuthenticationForm()
+    return render(request, "registration/login.html", {"form": form}) 
 
 def signup(request):
     if request.method == "POST":
@@ -386,11 +386,11 @@ def signup(request):
 
         try:
             with connection.cursor() as cursor:
-                # ✅ Check if the username already exists
+                # Check if the username already exists
                 cursor.execute("SELECT COUNT(*) FROM `User` WHERE username = %s", [username])
                 username_exists = cursor.fetchone()[0] > 0
 
-                # ✅ Check if the email is already registered
+                # Check if the email is already registered
                 cursor.execute("SELECT COUNT(*) FROM `User` WHERE email = %s", [email])
                 email_exists = cursor.fetchone()[0] > 0
 
@@ -402,7 +402,7 @@ def signup(request):
                 if username_exists or email_exists:
                     return redirect("signup")  # Redirect back to signup page to show error
 
-                # ✅ If username & email are unique, proceed with signup
+                # If username & email are unique, proceed with signup
                 cursor.execute("""
                     INSERT INTO `User` (username, surname, email, phoneNumber, password, Permission)
                     VALUES (%s, %s, %s, %s, %s, %s)
@@ -700,12 +700,12 @@ def create_event(request):
             description = data['description']
             virtual_link = None
 
-            # ✅ If online, generate Jitsi link
+            # If online, generate Jitsi link
             if is_online:
                 room_name = f"Jitsi_{uuid4().hex[:10]}"
                 virtual_link = f"https://meet.jit.si/{room_name}"
 
-            # ✅ Insert event into DB
+            # Insert event into DB
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
@@ -715,7 +715,7 @@ def create_event(request):
                     [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, description, user_id]
                 )
 
-            # ✅ Notify members of the new event
+            # Notify members of the new event
             with connection.cursor() as cursor:
                 cursor.execute(
                     "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
@@ -768,7 +768,7 @@ def change_event(request):
             location = request.POST.get("location") if "onlineEvent" not in request.POST else None
             virtual_link = selected_event[5]  # existing link by default
 
-            # ✅ If switching to online and no existing Jitsi, generate new one
+            # If switching to online and no existing Jitsi, generate new one
             if "onlineEvent" in request.POST and not virtual_link:
                 room_name = f"Jitsi_{uuid4().hex[:10]}"
                 virtual_link = f"https://meet.jit.si/{room_name}"
@@ -788,7 +788,7 @@ def change_event(request):
                     [event_title, event_date, event_time, location, virtual_link, request.POST.get("description"), event_id]
                 )
 
-            # ✅ Notify members
+            # Notify members
             with connection.cursor() as cursor:
                 cursor.execute(
                     "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
@@ -827,7 +827,7 @@ def cancel_event(request):
                 result = cursor.fetchone()
                 community_id, event_title = result
 
-            # ✅ Notify members
+            # Notify members
             with connection.cursor() as cursor:
                 cursor.execute(
                     "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
@@ -844,7 +844,7 @@ def cancel_event(request):
                     notification_type="event"
                 )
 
-            # ✅ Delete event
+            # Delete event
             with connection.cursor() as cursor:
                 cursor.execute("DELETE FROM Events WHERE eventID = %s AND createdBy = %s", [event_id, user_id])
 
@@ -881,7 +881,7 @@ def embedded_meeting(request, room_slug):
     is_within_five_minutes = now >= (event_datetime - timedelta(minutes=5))
 
     if (user_id == created_by_id or request.user.Permission == "Admin") and not meeting_launched:
-        # ✅ Creator starts the meeting, set the flag
+        # Creator starts the meeting, set the flag
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE Events SET meetingLaunched = TRUE WHERE eventID = %s
@@ -891,7 +891,7 @@ def embedded_meeting(request, room_slug):
         })
 
     elif meeting_launched and is_within_five_minutes:
-        # ✅ Any user can join if meeting launched AND within 5 minutes
+        # Any user can join if meeting launched AND within 5 minutes
         return render(request, 'Events/embedded_meeting.html', {
             'room_name': room_slug
         })
@@ -903,7 +903,7 @@ def embedded_meeting(request, room_slug):
         return redirect("events")
 
     else:
-        # 🛑 Creator hasn't launched it yet
+        # Creator hasn't launched it yet
         messages.warning(request, "The meeting hasn't started yet. Please wait for the event creator.")
         return redirect("events")
 

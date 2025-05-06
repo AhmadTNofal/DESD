@@ -104,6 +104,19 @@ p {
     font-size: 14px; /* Increased from 12px */
     margin-top: 12px; /* Slightly more spacing */
 }
+.messages li {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+.error {
+    color: red;
+}
+.success {
+    color: green;
+}
+.info {
+    color: #007bff;
+}
 
 /* Responsive Design */
 @media (max-width: 500px) {
