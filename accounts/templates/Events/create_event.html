@@ -12,13 +12,15 @@
             var isOnline = document.getElementById("onlineEventCheckbox").checked;
             document.getElementById("locationField").classList.toggle("hidden", isOnline);
             document.getElementById("virtualLinkField").classList.toggle("hidden", !isOnline);
+            document.getElementById("capacityField").classList.toggle("hidden", isOnline);
         }
-
         document.addEventListener("DOMContentLoaded", function() {
-            let today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+            toggleEventType(); // Ensure correct visibility on page load
+            let today = new Date().toISOString().split('T')[0];
             document.getElementById("eventDate").setAttribute("min", today);
         });
     </script>
+    
 </head>
 <body>
     <div class="container">
@@ -52,6 +54,11 @@
                 <input type="checkbox" id="onlineEventCheckbox" name="onlineEvent" onclick="toggleEventType()"> Online Event
             </label>
 
+            <div id="capacityField">
+                <label for="id_capacity">Capacity (for in-person events only):</label>
+                <input type="number" name="capacity" id="id_capacity" min="1">
+            </div>
+            
             <div id="locationField">
                 <label for="id_location">Location:</label>
                 {{ form.location }}

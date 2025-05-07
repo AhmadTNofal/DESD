@@ -352,14 +352,18 @@ def view_event(request, event_id):
         return redirect('search_events')
 
     event_data = {
-        "eventID": event[0],
-        "eventTitle": event[1],
-        "eventDate": event[2],
-        "eventTime": event[3].strftime("%H:%M"),
-        "location": event[4],
-        "virtualLink": event[5],
-        "communityName": event[6]
+        "eventID": event_id,  
+        "eventTitle": event[0],
+        "eventDate": event[1],
+        "eventTime": event[2].strftime("%H:%M"),
+        "location": event[3],
+        "virtualLink": event[4],
+        "description": event[5],
+        "communityName": event[6],
+        "createdBy": event[7],
+        "meetingLaunched": event[8],
     }
+
 
     return render(request, 'Events/view_event.html', {"event": event_data})
 
@@ -656,45 +660,65 @@ def events(request):
 def event_details(request, event_id):
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, e.description, c.name as communityName, e.createdBy, e.meetingLaunched
+            SELECT e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, e.description,
+                   c.name as communityName, e.createdBy, e.meetingLaunched, e.capacity
             FROM Events e
             JOIN Communities c ON e.communityID = c.communityID
             WHERE e.eventID = %s
         """, [event_id])
-
         event = cursor.fetchone()
 
     if not event:
+        messages.error(request, "Event not found.")
         return redirect("events")
 
-    event_data = {
-        "eventTitle": event[0],
-        "eventDate": event[1],
-        "eventTime": event[2].strftime("%H:%M"),
-        "location": event[3],
-        "virtualLink": event[4],
-        "description": event[5],
-        "communityName": event[6],
-        "createdBy": event[7],
-        "meetingLaunched": event[8],
-    }
+    # Unpack event data
+    title, date_, time_, location, vlink, desc, community, created_by, launched, capacity = event
+
+    remaining_capacity = None
+    registered_users = []
+    if capacity is not None:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM EventRegistrations WHERE eventID = %s", [event_id])
+            registered = cursor.fetchone()[0]
+            remaining_capacity = capacity - registered
+
+            # Fetch registered users
+            cursor.execute("""
+                SELECT u.username, u.email
+                FROM EventRegistrations r
+                JOIN User u ON r.userID = u.userID
+                WHERE r.eventID = %s
+            """, [event_id])
+            registered_users = cursor.fetchall()
 
     from datetime import datetime, timedelta
     now = datetime.now()
-    event_datetime = datetime.combine(event[1], event[2])
+    event_datetime = datetime.combine(date_, time_)
     accessible_now = now >= (event_datetime - timedelta(minutes=5))
 
-    event_data["is_creator"] = (request.user.userID == event[7])
-    event_data["accessible_now"] = accessible_now
+    event_data = {
+        "eventID": event_id,
+        "eventTitle": title,
+        "eventDate": date_,
+        "eventTime": time_.strftime("%H:%M"),
+        "location": location,
+        "virtualLink": vlink,
+        "description": desc,
+        "communityName": community,
+        "createdBy": created_by,
+        "meetingLaunched": launched,
+        "remaining_capacity": remaining_capacity,
+        "is_creator": (request.user.userID == created_by),
+        "accessible_now": accessible_now,
+        "registered_users": registered_users,
+    }
 
     return render(request, "Events/event_details.html", {"event": event_data})
-
 
 @login_required
 def create_event(request):
     user_id = request.user.userID
-
-    # Fetch communities where user is Admin
     with connection.cursor() as cursor:
         cursor.execute(
             "SELECT c.communityID, c.name FROM CommunityMemberships cm "
@@ -713,47 +737,30 @@ def create_event(request):
             community_id = request.POST.get("communityID")
             is_online = request.POST.get("onlineEvent")
             location = data['location'] if not is_online else None
-            description = data['description']
             virtual_link = None
+            capacity = request.POST.get("capacity") if not is_online else None
 
-            # ✅ If online, generate Jitsi link
             if is_online:
-                room_name = f"Jitsi_{uuid4().hex[:10]}"
-                virtual_link = f"https://meet.jit.si/{room_name}"
+                from uuid import uuid4
+                virtual_link = f"https://meet.jit.si/Jitsi_{uuid4().hex[:10]}"
 
-            # ✅ Insert event into DB
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    INSERT INTO Events (communityID, eventTitle, eventDate, eventTime, location, virtualLink, description, createdBy, createdAt)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                    INSERT INTO Events (communityID, eventTitle, eventDate, eventTime, location, virtualLink, description, capacity, createdBy, createdAt)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                     """,
-                    [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, description, user_id]
-                )
-
-            # ✅ Notify members of the new event
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
-                    [community_id, user_id]
-                )
-                members = cursor.fetchall()
-
-            for member in members:
-                member_id = member[0]
-                member_user = CustomUser.objects.get(userID=member_id)
-                send_notification(
-                    user=member_user,
-                    message=f"New event '{data['eventTitle']}' created in {communities[0][1]}",
-                    notification_type="event"
+                    [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, data['description'], capacity, user_id]
                 )
 
             messages.success(request, "Event created successfully!")
             return redirect('events')
+
     else:
         form = EventForm()
 
     return render(request, 'Events/create_event.html', {'form': form, 'communities': communities})
+
 
 @login_required
 def change_event(request):
@@ -1746,3 +1753,34 @@ def add_comment(request, post_id):
 
         return redirect(request.META.get('HTTP_REFERER', '/'))
     return redirect('post_detail', post_id=post_id)  # Handle GET requests gracefully
+
+
+@login_required
+def register_for_event(request, event_id):
+    user_id = request.user.userID
+
+    with connection.cursor() as cursor:
+        # Check if user already registered
+        cursor.execute("SELECT COUNT(*) FROM EventRegistrations WHERE eventID = %s AND userID = %s", [event_id, user_id])
+        already_registered = cursor.fetchone()[0]
+
+        if already_registered:
+            messages.info(request, "You are already registered for this event.")
+            return redirect("event_details", event_id=event_id)
+
+        # Check capacity
+        cursor.execute("SELECT capacity FROM Events WHERE eventID = %s", [event_id])
+        capacity = cursor.fetchone()[0]
+
+        if capacity is not None:
+            cursor.execute("SELECT COUNT(*) FROM EventRegistrations WHERE eventID = %s", [event_id])
+            current_count = cursor.fetchone()[0]
+
+            if current_count >= capacity:
+                messages.error(request, "This event is full.")
+                return redirect("event_details", event_id=event_id)
+
+        # Register user
+        cursor.execute("INSERT INTO EventRegistrations (eventID, userID) VALUES (%s, %s)", [event_id, user_id])
+        messages.success(request, "Successfully registered for the event.")
+        return redirect("event_details", event_id=event_id)
