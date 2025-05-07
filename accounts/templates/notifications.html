@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifications</title>
     <link rel="stylesheet" href="{% static 'accounts/css/notifications.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
     <!-- Include CSRF token -->
@@ -30,6 +31,26 @@
             <p>No notifications to display.</p>
         {% endif %}
     </div>
+
+    <!-- Add Back Navigation Bar -->
+    <nav class="bottom-navbar">
+        <a href="{% url 'home' %}" class="nav-item">
+            <i class="fa fa-home"></i>
+            <span class="tooltip">Home</span>
+        </a>
+        <a href="{% url 'communities' %}" class="nav-item">
+            <i class="fa-solid fa-users"></i>
+            <span class="tooltip">Communities</span>
+        </a>
+        <a href="{% url 'events' %}" class="nav-item">
+            <i class="fa-solid fa-calendar"></i>
+            <span class="tooltip">Events</span>
+        </a>
+        <a href="{% url 'profile_settings' %}" class="nav-item">
+            <i class="fa-solid fa-user"></i>
+            <span class="tooltip">Profile</span>
+        </a>
+    </nav>
 
     <!-- Pass variables to JavaScript -->
     <script>
