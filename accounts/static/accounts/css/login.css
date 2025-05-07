@@ -68,7 +68,7 @@ input::placeholder {
 
 /* Button Styling */
 button {
-    background: #ff758c; /* Instagram’s blue */
+    background: #ff758c; 
     color: white;
     border: none;
     padding: 10px; /* Slightly thicker button */

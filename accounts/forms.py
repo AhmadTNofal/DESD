@@ -43,28 +43,44 @@ class EventForm(forms.Form):
     description = forms.CharField(widget=forms.Textarea, required=True)
 
 class PostForm(forms.ModelForm):
-    # tagging users field
+    community = forms.ModelChoiceField(
+        queryset=Community.objects.none(),
+        required=False,
+        label="Post in Community"
+    )
+    visibility = forms.ChoiceField(
+        choices=[('public', 'Public'), ('community', 'Community Only')],
+        required=False,
+        label="Visibility"
+    )
     tagged_users = forms.ModelMultipleChoiceField(
-        queryset=CustomUser.objects.none(),  # We'll set this dynamically in the view
+        queryset=CustomUser.objects.none(),
         widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
         required=False,
         label="Tag Users"
     )
 
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            # Communities the user is admin of
+            self.fields['community'].queryset = Community.objects.filter(
+                communitymembership__userID=user,
+                communitymembership__role='Admin'
+            )
+            # People the user follows
+            self.fields['tagged_users'].queryset = CustomUser.objects.filter(
+                followers__follower=user
+            ).exclude(userID=user.userID)
+
     class Meta:
         model = Post
-        fields = ['image', 'content', 'tagged_users']  # Include tagged_users in the form
+        fields = ['image', 'content']  # Only include real model fields here
         widgets = {
             'content': forms.Textarea(attrs={'placeholder': 'Write something...', 'rows': 4}),
             'image': forms.FileInput(attrs={'accept': 'image/*'}),
         }
-
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)  # Get the current user from the view
-        super().__init__(*args, **kwargs)
-        if user:
-            # Only show users that the current user follows
-            self.fields['tagged_users'].queryset = CustomUser.objects.filter(followers__follower=user).exclude(userID=user.userID)
 
 class ProfileForm(forms.ModelForm):
     class Meta:

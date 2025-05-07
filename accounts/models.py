@@ -121,6 +121,18 @@ class Post(models.Model):
         null=True,
         blank=True
     )
+
+    # Add this:
+    VISIBILITY_CHOICES = [
+        ('public', 'Public'),
+        ('community', 'Community Only')
+    ]
+    visibility = models.CharField(
+        max_length=20,
+        choices=VISIBILITY_CHOICES,
+        default='public'
+    )
+
     content = models.TextField()
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
     createdAt = models.DateTimeField(auto_now_add=True)

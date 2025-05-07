@@ -112,7 +112,7 @@ html, body {
 }
 
 .like-btn.liked {
-    color: #ed4956; /* Instagram’s red when liked */
+    color: #ed4956; 
 }
 
 .comment-btn {
@@ -832,4 +832,30 @@ h2 {
 }
 .tagged-users a:hover {
     text-decoration: underline;
+}
+.post-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background-color: #f0f0f0;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.tab-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.tab-btn.active {
+    background-color: #ff758c; 
+    color: white;
 }

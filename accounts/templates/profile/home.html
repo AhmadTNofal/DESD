@@ -2,15 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/home.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
-
 <body>
-    <!-- Top Search Bar -->
+
+    <!-- Top Bar -->
     <div class="top-bar">
         <a href="{% url 'search_page' %}" class="search-icon">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -36,17 +35,26 @@
         </a>
     </div>
 
-    <!-- Main Feed -->
     <div class="container">
         <h1>Welcome, {{ request.user.username }}!</h1>
+
+        <!-- Tabs -->
+        <div class="post-tabs">
+            <a href="{% url 'home' %}?filter=" class="tab-btn {% if not request.GET.filter %}active{% endif %}">All</a>
+            <a href="{% url 'home' %}?filter=community" class="tab-btn {% if request.GET.filter == 'community' %}active{% endif %}">Community Posts</a>
+            <a href="{% url 'home' %}?filter=my_communities" class="tab-btn {% if request.GET.filter == 'my_communities' %}active{% endif %}">My Communities</a>
+        </div>
+
+        <!-- Messages -->
         {% if messages %}
             <div class="messages">
                 {% for message in messages %}
-                <div class="alert {{ message.tags }}">{{ message }}</div>
+                    <div class="alert {{ message.tags }}">{{ message }}</div>
                 {% endfor %}
             </div>
         {% endif %}
 
+        <!-- Feed -->
         <div class="feed">
             {% for post in posts %}
                 <div class="post">
@@ -54,37 +62,34 @@
                         <img src="{{ post.image }}" alt="Post Image">
                     {% endif %}
                     <div class="post-content">
-                        <!-- Like & Comment Buttons -->
                         <div class="post-actions">
-                            <!-- Like -->
                             <button class="like-btn" onclick="toggleLike('{{ post.postID }}', this)">
                                 <i class="fa-heart {% if post.is_liked_by_user %}fa-solid{% else %}fa-regular{% endif %}"></i>
                                 <span class="like-count">{{ post.likes.count }}</span>
                             </button>
-
-                            <!-- Comment -->
                             <button class="comment-toggle-btn" onclick="toggleComments('{{ post.postID }}')">
                                 <i class="fa-regular fa-comment"></i>
                                 <span class="comment-count">{{ post.comments.count }}</span>
                             </button>
                         </div>
 
-                        <!-- Post Info -->
                         <p><strong>{{ post.user.username }}</strong></p>
                         <p class="timestamp">{{ post.createdAt|date:"F j, Y, g:i a" }}</p>
                         <p>{{ post.content }}</p>
 
-                        <!-- Display Tagged Users -->
+                        {% if post.community %}
+                            <p><em>Posted in <strong>{{ post.community.name }}</strong></em></p>
+                        {% endif %}
+
                         {% if post.tagged.exists %}
                             <p class="tagged-users">
-                                Tagged: 
+                                Tagged:
                                 {% for tagged_user in post.tagged %}
                                     <a href="{% url 'view_profile' tagged_user.userID %}">@{{ tagged_user.username }}</a>{% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                             </p>
                         {% endif %}
 
-                        <!-- Comments Section (Initially Hidden) -->
                         <div id="comments-{{ post.postID }}" class="comments-section" style="display: none;">
                             <h4>Comments</h4>
                             {% for comment in post.comments.all %}
@@ -96,7 +101,6 @@
                                 <p>No comments yet.</p>
                             {% endfor %}
 
-                            <!-- Add Comment Form -->
                             <form method="post" action="{% url 'add_comment' post.postID %}">
                                 {% csrf_token %}
                                 <div class="comment-form">
@@ -110,9 +114,9 @@
                     </div>
                 </div>
             {% empty %}
-                <p>No posts yet.</p>
+                <p>No posts to show.</p>
             {% endfor %}
-        </div>        
+        </div>
 
         <!-- Bottom Navbar -->
         <nav class="bottom-navbar">
@@ -139,11 +143,11 @@
                 <i class="fa-solid fa-user-shield"></i>
                 <span class="tooltip">Admin</span>
             </a>
-            {% endif %}    
+            {% endif %}
         </nav>
     </div>
 
-    <!-- JS Scripts -->
+    <!-- Scripts -->
     <script>
         function toggleLike(postId, btn) {
             fetch("{% url 'toggle_like' %}", {
