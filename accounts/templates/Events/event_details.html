@@ -26,20 +26,29 @@
         </a>
 
         {% if not event.virtualLink %}
+    {% if event.is_registered %}
+        <p><strong>Status:</strong> Registered for Event</p>
+        <form method="POST" action="{% url 'unregister_for_event' event.eventID %}">
+            {% csrf_token %}
+            <button type="submit" style="background-color: #f44336; color: white;">Unregister</button>
+        </form>
+    {% else %}
         <form method="POST" action="{% url 'register_for_event' event.eventID %}">
             {% csrf_token %}
             <button type="submit">Register for Event</button>
         </form>
-    
-        {% if event.remaining_capacity is not None %}
-            <p>
-                Remaining spots:
-                <a href="#" onclick="openPopup(); return false;">
-                    {{ event.remaining_capacity }}
-                </a>
-            </p>
-        {% endif %}
     {% endif %}
+
+    {% if event.remaining_capacity is not None %}
+        <p>
+            Remaining spots:
+            <a href="#" onclick="openPopup(); return false;">
+                {{ event.remaining_capacity }}
+            </a>
+        </p>
+    {% endif %}
+{% endif %}
+
     
     <!-- Popup Modal -->
     <div id="popup" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%);

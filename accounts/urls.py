@@ -62,4 +62,5 @@ urlpatterns = [
     path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
 
     path("events/<int:event_id>/register/", views.register_for_event, name="register_for_event"),
+    path("events/<int:event_id>/unregister/", views.unregister_for_event, name="unregister_for_event"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

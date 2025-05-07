@@ -672,8 +672,16 @@ def event_details(request, event_id):
         messages.error(request, "Event not found.")
         return redirect("events")
 
-    # Unpack event data
     title, date_, time_, location, vlink, desc, community, created_by, launched, capacity = event
+
+    # Check registration status
+    user_id = request.user.userID
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT COUNT(*) FROM EventRegistrations
+            WHERE eventID = %s AND userID = %s
+        """, [event_id, user_id])
+        is_registered = cursor.fetchone()[0] > 0
 
     remaining_capacity = None
     registered_users = []
@@ -709,12 +717,14 @@ def event_details(request, event_id):
         "createdBy": created_by,
         "meetingLaunched": launched,
         "remaining_capacity": remaining_capacity,
-        "is_creator": (request.user.userID == created_by),
+        "is_creator": (user_id == created_by),
         "accessible_now": accessible_now,
         "registered_users": registered_users,
+        "is_registered": is_registered,
     }
 
     return render(request, "Events/event_details.html", {"event": event_data})
+
 
 @login_required
 def create_event(request):
@@ -1784,3 +1794,16 @@ def register_for_event(request, event_id):
         cursor.execute("INSERT INTO EventRegistrations (eventID, userID) VALUES (%s, %s)", [event_id, user_id])
         messages.success(request, "Successfully registered for the event.")
         return redirect("event_details", event_id=event_id)
+
+
+@login_required
+def unregister_for_event(request, event_id):
+    user_id = request.user.userID
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            DELETE FROM EventRegistrations WHERE eventID = %s AND userID = %s
+        """, [event_id, user_id])
+        messages.success(request, "You have unregistered from the event.")
+
+    return redirect("event_details", event_id=event_id)
