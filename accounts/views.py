@@ -579,37 +579,40 @@ def edit_profile(request):
 
 @login_required
 def events(request):
-    """ Fetch and filter events based on user input and include available locations """
     query = request.GET.get("q", "").strip()
     selected_date = request.GET.get("date", "")
     selected_time = request.GET.get("time", "")
     online_filter = request.GET.get("online", "")
     location_filter = request.GET.get("location", "")
+    selected_community_id = request.GET.get("community_id", "")
 
-    user_id = request.user.userID if request.user.is_authenticated else None
+    user_id = request.user.userID
 
-    # Fetch events from communities the user is part of
+    # Fetch joined communities for the filter dropdown
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location, e.virtualLink, e.description, c.name as communityName
+            SELECT c.communityID, c.name
+            FROM Communities c
+            JOIN CommunityMemberships cm ON c.communityID = cm.communityID
+            WHERE cm.userID = %s
+        """, [user_id])
+        joined_communities = cursor.fetchall()
+
+    # Fetch all relevant events
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location,
+                   e.virtualLink, e.description, c.name as communityName, e.communityID
             FROM Events e
             JOIN Communities c ON e.communityID = c.communityID
             JOIN CommunityMemberships cm ON cm.communityID = c.communityID
             WHERE e.eventDate >= %s AND cm.userID = %s
         """, [date.today(), user_id])
-
         events = cursor.fetchall()
 
-    # Fetch distinct locations for filtering
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT DISTINCT location FROM Events WHERE location IS NOT NULL ORDER BY location")
-        locations = [row[0] for row in cursor.fetchall()]
-
-    # Convert raw data into dictionaries
     filtered_events = []
-    for event in events:
-        event_id, title, event_date, event_time, location, virtual_link, description, community_name = event
-
+    for e in events:
+        event_id, title, event_date, event_time, location, virtual_link, description, community_name, community_id = e
         event_data = {
             "eventID": event_id,
             "eventTitle": title,
@@ -619,7 +622,8 @@ def events(request):
             "virtualLink": virtual_link,
             "description": description,
             "is_online": virtual_link is not None,
-            "communityName": community_name
+            "communityName": community_name,
+            "communityID": community_id
         }
 
         # Apply filters
@@ -635,14 +639,18 @@ def events(request):
             continue
         if location_filter and location_filter.lower() not in (location or "").lower():
             continue
+        if selected_community_id and str(community_id) != selected_community_id:
+            continue
 
         filtered_events.append(event_data)
 
     return render(request, "Events/events.html", {
         "events": filtered_events,
-        "locations": locations,
-        "query": query
+        "locations": list({e[4] for e in events if e[4]}),
+        "query": query,
+        "joined_communities": joined_communities
     })
+
 
 @login_required
 def event_details(request, event_id):
