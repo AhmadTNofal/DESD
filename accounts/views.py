@@ -1254,8 +1254,26 @@ def create_post(request):
 
             post.save()
 
-            # Tagged users notifications...
-            # Follower notifications...
+            # Save tagged users
+            tagged_users = form.cleaned_data.get('tagged_users', [])
+            for tagged_user in tagged_users:
+                PostTags.objects.create(post=post, user=tagged_user)
+                # Notify the tagged user
+                send_notification(
+                    user=tagged_user,
+                    message=f"{request.user.username} tagged you in a post",
+                    notification_type="post"
+                )
+
+            # Notify followers about the new post
+            followers = CustomUser.objects.filter(following__following=request.user)
+            for follower in followers:
+                if follower not in tagged_users:  # Avoid duplicate notifications for tagged users
+                    send_notification(
+                        user=follower,
+                        message=f"{request.user.username} created a new post",
+                        notification_type="post"
+                    )
 
             messages.success(request, "Post created successfully!")
             return redirect("home")
