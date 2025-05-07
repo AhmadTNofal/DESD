@@ -49,9 +49,29 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
+            background-color: rgba(0, 0, 0, 0.75);
             justify-content: center;
             align-items: center;
+        }
+        .modal .bg-white {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+        }
+        .modal ul {
+            max-height: 60vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #dbdbdb #ffffff;
+        }
+        .modal ul::-webkit-scrollbar {
+            width: 6px;
+        }
+        .modal ul::-webkit-scrollbar-thumb {
+            background-color: #dbdbdb;
+            border-radius: 6px;
+        }
+        .modal ul::-webkit-scrollbar-track {
+            background-color: #ffffff;
         }
         .modal-content {
             max-width: 90%;
@@ -102,6 +122,13 @@
         .uploaded-image:hover .image-subtitle {
             opacity: 1;
         }
+        .clickable-count {
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .clickable-count:hover {
+            color: #0095f6;
+        }
         /* Responsive adjustments */
         @media (max-width: 640px) {
             .profile-picture {
@@ -111,10 +138,13 @@
             .profile-header {
                 flex-direction: column;
                 align-items: flex-start;
-               
             }
             .uploaded-pictures {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .modal .bg-white {
+                width: 90%;
+                max-height: 90vh;
             }
         }
     </style>
@@ -147,8 +177,16 @@
                 </div>
                 <div class="flex space-x-6 text-sm text-gray-600 mb-2">
                     <p><strong>{{ posts|length }}</strong> posts</p>
-                    <p><strong>{{ followers_count }}</strong> followers</p>
-                    <p><strong>{{ following_count }}</strong> following</p>
+                    <p>
+                        <span class="clickable-count" onclick="openFollowersModal()">
+                            <strong>{{ followers_count }}</strong> followers
+                        </span>
+                    </p>
+                    <p>
+                        <span class="clickable-count" onclick="openFollowingModal()">
+                            <strong>{{ following_count }}</strong> following
+                        </span>
+                    </p>
                 </div>
                 <div>
                     <span class="full-name font-medium text-gray-800">{{ user.surname }}</span>
@@ -164,42 +202,6 @@
             <p><strong>Academic Year:</strong> {{ profile.academicYear|default:"Not provided" }}</p>
             <p><strong>Campus Involvement:</strong> {{ profile.campusInvolvement|default:"Not provided" }}</p>
             <p><strong>Interests:</strong> {{ profile.interests }}</p>
-
-        </div>
-
-        <!-- Followers and Following Lists -->
-        <div class="flex flex-col sm:flex-row sm:space-x-4 mb-6">
-            <!-- Followers List -->
-            {% if followers %}
-                <div class="flex-1 bg-white border border-gray-200 rounded-lg p-4 mb-4 sm:mb-0">
-                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Followers</h4>
-                    <ul class="space-y-2 text-sm">
-                        {% for follower in followers %}
-                            <li>
-                                <a href="{% url 'view_profile' follower.userID %}" class="text-blue-500 hover:underline">
-                                    {{ follower.username }}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-
-            <!-- Following List -->
-            {% if following %}
-                <div class="flex-1 bg-white border border-gray-200 rounded-lg p-4">
-                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Following</h4>
-                    <ul class="space-y-2 text-sm">
-                        {% for followee in following %}
-                            <li>
-                                <a href="{% url 'view_profile' followee.userID %}" class="text-blue-500 hover:underline">
-                                    {{ followee.username }}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
         </div>
 
         <!-- User's Uploaded Pictures -->
@@ -231,8 +233,61 @@
         </div>
     </div>
 
+    <!-- Followers Modal -->
+    <div id="followersModal" class="modal hidden fixed z-50 inset-0 bg-black bg-opacity-75 flex justify-center items-center">
+        <div class="bg-white rounded-lg w-full max-w-md max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Followers</h3>
+                <span class="text-2xl cursor-pointer text-gray-600 hover:text-gray-800" onclick="closeFollowersModal()">×</span>
+            </div>
+            <ul class="flex-1 overflow-y-auto p-4 space-y-4">
+                {% for follower in followers %}
+                    <li class="flex items-center space-x-3">
+                        {% if follower.profile_picture %}
+                            <img src="{{ follower.profile_picture }}" alt="{{ follower.username }}'s profile picture" class="w-10 h-10 rounded-full object-cover">
+                        {% else %}
+                            <img src="{% static 'accounts/images/default-profile.png' %}" alt="Default Profile Picture" class="w-10 h-10 rounded-full object-cover">
+                        {% endif %}
+                        <a href="{% url 'view_profile' follower.userID %}" class="text-sm font-medium text-gray-800 hover:text-blue-500">
+                            {{ follower.username }}
+                        </a>
+                    </li>
+                {% empty %}
+                    <li class="text-gray-600 text-sm">No followers yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Following Modal -->
+    <div id="followingModal" class="modal hidden fixed z-50 inset-0 bg-black bg-opacity-75 flex justify-center items-center">
+        <div class="bg-white rounded-lg w-full max-w-md max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Following</h3>
+                <span class="text-2xl cursor-pointer text-gray-600 hover:text-gray-800" onclick="closeFollowingModal()">×</span>
+            </div>
+            <ul class="flex-1 overflow-y-auto p-4 space-y-4">
+                {% for followee in following %}
+                    <li class="flex items-center space-x-3">
+                        {% if followee.profile_picture %}
+                            <img src="{{ followee.profile_picture }}" alt="{{ followee.username }}'s profile picture" class="w-10 h-10 rounded-full object-cover">
+                        {% else %}
+                            <img src="{% static 'accounts/images/default-profile.png' %}" alt="Default Profile Picture" class="w-10 h-10 rounded-full object-cover">
+                        {% endif %}
+                        <a href="{% url 'view_profile' followee.userID %}" class="text-sm font-medium text-gray-800 hover:text-blue-500">
+                            {{ followee.username }}
+                        </a>
+                    </li>
+                {% empty %}
+                    <li class="text-gray-600 text-sm">Not following anyone yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
     <!-- Modal JavaScript -->
     <script>
+        // Image modal functions
         function openModal(imageUrl, caption) {
             document.getElementById("modalImage").src = imageUrl;
             document.getElementById("modalCaption").textContent = caption;
@@ -243,6 +298,29 @@
             document.getElementById("imageModal").style.display = "none";
         }
 
+        // Followers modal functions
+        function openFollowersModal() {
+            document.getElementById("followersModal").classList.remove("hidden");
+            document.getElementById("followersModal").style.display = "flex";
+        }
+
+        function closeFollowersModal() {
+            document.getElementById("followersModal").classList.add("hidden");
+            document.getElementById("followersModal").style.display = "none";
+        }
+
+        // Following modal functions
+        function openFollowingModal() {
+            document.getElementById("followingModal").classList.remove("hidden");
+            document.getElementById("followingModal").style.display = "flex";
+        }
+
+        function closeFollowingModal() {
+            document.getElementById("followingModal").classList.add("hidden");
+            document.getElementById("followingModal").style.display = "none";
+        }
+
+        // Follow/unfollow logic
         document.querySelector("button[type='submit']")?.addEventListener("click", async function (e) {
             e.preventDefault();
             const form = this.closest("form");
@@ -266,6 +344,19 @@
                 location.reload();
             } else {
                 alert(data.error || "Something went wrong");
+            }
+        });
+
+        // Close modals when clicking outside
+        document.getElementById("followersModal").addEventListener("click", function (e) {
+            if (e.target === this) {
+                closeFollowersModal();
+            }
+        });
+
+        document.getElementById("followingModal").addEventListener("click", function (e) {
+            if (e.target === this) {
+                closeFollowingModal();
             }
         });
     </script>
