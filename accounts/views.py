@@ -1,15 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.db import connection
 from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
-from .models import CustomUser, Community, CommunityMembership, Profile, Notifications, NotificationPreferences, PostTags
-from .forms import CommunityForm, EventForm, PostForm
+from .models import CustomUser, Community, CommunityMembership, Profile, Notifications, NotificationPreferences
+from .forms import CommunityForm, EventForm
 from django.urls import reverse
 from datetime import date
 from .models import Post, Comment 
@@ -26,12 +26,18 @@ import cloudinary.uploader
 from django.http import JsonResponse
 from .models import Like
 from .models import Follow
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_POST
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.core.mail import send_mail
 from datetime import datetime, timedelta
 from uuid import uuid4  # for generating unique Jitsi room names
+from django.views.decorators.http import require_GET
+import logging
+
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 def send_notification(user, message, notification_type):
     """Helper function to create and send a notification."""
@@ -73,54 +79,41 @@ def send_notification(user, message, notification_type):
                 'notification_type': notification_type,
             }
         )
-
 @login_required
 def home(request):
-    filter_type = request.GET.get('filter', '')
-    user = request.user
+    posts = Post.objects.all().order_by('-createdAt')
 
-    posts = Post.objects.all()
-
-    if filter_type == "community":
-        posts = posts.filter(community__isnull=False)
-
-    elif filter_type == "my_communities":
-        my_community_ids = CommunityMembership.objects.filter(userID=user).values_list('communityID', flat=True)
-        posts = posts.filter(community__communityID__in=my_community_ids)
-
-    # Apply visibility filter
-    my_community_ids = CommunityMembership.objects.filter(userID=user).values_list('communityID', flat=True)
-    posts = posts.filter(
-        Q(visibility='public') | Q(community__communityID__in=my_community_ids)
-    ).order_by('-createdAt')
-
-    # Post annotations
+    # Precompute if the post is liked by the current user
     for post in posts:
-        post.is_liked_by_user = post.likes.filter(user=user).exists()
-        post.tagged = post.tagged_users()
+        post.is_liked_by_user = post.likes.filter(user=request.user).exists()
 
-    # Unread messages & notifications
     unread_count = 0
     try:
         client = get_stream_client()
-        user_id = str(user.userID)
-        channels = client.query_channels({"members": {"$in": [user_id]}}, {"last_message_at": -1}).get("channels", [])
+        user_id = str(request.user.userID)
+
+        channels_response = client.query_channels(
+            {"members": {"$in": [user_id]}},
+            {"last_message_at": -1}
+        )
+        channels = channels_response.get("channels", [])
+
         for ch in channels:
             for read in ch.get("read", []):
                 if read["user"]["id"] == user_id:
                     unread_count += read.get("unread_messages", 0)
     except Exception as e:
-        print("Stream error in home view:", e)
+        print("🔴 Stream error in home view:", e)
 
-    unread_notifications = Notifications.objects.filter(userID=user, status='unread').count()
+    # Add count of unread notifications
+    unread_notifications = Notifications.objects.filter(userID=request.user, status='unread').count()
 
     return render(request, "profile/home.html", {
         "posts": posts,
         "unread_count": unread_count,
-        "unread_notifications": unread_notifications,
-        "permission": user.Permission
+        "unread_notifications": unread_notifications,  # Add this
+        "permission": request.user.Permission
     })
-
 
 def search_page(request):
     return render(request, "profile/search.html")
@@ -167,18 +160,19 @@ def search_users(request):
     results = CustomUser.objects.raw(query_sql, params)
     return render(request, 'profile/search_results.html', {'results': results, 'query': query})
 
+
 def search_communities(request):
-    """ Allow users to search for communities by name or category """
-    
-    query = request.GET.get('q', '').strip()  # Get search query
-
-    # Exclude communities created by the logged-in user
+    """ Allow users to search for communities by name, category, or description """
+    query = request.GET.get('q', '').strip()
     user_id = request.user.userID if request.user.is_authenticated else None
-    results = Community.objects.filter(
-        (Q(name__icontains=query) | Q(communityCategory__icontains=query)) &
-        ~Q(createdBy_id=user_id)  # Exclude communities created by the user
-    ) if query else None  # Return results only if query is not empty
-
+    if query:
+        results = Community.objects.filter(
+            Q(name__icontains=query) | 
+            Q(communityCategory__icontains=query) | 
+            Q(communityDescription__icontains=query)
+        ).exclude(createdBy_id=user_id)
+    else:
+        results = None
     return render(request, 'Communities/search_communities.html', {'results': results, 'query': query})
 
 def search_events(request):
@@ -232,24 +226,33 @@ def search_suggestions(request):
             ]
 
         elif search_type == "communities":
-            cursor.execute("""
-                SELECT c.communityID, c.name, COUNT(cm.userID) as member_count
+            sql_query = """
+                SELECT c.communityID, c.name, c.communityCategory, c.communityDescription, COUNT(cm.userID) as member_count
                 FROM Communities c
                 LEFT JOIN CommunityMemberships cm ON c.communityID = cm.communityID
-                WHERE c.name LIKE %s
-                GROUP BY c.communityID, c.name
+                WHERE c.name LIKE %s OR c.communityCategory LIKE %s OR c.communityDescription LIKE %s
+                GROUP BY c.communityID, c.name, c.communityCategory, c.communityDescription
                 ORDER BY member_count DESC
                 LIMIT 10
-            """, [f"%{query}%"])
-            rows = cursor.fetchall()
-            suggestions = [
-                {
-                    "id": row[0],
-                    "name": row[1],
-                    "members": row[2]
-                }
-                for row in rows
-            ]
+            """
+            params = [f"%{query}%", f"%{query}%", f"%{query}%"]
+            logger.debug("Executing community suggestions query: %s with params: %s", sql_query, params)
+            try:
+                cursor.execute(sql_query, params)
+                rows = cursor.fetchall()
+                suggestions = [
+                    {
+                        "id": row[0],
+                        "name": row[1],
+                        "category": row[2] or "",
+                        "description": row[3] or "",
+                        "members": row[4]
+                    }
+                    for row in rows
+                ]
+            except Exception as e:
+                logger.error("Error executing community suggestions query: %s", e)
+                raise
 
         elif search_type == "events":
             cursor.execute("""
@@ -364,20 +367,20 @@ def view_event(request, event_id):
 def login_view(request):
     """Custom login view to authenticate users and redirect them to home."""
     if request.method == "POST":
-        form = AuthenticationForm(request, data=request.POST)
+        username = request.POST["username"]
+        password = request.POST["password"]
+        
+        user = authenticate(request, username=username, password=password)  
 
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            # messages.success(request, "Login successful!")
-            return redirect("home")
+        if user is not None:
+            login(request, user)  # Log in the user
+            messages.success(request, "Login successful!")
+            return redirect("home")  
+
         else:
             messages.error(request, "Invalid username or password.")
-            return render(request, "registration/login.html", {"form": form})
-    
-    else:
-        form = AuthenticationForm()
-    return render(request, "registration/login.html", {"form": form}) 
+
+    return render(request, "registration/login.html")  
 
 def signup(request):
     if request.method == "POST":
@@ -397,11 +400,11 @@ def signup(request):
 
         try:
             with connection.cursor() as cursor:
-                # Check if the username already exists
+                # ✅ Check if the username already exists
                 cursor.execute("SELECT COUNT(*) FROM `User` WHERE username = %s", [username])
                 username_exists = cursor.fetchone()[0] > 0
 
-                # Check if the email is already registered
+                # ✅ Check if the email is already registered
                 cursor.execute("SELECT COUNT(*) FROM `User` WHERE email = %s", [email])
                 email_exists = cursor.fetchone()[0] > 0
 
@@ -413,7 +416,7 @@ def signup(request):
                 if username_exists or email_exists:
                     return redirect("signup")  # Redirect back to signup page to show error
 
-                # If username & email are unique, proceed with signup
+                # ✅ If username & email are unique, proceed with signup
                 cursor.execute("""
                     INSERT INTO `User` (username, surname, email, phoneNumber, password, Permission)
                     VALUES (%s, %s, %s, %s, %s, %s)
@@ -528,7 +531,7 @@ def create_community(request):
 
 @login_required
 def profile_settings(request):
-    user = request.user  # Get PEGGIESlogged-in user
+    user = request.user  # Get logged-in user
     profile = Profile.objects.filter(user=user).first()  # Use `.first()` to avoid errors if profile doesn't exist
 
     if not profile:
@@ -542,10 +545,8 @@ def profile_settings(request):
 
 @login_required
 def edit_profile(request):
-    user = request.user
-    profile, created = Profile.objects.get_or_create(user=user)
-    # Get or create notification preferences
-    preferences, created = NotificationPreferences.objects.get_or_create(userID=user)
+    user = request.user  
+    profile, created = Profile.objects.get_or_create(user=user)  
 
     if request.method == "POST":
         user.username = request.POST["username"]
@@ -558,30 +559,13 @@ def edit_profile(request):
         profile.academicYear = request.POST.get("academicYear", profile.academicYear)
         profile.campusInvolvement = request.POST.get("campusInvolvement", profile.campusInvolvement)
         profile.interests = request.POST.get("interests", profile.interests)
-        profile.date_of_birth = request.POST.get("date_of_birth", profile.date_of_birth)
-        profile.city = request.POST.get("city", profile.city)
-        profile.street_name = request.POST.get("street_name", profile.street_name)
-        profile.post_code = request.POST.get("post_code", profile.post_code)
 
-        # Handle Profile Picture Upload
+
+        # ✅ Handle Profile Picture Upload
         if 'profile_picture' in request.FILES:
             uploaded_file = request.FILES['profile_picture']
             result = cloudinary.uploader.upload(uploaded_file, folder="profile_pictures/")
             profile.profile_picture = result['secure_url']
-            
-        preferences.email_post = 'email_post' in request.POST
-        preferences.in_app_post = 'in_app_post' in request.POST
-        preferences.email_follow = 'email_follow' in request.POST
-        preferences.in_app_follow = 'in_app_follow' in request.POST
-        preferences.email_message = 'email_message' in request.POST
-        preferences.in_app_message = 'in_app_message' in request.POST
-        preferences.email_event = 'email_event' in request.POST
-        preferences.in_app_event = 'in_app_event' in request.POST
-        preferences.email_community = 'email_community' in request.POST
-        preferences.in_app_community = 'in_app_community' in request.POST
-        preferences.email_like = 'email_like' in request.POST
-        preferences.in_app_like = 'in_app_like' in request.POST
-        
         try:
             user.save()  
             profile.save()  
@@ -697,6 +681,7 @@ def event_details(request, event_id):
 
     return render(request, "Events/event_details.html", {"event": event_data})
 
+
 @login_required
 def create_event(request):
     user_id = request.user.userID
@@ -723,12 +708,12 @@ def create_event(request):
             description = data['description']
             virtual_link = None
 
-            # If online, generate Jitsi link
+            # ✅ If online, generate Jitsi link
             if is_online:
                 room_name = f"Jitsi_{uuid4().hex[:10]}"
                 virtual_link = f"https://meet.jit.si/{room_name}"
 
-            # Insert event into DB
+            # ✅ Insert event into DB
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
@@ -738,7 +723,7 @@ def create_event(request):
                     [community_id, data['eventTitle'], data['eventDate'], data['eventTime'], location, virtual_link, description, user_id]
                 )
 
-            # Notify members of the new event
+            # ✅ Notify members of the new event
             with connection.cursor() as cursor:
                 cursor.execute(
                     "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
@@ -791,7 +776,7 @@ def change_event(request):
             location = request.POST.get("location") if "onlineEvent" not in request.POST else None
             virtual_link = selected_event[5]  # existing link by default
 
-            # If switching to online and no existing Jitsi, generate new one
+            # ✅ If switching to online and no existing Jitsi, generate new one
             if "onlineEvent" in request.POST and not virtual_link:
                 room_name = f"Jitsi_{uuid4().hex[:10]}"
                 virtual_link = f"https://meet.jit.si/{room_name}"
@@ -811,7 +796,7 @@ def change_event(request):
                     [event_title, event_date, event_time, location, virtual_link, request.POST.get("description"), event_id]
                 )
 
-            # Notify members
+            # ✅ Notify members
             with connection.cursor() as cursor:
                 cursor.execute(
                     "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
@@ -850,7 +835,7 @@ def cancel_event(request):
                 result = cursor.fetchone()
                 community_id, event_title = result
 
-            # Notify members
+            # ✅ Notify members
             with connection.cursor() as cursor:
                 cursor.execute(
                     "SELECT userID FROM CommunityMemberships WHERE communityID = %s AND userID != %s",
@@ -867,7 +852,7 @@ def cancel_event(request):
                     notification_type="event"
                 )
 
-            # Delete event
+            # ✅ Delete event
             with connection.cursor() as cursor:
                 cursor.execute("DELETE FROM Events WHERE eventID = %s AND createdBy = %s", [event_id, user_id])
 
@@ -875,6 +860,8 @@ def cancel_event(request):
             return redirect('cancel_events')
 
     return render(request, 'Events/cancel_event.html', {'events': events})
+
+
 
 @login_required
 def embedded_meeting(request, room_slug):
@@ -902,7 +889,7 @@ def embedded_meeting(request, room_slug):
     is_within_five_minutes = now >= (event_datetime - timedelta(minutes=5))
 
     if (user_id == created_by_id or request.user.Permission == "Admin") and not meeting_launched:
-        # Creator starts the meeting, set the flag
+        # ✅ Creator starts the meeting, set the flag
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE Events SET meetingLaunched = TRUE WHERE eventID = %s
@@ -912,21 +899,24 @@ def embedded_meeting(request, room_slug):
         })
 
     elif meeting_launched and is_within_five_minutes:
-        # Any user can join if meeting launched AND within 5 minutes
+        # ✅ Any user can join if meeting launched AND within 5 minutes
         return render(request, 'Events/embedded_meeting.html', {
             'room_name': room_slug
         })
 
     elif not is_within_five_minutes:
-        # Too early for non-creators
+        # ⏰ Too early for non-creators
         minutes_left = int((event_datetime - now).total_seconds() // 60)
         messages.warning(request, f"The meeting will be available {minutes_left} minutes before it starts.")
         return redirect("events")
 
     else:
-        # Creator hasn't launched it yet
+        # 🛑 Creator hasn't launched it yet
         messages.warning(request, "The meeting hasn't started yet. Please wait for the event creator.")
         return redirect("events")
+
+
+
 
 @login_required
 def join_community(request):
@@ -1239,14 +1229,11 @@ def join_community_action(request, community_id):
 @login_required
 def create_post(request):
     if request.method == "POST":
-        form = PostForm(request.POST, request.FILES, user=request.user)
+        form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
             post.user = request.user
-            post.community = form.cleaned_data.get("community")
-            post.visibility = form.cleaned_data.get("visibility") or 'public'
-            
-            # Upload image if provided
+
             if 'image' in request.FILES:
                 uploaded_image = request.FILES['image']
                 result = cloudinary.uploader.upload(uploaded_image, folder="post_images/")
@@ -1254,34 +1241,21 @@ def create_post(request):
 
             post.save()
 
-            # Save tagged users
-            tagged_users = form.cleaned_data.get('tagged_users', [])
-            for tagged_user in tagged_users:
-                PostTags.objects.create(post=post, user=tagged_user)
-                # Notify the tagged user
-                send_notification(
-                    user=tagged_user,
-                    message=f"{request.user.username} tagged you in a post",
-                    notification_type="post"
-                )
-
             # Notify followers about the new post
             followers = CustomUser.objects.filter(following__following=request.user)
             for follower in followers:
-                if follower not in tagged_users:  # Avoid duplicate notifications for tagged users
-                    send_notification(
-                        user=follower,
-                        message=f"{request.user.username} created a new post",
-                        notification_type="post"
-                    )
+                send_notification(
+                    user=follower,
+                    message=f"{request.user.username} created a new post",
+                    notification_type="post"
+                )
 
             messages.success(request, "Post created successfully!")
             return redirect("home")
     else:
-        form = PostForm(user=request.user)
+        form = PostForm()  # <- here you define `form` for GET
 
     return render(request, "profile/create_post.html", {"form": form})
-
 
 @login_required
 def admin_view(request):
