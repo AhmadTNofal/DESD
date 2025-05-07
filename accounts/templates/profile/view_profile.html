@@ -7,6 +7,8 @@
     <title>User Profile</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         /* Custom styles for Instagram-like design with enhancements */
         .profile-picture {
@@ -128,6 +130,50 @@
         }
         .clickable-count:hover {
             color: #0095f6;
+        }
+        /* Navigation bar styles */
+        .bottom-navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            border-top: 1px solid #dbdbdb;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+        .nav-item {
+            position: relative;
+            color: #262626;
+            font-size: 24px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: color 0.3s ease;
+        }
+        .nav-item:hover {
+            color: #0095f6;
+        }
+        /* Tooltip Styling */
+        .tooltip {
+            position: absolute;
+            bottom: 50px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .nav-item:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
         }
         /* Responsive adjustments */
         @media (max-width: 640px) {
@@ -284,6 +330,26 @@
             </ul>
         </div>
     </div>
+
+    <!-- Add Navigation Bar -->
+    <nav class="bottom-navbar">
+        <a href="{% url 'home' %}" class="nav-item">
+            <i class="fa fa-home"></i>
+            <span class="tooltip">Home</span>
+        </a>
+        <a href="{% url 'communities' %}" class="nav-item">
+            <i class="fa-solid fa-users"></i>
+            <span class="tooltip">Communities</span>
+        </a>
+        <a href="{% url 'events' %}" class="nav-item">
+            <i class="fa-solid fa-calendar"></i>
+            <span class="tooltip">Events</span>
+        </a>
+        <a href="{% url 'profile_settings' %}" class="nav-item">
+            <i class="fa-solid fa-user"></i>
+            <span class="tooltip">Profile</span>
+        </a>
+    </nav>
 
     <!-- Modal JavaScript -->
     <script>

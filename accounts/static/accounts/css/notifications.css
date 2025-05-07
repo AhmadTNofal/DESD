@@ -178,6 +178,27 @@ body {
     opacity: 0.6;
 }
 
+/* Tooltip Styling */
+.tooltip {
+    position: absolute;
+    bottom: 50px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out;
+}
+
+
+.nav-item:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .notification-list {
@@ -211,4 +232,24 @@ body {
     .notification {
         padding: 12px;
     }
+}
+
+/* Tooltip Styling */
+.tooltip {
+    position: absolute;
+    bottom: 50px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.nav-item:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
 }
