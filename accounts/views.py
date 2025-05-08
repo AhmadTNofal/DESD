@@ -8,11 +8,10 @@ from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
-from .models import CustomUser, Community, CommunityMembership, Profile, Notifications, NotificationPreferences
+from .models import CustomUser, Community, CommunityMembership, Profile, Notifications, NotificationPreferences, Like, Follow, Post, Comment, PostTags
 from .forms import CommunityForm, EventForm
 from django.urls import reverse
 from datetime import date
-from .models import Post, Comment 
 from .forms import PostForm, CommentForm 
 from django.core.files.storage import default_storage 
 from django.views.decorators.http import require_POST
@@ -24,8 +23,6 @@ from django.conf import settings
 from stream_chat import StreamChat
 import cloudinary.uploader
 from django.http import JsonResponse
-from .models import Like
-from .models import Follow
 from django.views.decorators.http import require_POST
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -86,6 +83,7 @@ def home(request):
     # Precompute if the post is liked by the current user
     for post in posts:
         post.is_liked_by_user = post.likes.filter(user=request.user).exists()
+        post.tagged = post.tagged_users()
 
     unread_count = 0
     try:
@@ -103,7 +101,7 @@ def home(request):
                 if read["user"]["id"] == user_id:
                     unread_count += read.get("unread_messages", 0)
     except Exception as e:
-        print("🔴 Stream error in home view:", e)
+        print("Stream error in home view:", e)
 
     # Add count of unread notifications
     unread_notifications = Notifications.objects.filter(userID=request.user, status='unread').count()
@@ -1268,7 +1266,7 @@ def join_community_action(request, community_id):
 @login_required
 def create_post(request):
     if request.method == "POST":
-        form = PostForm(request.POST, request.FILES)
+        form = PostForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             post = form.save(commit=False)
             post.user = request.user
@@ -1280,19 +1278,31 @@ def create_post(request):
 
             post.save()
 
+            # Save tagged users
+            tagged_users = form.cleaned_data.get('tagged_users', [])
+            for tagged_user in tagged_users:
+                PostTags.objects.create(post=post, user=tagged_user)  # This line should now work
+                # Notify the tagged user
+                send_notification(
+                    user=tagged_user,
+                    message=f"{request.user.username} tagged you in a post",
+                    notification_type="post"
+                )
+
             # Notify followers about the new post
             followers = CustomUser.objects.filter(following__following=request.user)
             for follower in followers:
-                send_notification(
-                    user=follower,
-                    message=f"{request.user.username} created a new post",
-                    notification_type="post"
-                )
+                if follower not in tagged_users:  # Avoid duplicate notifications for tagged users
+                    send_notification(
+                        user=follower,
+                        message=f"{request.user.username} created a new post",
+                        notification_type="post"
+                    )
 
             messages.success(request, "Post created successfully!")
             return redirect("home")
     else:
-        form = PostForm()  # <- here you define `form` for GET
+        form = PostForm(user=request.user)
 
     return render(request, "profile/create_post.html", {"form": form})
 

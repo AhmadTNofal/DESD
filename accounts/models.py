@@ -260,7 +260,7 @@ class NotificationPreferences(models.Model):
         return f"Preferences for {self.userID.username}"
 
 class PostTags(models.Model):
-    postTagID = models.AutoField(primary_key=True)  # Re-add to match the database schema
+    postTagID = models.AutoField(primary_key=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='posttags', db_column='postID')
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tagged_in_posts', db_column='userID')
 

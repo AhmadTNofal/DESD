@@ -76,7 +76,7 @@ class PostForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = ['image', 'content']  # Only include real model fields here
+        fields = ['image', 'content', 'tagged_users', 'community', 'visibility']
         widgets = {
             'content': forms.Textarea(attrs={'placeholder': 'Write something...', 'rows': 4}),
             'image': forms.FileInput(attrs={'accept': 'image/*'}),
