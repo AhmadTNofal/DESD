@@ -69,6 +69,11 @@
                 Online Event
             </label>
 
+            <label  class="checkbox-container">
+                <input type="checkbox" name="registered" {% if show_registered_only %}checked{% endif %}>
+                Show Registered Events Only
+            </label>
+
             <div id="locationField">
                 <label for="location">Select Location:</label>
                 <select name="location">

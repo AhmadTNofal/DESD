@@ -589,6 +589,7 @@ def events(request):
     online_filter = request.GET.get("online", "")
     location_filter = request.GET.get("location", "")
     selected_community_id = request.GET.get("community_id", "")
+    show_registered_only = request.GET.get("registered", "") == "on"  # <-- new line
 
     user_id = request.user.userID
 
@@ -602,16 +603,28 @@ def events(request):
         """, [user_id])
         joined_communities = cursor.fetchall()
 
-    # Fetch all relevant events
+    # Fetch events from the user's communities
     with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location,
-                   e.virtualLink, e.description, c.name as communityName, e.communityID
-            FROM Events e
-            JOIN Communities c ON e.communityID = c.communityID
-            JOIN CommunityMemberships cm ON cm.communityID = c.communityID
-            WHERE e.eventDate >= %s AND cm.userID = %s
-        """, [date.today(), user_id])
+        if show_registered_only:
+            cursor.execute("""
+                SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location,
+                       e.virtualLink, e.description, c.name as communityName, e.communityID
+                FROM Events e
+                JOIN EventRegistrations r ON e.eventID = r.eventID
+                JOIN Communities c ON e.communityID = c.communityID
+                WHERE r.userID = %s
+                ORDER BY e.eventDate ASC
+            """, [user_id])
+        else:
+            cursor.execute("""
+                SELECT e.eventID, e.eventTitle, e.eventDate, e.eventTime, e.location,
+                       e.virtualLink, e.description, c.name as communityName, e.communityID
+                FROM Events e
+                JOIN Communities c ON e.communityID = c.communityID
+                JOIN CommunityMemberships cm ON cm.communityID = c.communityID
+                WHERE e.eventDate >= %s AND cm.userID = %s
+            """, [date.today(), user_id])
+
         events = cursor.fetchall()
 
     filtered_events = []
@@ -652,7 +665,8 @@ def events(request):
         "events": filtered_events,
         "locations": list({e[4] for e in events if e[4]}),
         "query": query,
-        "joined_communities": joined_communities
+        "joined_communities": joined_communities,
+        "show_registered_only": show_registered_only  # <-- send to template
     })
 
 
